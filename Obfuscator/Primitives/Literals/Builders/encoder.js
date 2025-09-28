@@ -1,4 +1,4 @@
-const { generateObfuscatedName } = require("../../../Utils/namer");
+const { generateObfuscatedName } = require("../../../Utils/nameGenerator");
 
 // encoder.js - run at build-time / in Node
 const toBinaryString = (buf) => {

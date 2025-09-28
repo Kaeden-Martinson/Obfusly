@@ -1,5 +1,5 @@
 /* Zalgo variable generator */
-const usedZalgoVariableNames = new Set();
+let usedZalgoVariableNames = new Set();
 function generateZalgoVariable() {
     var intensity = 2;
     var length = 1;
@@ -52,7 +52,7 @@ function createMinifiedVariableGenerator() {
     };
 }
 
-const generateMinifiedVariable = createMinifiedVariableGenerator();
+let generateMinifiedVariable = createMinifiedVariableGenerator();
 
 /* Invisable variable generator */
 let allCombinations = [];
@@ -72,11 +72,18 @@ for (let i = 0; i < firstVariableCharacter.length; i++) {
 }
 
 let generateObfuscatedName = () => {
-    switch ('zalgo') {
+    switch ('minify') {
         case 'minify': return generateMinifiedVariable();
         case 'zalgo': return generateZalgoVariable();
         case 'invisable': return allCombinations[combinationsCounter++];
     }
 };
 
-module.exports = { generateObfuscatedName };
+let clearOldNames = () => {
+    generateMinifiedVariable = createMinifiedVariableGenerator();
+    usedZalgoVariableNames = new Set();
+    allCombinations = [];
+    combinationsCounter = 0;
+};
+
+module.exports = { generateObfuscatedName, clearOldNames };

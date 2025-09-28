@@ -1,5 +1,5 @@
 const config = require("../../../Settings/config.json");
-const { generateObfuscatedName } = require("../../../Utils/namer");
+const { generateObfuscatedName } = require("../../../Utils/nameGenerator");
 
 function buildBaseNames(declarationMapping) {
     let baseVariable = "variable_numbers_";

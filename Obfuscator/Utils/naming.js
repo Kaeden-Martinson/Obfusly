@@ -1,5 +1,5 @@
 const config = require('../Settings/config.json');
-const { generateObfuscatedName } = require('./namer');
+const { generateObfuscatedName } = require('./nameGenerator');
 const { windowVariables, defaultedValues, ignoreVariables, newDeclarationVariables } = require('./Window/window_variables');
 
 let declarationMapping = new Map();

@@ -13,9 +13,11 @@ const { objectPropertyRecursive } = require('../Functions/property');
 const { encodeVariable } = require('../Functions/variable');
 const { encodeFunction } = require('../Functions/function');
 const { encodeExtra, encodeRecursiveExtra } = require('../Functions/extra');
-const { generateObfuscatedName } = require('../Utils/namer');
+const { generateObfuscatedName, clearOldNames } = require('../Utils/nameGenerator');
 
 function obfuscateEntireSource(code) {
+    clearOldNames();
+    
     const windowName = generateObfuscatedName();
 
     const ast = acorn.parse(code, { ecmaVersion: 2020 });
