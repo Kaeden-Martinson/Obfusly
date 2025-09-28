@@ -1,6 +1,5 @@
 # JsScramble
 
-**Description**
 JsScramble is a Node-based obfuscator that protects and secures any JavaScript application.
 
 > JsScramble transforms your JavaScript into runtime-equivalent, highly obfuscated bundles—hiding implementation details, constants, and strings while offering configurable tradeoffs between performance, size, and protection.
@@ -21,7 +20,7 @@ JsScramble is a Node-based obfuscator that protects and secures any JavaScript a
 
 ## Quick demo
 
-```bash
+```
 # install globally (example)
 npm install -g jsscramble
 
@@ -37,7 +36,7 @@ node server.js
 
 Place this in `jsscramble.config.json` at project root:
 
-```json
+```
 {
     "numberEncoding": true,
     "numberCalculator": true,
@@ -138,7 +137,7 @@ Below is a concise explanation of the most important options and practical recom
 
 **Safe (smaller, reliable)**
 
-```json
+```
 {
   "numberEncoding": true,
   "numberCalculator": false,
@@ -153,7 +152,7 @@ Below is a concise explanation of the most important options and practical recom
 
 **Aggressive (max obscurity, larger, slower)**
 
-```json
+```
 {
   "numberEncoding": true,
   "numberCalculator": true,
@@ -186,6 +185,8 @@ const { obfuscate } = require('jsscramble');
   fs.writeFileSync('dist/index.js', code);
 })();
 ```
+
+---
 
 ## Contact
 
