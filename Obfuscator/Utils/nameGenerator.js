@@ -1,3 +1,4 @@
+
 /* Zalgo variable generator */
 let usedZalgoVariableNames = new Set();
 function generateZalgoVariable() {
@@ -18,72 +19,80 @@ function generateZalgoVariable() {
     return zalgoVariableName;
 };
 
-let blackListedNames = ['for', 'do', 'let', 'var', 'in', 'if', 'try', 'int', 'new', 'ui'];
-
-/* Minfied variable generator */
-function createMinifiedVariableGenerator() {
-    let currentVariable = 'a';
-    const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-    return function getNextVariable() {
-        const variableName = currentVariable;
-        let carry = true;
-
-        let chars = currentVariable.split('');
-
-        for (let i = chars.length - 1; i >= 0; i--) {
-            if (!carry) break;
-
-            const charIndex = alphabet.indexOf(chars[i]);
-            if (charIndex === alphabet.length - 1) {
-                chars[i] = alphabet[0];
-            } else {
-                chars[i] = alphabet[charIndex + 1];
-                carry = false;
-            }
-        }
-
-        if (carry) chars.unshift(alphabet[0]);
-
-        currentVariable = chars.join('');
-
-        if (blackListedNames.includes(variableName)) return getNextVariable();
-        return variableName;
+/* Shuffle and Sort Function */
+function shuffleAndSort(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     };
-}
+    return arr.map((str, index) => ({ str, index })).sort((a, b) => { if (a.str.length !== b.str.length) return a.str.length - b.str.length; return a.index - b.index; }).map(obj => obj.str);
+};
 
-let generateMinifiedVariable = createMinifiedVariableGenerator();
+/* AZ variable generator (475,254 Variables) */
+function generateAZVariables() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    let AZCombinations = [];
+    for (let i = 0; i < letters.length; i++) {
+        let a = letters[i];
+        AZCombinations.push(a);
+        for (let j = 0; j < letters.length; j++) {
+            let b = a + letters[j];
+            AZCombinations.push(b);
+            for (let k = 0; k < letters.length; k++) {
+                let c = b + letters[k];
+                AZCombinations.push(c);
+                for (let l = 0; l < letters.length; l++) {
+                    let d = c + letters[l];
+                    AZCombinations.push(d);
+                };
+            };
+        };
+    };
+    return shuffleAndSort(AZCombinations);
+};
 
-/* Invisable variable generator */
-let allCombinations = [];
-let combinationsCounter = 0;
-let firstVariableCharacter = ['ㅤ', 'ᅟ', 'ᅠ', 'ﾠ'];
-let nextCharacter = ["‍", "︀", "︁", "︂", "︃", "︄", "︅", "︆", "︇", "︈", "︉", "︊", "︋", "︌", "︍", "︎"];
-for (let i = 0; i < firstVariableCharacter.length; i++) {
-    for (let j = 0; j < nextCharacter.length; j++) {
-        allCombinations.push(firstVariableCharacter[i] + nextCharacter[j]);
-        for (let k = 0; k < nextCharacter.length; k++) {
-            allCombinations.push(firstVariableCharacter[i] + nextCharacter[j] + nextCharacter[k]);
-            for (let l = 0; l < nextCharacter.length; l++) {
-                allCombinations.push(firstVariableCharacter[i] + nextCharacter[j] + nextCharacter[k] + nextCharacter[l]);
-            }
-        }
-    }
-}
+/* Invisible variable generator (17,476 Variables) */
+function generateInvisibleVariables() {
+    let InvisableCombinations = [];
+    let firstInvisableChar = ['ㅤ', 'ᅟ', 'ᅠ', 'ﾠ'];
+    let zeroWidthChar = ["‍", "︀", "︁", "︂", "︃", "︄", "︅", "︆", "︇", "︈", "︉", "︊", "︋", "︌", "︍", "︎"];
+    for (let i = 0; i < firstInvisableChar.length; i++) {
+        InvisableCombinations.push(firstInvisableChar[i]);
+        for (let j = 0; j < zeroWidthChar.length; j++) {
+            InvisableCombinations.push(firstInvisableChar[i] + zeroWidthChar[j]);
+            for (let k = 0; k < zeroWidthChar.length; k++) {
+                InvisableCombinations.push(firstInvisableChar[i] + zeroWidthChar[j] + zeroWidthChar[k]);
+                for (let l = 0; l < zeroWidthChar.length; l++) {
+                    InvisableCombinations.push(firstInvisableChar[i] + zeroWidthChar[j] + zeroWidthChar[k] + zeroWidthChar[l]);
+                };
+            };
+        };
+    };
+    return shuffleAndSort(InvisableCombinations);
+};
+
+/* Variable Arrays and Generators */
+let AZCombinations = generateAZVariables();
+let AZCount = 0;
+let InvisableCombinations = generateInvisibleVariables();
+let InvisableCount = 0;
 
 let generateObfuscatedName = () => {
     switch ('minify') {
-        case 'minify': return generateMinifiedVariable();
         case 'zalgo': return generateZalgoVariable();
-        case 'invisable': return allCombinations[combinationsCounter++];
-    }
+        case 'minify': return AZCombinations[AZCount++];
+        case 'invisable': return InvisableCombinations[InvisableCount++];
+    };
 };
 
 let clearOldNames = () => {
-    generateMinifiedVariable = createMinifiedVariableGenerator();
     usedZalgoVariableNames = new Set();
-    allCombinations = [];
-    combinationsCounter = 0;
+    /* Regenerate AZ and Invisable Variables And Reset Counts */
+    AZCombinations = generateAZVariables()
+    AZCount = 0;
+    InvisableCombinations = generateInvisibleVariables()
+    InvisableCount = 0;
+
 };
 
 module.exports = { generateObfuscatedName, clearOldNames };
