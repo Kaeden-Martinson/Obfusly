@@ -36,7 +36,7 @@ node server.js
 
 Place this in `jsscramble.config.json` at project root:
 
-```
+```sh
 {
     "numberEncoding": true,
     "numberCalculator": true,
@@ -137,7 +137,7 @@ Below is a concise explanation of the most important options and practical recom
 
 **Safe (smaller, reliable)**
 
-```
+```sh
 {
   "numberEncoding": true,
   "numberCalculator": false,
@@ -152,7 +152,7 @@ Below is a concise explanation of the most important options and practical recom
 
 **Aggressive (max obscurity, larger, slower)**
 
-```
+```sh
 {
   "numberEncoding": true,
   "numberCalculator": true,
