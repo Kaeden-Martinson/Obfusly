@@ -1,5 +1,5 @@
 const config = require('../../../Settings/config.json');
-const { generateObfuscatedName } = require('../../../Utils/namer');
+const { generateObfuscatedName } = require('../../../Utils/nameGenerator');
 
 const { pickWeightedRandom } = require('../../../Utils/weights');
 const { encodeStringsRandom } = require('../../Literals/strings');
@@ -222,6 +222,9 @@ function createEncodeAndDecodingPairs(declarationMapping) {
     };
 
     encoderOut += "module.exports={encode: chainEncode0};";
+
+    encoderOut = encoderOut.replace(/__ENCODED_STRINGS__x/g, '\\x');
+    encoderOut = encoderOut.replace(/__ENCODED_STRINGS__u/g, '\\u');
 
     return { encoder: encoderOut, decoder: decoderOut, decodeName: decoderFunctionNames[FUNCTIONS - 1] };
 };

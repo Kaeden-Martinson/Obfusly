@@ -25,7 +25,7 @@ const { createEncodeAndDecodingPairs } = require('../Primitives/Integers/Builder
 const stringBuilderModule = require('../Primitives/Literals/Builders/strings');
 const { createObfuscatedWindow } = require('../Utils/Window/window');
 const { defaultedValues } = require('../Utils/window/window_variables');
-const { generateObfuscatedName } = require('../Utils/namer');
+const { generateObfuscatedName } = require('../Utils/nameGenerator');
 
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
     updateSourceCode(sourceCode);

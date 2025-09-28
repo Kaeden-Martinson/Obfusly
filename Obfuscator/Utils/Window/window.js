@@ -1,5 +1,5 @@
 const { encodeStringsRandom } = require("../../Primitives/Literals/strings");
-const { generateObfuscatedName } = require("../namer");
+const { generateObfuscatedName } = require("../nameGenerator");
 
 function createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, encodeLocalNumber, isInStringIIFE) {
     const name = declarationMapping.get("window");

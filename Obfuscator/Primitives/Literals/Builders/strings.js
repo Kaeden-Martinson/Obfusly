@@ -8,8 +8,8 @@ const { toRefractal } = require('../../Integers/refractal');
 
 const { createObfuscatedWindow } = require('../../../Utils/Window/window');
 const { breakShuffleAndBuild } = require('./iife');
-const { encodeParts, buildDecoderSnippet } = require('./Encoders/encoder');
-const { generateObfuscatedName } = require('../../../Utils/namer');
+const { encodeParts, buildDecoderSnippet } = require('./encoder');
+const { generateObfuscatedName } = require('../../../Utils/nameGenerator');
 
 let builtStrings = [];
 
