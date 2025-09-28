@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JS Obfuscator</title>
+</head>
+<body>
+    <h1>JavaScript Obfuscator</h1>
+    <textarea id="inputJs" rows="10" cols="50" placeholder="Enter JS here..."></textarea><br><br>
+    <button onclick="obfuscateJS()">Obfuscate</button>
+    <h2>Obfuscated Output</h2>
+    <textarea id="outputJs" rows="10" cols="50" readonly></textarea>
+
+    <script>
+        async function obfuscateJS() {
+            const code = document.getElementById('inputJs').value;
+            const response = await fetch('/obfuscate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+
+            const result = await response.json();
+            document.getElementById('outputJs').value = result.obfuscatedCode;
+        }
+    </script>
+</body>
+</html>
