@@ -54,7 +54,7 @@ function generateAZVariables() {
 /* Invisible variable generator (17,476 Variables) */
 function generateInvisibleVariables() {
     let InvisableCombinations = [];
-    let firstInvisableChar = ['ㅤ', 'ᅟ', 'ᅠ', 'ﾠ'];
+    let firstInvisableChar = ['ㅤ', 'ᅟ', 'ᅠ', 'ﾠ']; 
     let zeroWidthChar = ["‍", "︀", "︁", "︂", "︃", "︄", "︅", "︆", "︇", "︈", "︉", "︊", "︋", "︌", "︍", "︎"];
     for (let i = 0; i < firstInvisableChar.length; i++) {
         InvisableCombinations.push(firstInvisableChar[i]);

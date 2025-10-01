@@ -5,7 +5,7 @@ const estraverse = require('estraverse');
 const escodegen = require('escodegen');
 
 /** Import Utils */
-const { windowVariables, defaultedValues } = require('../Utils/window/window_variables');
+const { windowVariables, defaultedValues } = require('../Utils/Window/window_variables');
 
 /** Import Obfuscation Methods */
 let { updateNodeName, clearDeclarationMapping, setDeclarationMapping, getDeclarationMapping } = require('../Utils/naming');
@@ -24,7 +24,7 @@ function obfuscateEntireSource(code) {
 
     clearDeclarationMapping(code);
     for (let name of windowVariables) setDeclarationMapping(name, (config.concealPrimitives && defaultedValues.includes(name) ? generateObfuscatedName() : name));
-    setDeclarationMapping("window", windowName);
+    if (config.concealGlobalObjects) setDeclarationMapping("window", windowName);
 
     estraverse.replace(ast, {
         enter(node) {

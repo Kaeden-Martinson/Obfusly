@@ -29,11 +29,11 @@ function recursiveCallObject(node, properties, isCallee = false) {
                 let argument = node.arguments[i];
 
                 if (argument.type === "Identifier") {
-                    properties.push({ raw: "(" + argument.name + ")" });
+                    properties.push({ raw: (i === 0 ? "(" : ", ") + argument.name + (i === node.arguments.length - 1 ? ")" : "") });
                 } else if (argument.type === "Literal") {
-                    properties.push({ raw: (i === 0 ? "(" : ",") + argument.raw + (i === node.arguments.length - 1 ? ")" : "") });
+                    properties.push({ raw: (i === 0 ? "(" : ", ") + argument.raw + (i === node.arguments.length - 1 ? ")" : "") });
                 } else {
-                    properties.push({ raw: "(" + sourceCode.slice(argument.start, argument.end) + ")" });
+                    properties.push({ raw: (i === 0 ? "(" : ", ") + sourceCode.slice(argument.start, argument.end) + (i === node.arguments.length - 1 ? ")" : "") });
                 };
             };
         };

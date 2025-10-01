@@ -1,4 +1,6 @@
 function encodeStringContents(str) {
+    if (!str || !str.length) return str;
+    
     let out = '';
 
     for (let i = 0; i < str.length; i++) {

@@ -19,7 +19,9 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'print', 'prompt', 'origin', 'open', 'outerHeight', 'outerWidth', 'pageXOffset',
     'pageYOffset', 'performance', 'postMessage', 'screenLeft', 'screenTop', 'screenX',
     'screenY', 'scroll', 'stop', 'top', 'BigInt', 'Proxy', 'requestAnimationFrame', 'crypto', 
-    'decodeURI', 'fileUpload', 'elements', 'embed', 'defaultStatus', 'parseFloat', 'Symbol'
+    'decodeURI', 'fileUpload', 'elements', 'embed', 'defaultStatus', 'parseFloat', 'Symbol',
+    'Float32Array', 'Float64Array', 'BigUint64Array', 'Uint32Array', 'BigInt64Array', '$',
+    'XMLHttpRequest'
 ];
 
 const ignoreVariables = ['parent', 'window', 'arguments'];
