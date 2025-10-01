@@ -24,7 +24,7 @@ const { createEncodeAndDecodingPairs } = require('../Primitives/Integers/Builder
 
 const stringBuilderModule = require('../Primitives/Literals/Builders/strings');
 const { createObfuscatedWindow } = require('../Utils/Window/window');
-const { defaultedValues } = require('../Utils/window/window_variables');
+const { defaultedValues } = require('../Utils/Window/window_variables');
 const { generateObfuscatedName } = require('../Utils/nameGenerator');
 
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
@@ -149,10 +149,6 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     let generated = escodegen.generate(ast);
 
-    let randInt = Math.floor(Math.random() * 1000) + 10;
-    const isNegative = randInt < 0;
-    const encodedValue = encodeLocalNumber(randInt);
-
     if (!config.wrapStringsInIIFE || !config.stringConcealment) generated = `${createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, encodeLocalNumber, false)}` + '\n' + generated;
 
     if (config.stringConcealment) {
@@ -161,8 +157,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     };
 
     generated = `let ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
-
-    generated = `let ${declarationMapping.get("Function")} = [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${[...'map'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}];` + '\n' + generated;
+    generated = `let ${declarationMapping.get("Function")} = +![]+!+![][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}]\`\`(${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())}`)});` + '\n' + generated;
 
     if (config.numberCalculator) {
         generated = encodingAndDecodingPairs.decoder + '\n' + generated;
@@ -177,7 +172,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generated = `let ${declarationMapping.get("IIFEstringBreaker")} = ${stringBuilderModule.getBrokenIIFE()};` + '\n' + generated;
     };
 
-    if (config.concealPrimitives) {
+    if (config.concealPrimitives && (config.stringEncoding || config.stringConcealment)) {
         for (let primitive of defaultedValues) {
             generated = generated.replaceAll(primitive, previousDeclarationMapping.get(primitive));
             generated = `const ${previousDeclarationMapping.get(primitive)} = ${primitive}\n` + generated;
