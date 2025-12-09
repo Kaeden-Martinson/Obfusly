@@ -1,9 +1,9 @@
 {
-    "numberEncoding": false,
-    "numberCalculator": false,
-    "globalBaseIntegerConcealment": false,
-    "multipleVariableAssignments": false,
-    "shuffleBaseIntegers": false,
+    "numberEncoding": true,
+    "numberCalculator": true,
+    "globalBaseIntegerConcealment": true,
+    "multipleVariableAssignments": true,
+    "shuffleBaseIntegers": true,
     "baseIntegersDefault": "JSFuck",
     "integerPrecentage": {
         "Refractal": 60,
@@ -13,20 +13,20 @@
         "Binary": 10
     },
     "encodedFunctionStrength": 5,
-    "concealGlobalObjects": false,
+    "concealGlobalObjects": true,
     "target": "browser",
-    "stringEncoding": false,
-    "stringSplitting": false,
-    "optimizedStringCache": false,
-    "stringConcealment": false,
+    "stringEncoding": true,
+    "stringSplitting": true,
+    "optimizedStringCache": true,
+    "stringConcealment": true,
     "stringConcealmentSettings": {
         "decodersCount": 5,
         "addNoiseCount": 5
     },
-    "wrapStringsInIIFE": false,
-    "breakIIFEString": false,
-    "concealPrimitives": false,
-    "compression": false,
+    "wrapStringsInIIFE": true,
+    "breakIIFEString": true,
+    "concealPrimitives": true,
+    "compression": true,
 
     "disableConsoleOutput": false,
     "enableAntiDebugger": false,
@@ -34,7 +34,6 @@
 
     "wrapInIIFE": false,
 
-    "selfDefending": false,
     "integrityChecks": false,
 
     "dispatcher": false,
