@@ -143,6 +143,9 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                 const result = encodeLocalNumber(node.value);
                 node.type = "Identifier";
                 node.name = result;
+            } else if (node.type === "Literal" && config.concealPrimitives && defaultedValues.includes(node.raw)) {
+                node.type = "Identifier";
+                node.name = `${previousDeclarationMapping.get(node.raw)}`;
             };
         }
     });
@@ -157,7 +160,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     };
 
     generated = `let ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
-    generated = `let ${declarationMapping.get("Function")} = +![]+!+![][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}]\`\`(${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())}`)});` + '\n' + generated;
+    generated = `let ${declarationMapping.get("Function")} = +![]+!+![][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}]\`\`(${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")});` + '\n' + generated;
 
     if (config.numberCalculator) {
         generated = encodingAndDecodingPairs.decoder + '\n' + generated;
@@ -172,15 +175,10 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generated = `let ${declarationMapping.get("IIFEstringBreaker")} = ${stringBuilderModule.getBrokenIIFE()};` + '\n' + generated;
     };
 
-    if (config.concealPrimitives && (config.stringEncoding || config.stringConcealment)) {
-        for (let primitive of defaultedValues) {
-            generated = generated.replaceAll(primitive, previousDeclarationMapping.get(primitive));
-            generated = `const ${previousDeclarationMapping.get(primitive)} = ${primitive}\n` + generated;
-        };
-    };
-
     generated = generated.replace(/__ENCODED_STRINGS__x/g, '\\x');
     generated = generated.replace(/__ENCODED_STRINGS__u/g, '\\u');
+
+    if (config.concealPrimitives) for (let primitive of defaultedValues) generated = `const ${previousDeclarationMapping.get(primitive)} = ${primitive}\n` + generated;
 
     if (config.compression) {
         const result = await terser.minify(generated, {
@@ -194,6 +192,10 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
         generated = (result.code || '').replace(/\r?\n+/g, '');
     };
+
+    if (config.integrityChecks) {
+        
+    }
 
     return generated;
 }

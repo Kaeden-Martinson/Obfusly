@@ -7,21 +7,22 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'arguments', 'window', 'global', 'Function', 'eval', 'Array',
     'document', 'Node', 'Document', 'WebSocket', 'fetch', 'Set',
     'Map', 'RegExp', 'Date', 'Image', 'Promise', 'Uint16Array',
-    'Uint8Array', 'location', 'Math', 'navigator', 
+    'Uint8Array', 'location', 'Math', 'navigator',
     'console', 'Object', 'setTimeout', 'setInterval', 'clearTimeout',
     'clearInterval', 'localStorage', 'JSON', 'Error',
-    'sessions_alive', 'self', 'Intl', 'history', 'locationbar', 
-    'Atomics', 'CSS', 'Reflect', 'screen', 'parent', 'Number', 
+    'sessions_alive', 'self', 'Intl', 'history', 'locationbar',
+    'Atomics', 'CSS', 'Reflect', 'screen', 'parent', 'Number',
     'escape', 'unescape', (config.target === "node" ? "require" : "window" /** Reuse something set */),
     'isNaN', 'isFinite', 'Int8Array', 'Int16Array', 'Int32Array',
-    'clientInformation', 'confirm', 'close', 'find', 'focus', 'frames', 
+    'clientInformation', 'confirm', 'close', 'find', 'focus', 'frames',
     'navigation', 'innerHeight', 'innerWidth', 'devicePixelRatio', 'caches',
     'print', 'prompt', 'origin', 'open', 'outerHeight', 'outerWidth', 'pageXOffset',
     'pageYOffset', 'performance', 'postMessage', 'screenLeft', 'screenTop', 'screenX',
-    'screenY', 'scroll', 'stop', 'top', 'BigInt', 'Proxy', 'requestAnimationFrame', 'crypto', 
+    'screenY', 'scroll', 'stop', 'top', 'BigInt', 'Proxy', 'requestAnimationFrame', 'crypto',
     'decodeURI', 'fileUpload', 'elements', 'embed', 'defaultStatus', 'parseFloat', 'Symbol',
     'Float32Array', 'Float64Array', 'BigUint64Array', 'Uint32Array', 'BigInt64Array', '$',
-    'XMLHttpRequest'
+    'XMLHttpRequest', 'URLSearchParams', 'WeakMap', 'WeakSet', 'URL',
+    'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver'
 ];
 
 const ignoreVariables = ['parent', 'window', 'arguments'];
