@@ -1,3 +1,4 @@
+const { compress } = require("../../../Utils/compressor");
 const { generateObfuscatedName } = require("../../../Utils/nameGenerator");
 
 // encoder.js - run at build-time / in Node
@@ -65,7 +66,7 @@ function encodeParts(parts, keyStr) {
  * @returns {string} - snippet of JS to inject into generated source
  */
 function randomIdent() {
-   return generateObfuscatedName();
+  return generateObfuscatedName();
 }
 
 function buildDecoderSnippet(encodedParts, keyStr, breakerName = "__IIFE_PARTS__") {
@@ -73,15 +74,15 @@ function buildDecoderSnippet(encodedParts, keyStr, breakerName = "__IIFE_PARTS__
   const keyLiteral = JSON.stringify(keyStr);
 
   // Generate randomized names
-  const encVar   = randomIdent();
-  const keyVar   = randomIdent();
-  const atobVar  = randomIdent();
+  const encVar = randomIdent();
+  const keyVar = randomIdent();
+  const atobVar = randomIdent();
   const bytesVar = randomIdent();
-  const keyBVar  = randomIdent();
-  const xorVar   = randomIdent();
-  const b2sVar   = randomIdent();
-  const outVar   = randomIdent();
-  const str   = randomIdent();
+  const keyBVar = randomIdent();
+  const xorVar = randomIdent();
+  const b2sVar = randomIdent();
+  const outVar = randomIdent();
+  const str = randomIdent();
   const arr = randomIdent();
   const arg = randomIdent();
   const keyBytes = randomIdent();
@@ -90,8 +91,7 @@ function buildDecoderSnippet(encodedParts, keyStr, breakerName = "__IIFE_PARTS__
   const bin = randomIdent();
   const xored = randomIdent();
 
-  return `
-(function(){
+  return compress(`(function(){
   const ${encVar} = ${encodedArrayLiteral};
   const ${keyVar} = ${keyLiteral};
 
@@ -112,12 +112,12 @@ function buildDecoderSnippet(encodedParts, keyStr, breakerName = "__IIFE_PARTS__
     const ${str} = new Uint8Array(${arg}.length);
     for (let ${i} = 0; ${i} < ${arg}.length; ${i}++) ${str}[${i}] = ${arg}[${i}] ^ ${keyBytes}[${i} % ${keyBytes}.length];
     return ${str};
-  }
+  };
 
   function ${b2sVar}(${arg}) {
     if (typeof TextDecoder !== 'undefined') return new TextDecoder().decode(${arg});
     return Buffer.from(${arg}).toString('utf8');
-  }
+  };
 
   const ${outVar} = ${encVar}.map(${b64} => {
     const ${bin} = ${atobVar}(${b64});
@@ -127,7 +127,7 @@ function buildDecoderSnippet(encodedParts, keyStr, breakerName = "__IIFE_PARTS__
   });
 
   ${breakerName} = ${outVar};
-})();\n`;
+})();`);
 }
 
 

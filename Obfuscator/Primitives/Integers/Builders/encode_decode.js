@@ -210,7 +210,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
             decoderOut += `      break;\n`;
         }
 
-        decoderOut += `    default:${volumeVariable}=${volumeVariable};}\n  const ${arr}=[]; for(let i=${useConfig(0)};i<${useConfig(dcCount + 2)};i++)${arr}[i]=${useConfig(0)};\n  ${arr}[${valIdx}]=${volumeVariable}; ${arr}[(${valIdx}+${useConfig(1)})%${arr}.length]=${d0}; ${arr}[(${valIdx}+${useConfig(2)})%${arr}.length]=${d1};\n  return ${arr};\n}\n\n`;
+        decoderOut += `    default:${volumeVariable}=${volumeVariable};}\n  const ${arr}=[]; for(let i=${useConfig(0)};i<${useConfig(dcCount + 2)};i++)${arr}[i]=${useConfig(0)};\n  ${arr}[${valIdx}]=${volumeVariable}; ${arr}[(${valIdx}+${useConfig(1)})%${arr}.length]=${d0}; ${arr}[(${valIdx}+${useConfig(2)})%${arr}.length]=${d1};\n  return ${arr};\n};\n\n`;
     }
 
     const decoderFunctionNames = Array.from({ length: FUNCTIONS }, (_, i) => generateObfuscatedName());
@@ -218,7 +218,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
     for (let fi = 0; fi < FUNCTIONS; fi++) encoderOut += `function chainEncode${fi}(v){v=encode${fi}(v,${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][v&${useConfig(casesSubtractOne[fi])}]];${fi + 1 < FUNCTIONS ? `return chainEncode${fi + 1}(v);` : `return v>>>${useConfig(0)};`}}\n\n`;
     for (let fi = FUNCTIONS - 1; fi >= 0; fi--) {
         const mainParam = generateObfuscatedName();
-        decoderOut += `var ${decoderFunctionNames[fi]} = function (${mainParam}){${mainParam}=${decodeMainFunctionNames[fi]}(${mainParam},${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}]];${fi - 1 >= 0 ? `return ${decoderFunctionNames[fi - 1]}(${mainParam});` : `return ${mainParam}>>>${useConfig(0)};`}}\n\n`;
+        decoderOut += `var ${decoderFunctionNames[fi]} = (${mainParam})=>{${mainParam}=${decodeMainFunctionNames[fi]}(${mainParam},${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}]];${fi - 1 >= 0 ? `return ${decoderFunctionNames[fi - 1]}(${mainParam});` : `return ${mainParam}>>>${useConfig(0)};`}}\n\n`;
     };
 
     encoderOut += "module.exports={encode: chainEncode0};";
@@ -226,7 +226,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
     encoderOut = encoderOut.replace(/__ENCODED_STRINGS__x/g, '\\x');
     encoderOut = encoderOut.replace(/__ENCODED_STRINGS__u/g, '\\u');
 
-    return { encoder: encoderOut, decoder: decoderOut, decodeName: decoderFunctionNames[FUNCTIONS - 1] };
+    return { encoder: encoderOut, decoder: decoderOut, decodeName: decoderFunctionNames[FUNCTIONS - 1], decodeMainFunctionNames, decoderFunctionNames };
 };
 
 module.exports = { createEncodeAndDecodingPairs };

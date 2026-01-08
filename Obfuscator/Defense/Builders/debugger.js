@@ -113,12 +113,12 @@ let __decodePayload;
     if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
       var enc = new TextEncoder().encode(passphrase);
       var key = await window.crypto.subtle.importKey('raw', enc, { "name": 'PBKDF2' }, false, ['deriveBits']);
-      var derived = await window.crypto.subtle.deriveBits({ "name": 'PBKDF2', "salt": saltU8, "iterations": "iters": iters, "hash": 'SHA-256' }, key, outLen*8);
+      var derived = await window.crypto.subtle.deriveBits({ "name": 'PBKDF2', "salt": saltU8, "iterations": iters, "hash": 'SHA-256' }, key, outLen*8);
       return new Uint8Array(derived);
     } else if (typeof crypto !== 'undefined' && crypto.subtle) {
       var enc2 = new TextEncoder().encode(passphrase);
       var k2 = await crypto.subtle.importKey('raw', enc2, { "name": 'PBKDF2' }, false, ['deriveBits']);
-      var d2 = await crypto.subtle.deriveBits({ "name": 'PBKDF2', "salt": saltU8, "iterations": "iters": iters, "hash": 'SHA-256' }, k2, outLen*8);
+      var d2 = await crypto.subtle.deriveBits({ "name": 'PBKDF2', "salt": saltU8, "iterations": iters, "hash": 'SHA-256' }, k2, outLen*8);
       return new Uint8Array(d2);
     } else if (typeof require === 'function') {
       const nodeCrypto = require('crypto');
@@ -172,7 +172,9 @@ let __decodePayload;
 
     const newCode = astCode(runtime);
 
-    return newCode.code;
+    return [newCode.code, PASSPHRASE];
 };
+
+createDebuggerBundle("console.log(1)")
 
 module.exports = { createDebuggerBundle };

@@ -26,6 +26,7 @@ const stringBuilderModule = require('../Primitives/Literals/Builders/strings');
 const { createObfuscatedWindow } = require('../Utils/Window/window');
 const { defaultedValues } = require('../Utils/Window/window_variables');
 const { generateObfuscatedName } = require('../Utils/nameGenerator');
+const { createIntegrity } = require('../Integrity/build');
 
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
     updateSourceCode(sourceCode);
@@ -156,11 +157,11 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     if (config.stringConcealment) {
         stringBuilderModule.setCommonVariables(declarationMapping);
-        generated = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule) + '\n' + generated;
+        generated = "const __CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();" + generated;
     };
 
-    generated = `let ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
-    generated = `let ${declarationMapping.get("Function")} = +![]+!+![][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}]\`\`(${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")});` + '\n' + generated;
+    generated = `var ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
+    generated = `let ${declarationMapping.get("Function")} = [+![]+!+![]][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}](${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")})\`\`;` + '\n' + generated;
 
     if (config.numberCalculator) {
         generated = encodingAndDecodingPairs.decoder + '\n' + generated;
@@ -194,8 +195,11 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     };
 
     if (config.integrityChecks) {
-        
+        generated = createIntegrity(generated, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule);
     }
+
+    /** Rebuild after integrity */
+    if (config.stringConcealment) generated = generated.split("const __CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_()")[0] + stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule) + generated.split("const __CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_()")[1]
 
     return generated;
 }

@@ -10,6 +10,7 @@ const { createObfuscatedWindow } = require('../../../Utils/Window/window');
 const { breakShuffleAndBuild } = require('./iife');
 const { encodeParts, buildDecoderSnippet } = require('./encoder');
 const { generateObfuscatedName } = require('../../../Utils/nameGenerator');
+const { compress } = require('../../../Utils/compressor');
 
 let builtStrings = [];
 
@@ -95,6 +96,10 @@ function shuffle(arr) {
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+}
+
+function testBuilder() {
+    localBrokenIIFE = "window";
 }
 
 function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModule) {
@@ -241,7 +246,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
     const cache = rndName();
 
     if (config.optimizedStringCache) parts.push(`let ${cache} = [];`);
-    parts.push(`function ${iifeFnName}(${accessorParamName}){`);
+    parts.push(`var ${iifeFnName}=(${accessorParamName})=>{`);
     if (config.optimizedStringCache) parts.push(`if (${cache}[${accessorParamName}]) return ${cache}[${accessorParamName}];`);
     parts.push(`  var ${diName} = ${assignName}[${accessorParamName}] % ${encodeNumber(decodersCount)};`);
     parts.push(`  var ${resName} = ${decGroupName}[${diName}](${accessorParamName});`);
@@ -252,11 +257,12 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
     let code = parts.join("");
 
     if (config.wrapStringsInIIFE) {
+        // code += ";";
         let initEncArrName = code.split(";")[0];
         const randName = rndName();
         code = `
         ${initEncArrName};
-        const ${randName} = ${"eval"/*declarationMapping.get("Function")*/}(${JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
+        const ${randName} = ${declarationMapping.get("Function")}(${JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
         let ${getFnName} = (${randName} || ${declarationMapping.get("Function")});`;
 
         code = code.replaceAll("__QUOTE_OPERATORS__", '"');
@@ -286,11 +292,11 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         };
     };
 
-    return code;
+    return config.compression ? compress(code) : code;
 };
 
 function getBrokenIIFE() {
-    return localBrokenIIFE;
+    return "window";
 };
 
-module.exports = { addString, resetStrings, setCommonVariables, buildStringConcealment, encodeNumber, getBrokenIIFE };
+module.exports = { addString, resetStrings, setCommonVariables, buildStringConcealment, encodeNumber, getBrokenIIFE, testBuilder };

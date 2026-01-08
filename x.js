@@ -13,7 +13,10 @@ const outputPath = process.argv[3] || (path.basename(inputPath, ".js") + ".instr
 let code = fs.readFileSync(inputPath, "utf8");
 
 // ---------- Complex build-time hash function (same algorithm as injected one) ----------
-function generateRandomHasher() {
+let hasherIndex = 0;
+
+function generateRandomHasher(previous_hash) {
+  // console.log(previous_hash)
   const rand32 = () => Math.floor(Math.random() * 0xFFFFFFFF) >>> 0;
   const randShift = () => Math.floor(Math.random() * 24) + 1;
 
@@ -23,7 +26,7 @@ function generateRandomHasher() {
     const1: rand32(),
     const2: rand32(),
     const3: rand32(),
-    mul: rand32() | 1, // odd number for multiplication stability
+    mul: rand32() | 1,
     shift1: randShift(),
     shift2: randShift(),
     shift3: randShift(),
@@ -43,7 +46,8 @@ function ${fnMix}(x) {
   return Math.imul(t, ${consts.mul}) >>> 0;
 }
 function ${fnMain}(s) {
-  s = (s || "").replace(/\\r/g, "\\n");
+  s = (s || "").replace(/\\r/g, "");
+  s = (s || "").replace(/\\n/g, "");
   var a = ${consts.seed1} >>> 0, b = ${consts.seed2} >>> 0, c = 0 >>> 0;
   for (var i = 0; i < s.length; i++) {
     var ch = s.charCodeAt(i);
@@ -61,12 +65,12 @@ function ${fnMain}(s) {
   return r >>> 0;
 }`.trim();
 
-  // Runtime name to use in inserted checks
   const runtimeHasherName = fnMain;
 
-  // Also generate build-time function with identical logic
   const buildHash = (str) => {
-    str = (str || "").replace(/\r/g, "\n");
+    str = (str || "").replace(/\r/g, "");
+    str = (str || "").replace(/\n/g, "");
+
     let a = consts.seed1 >>> 0;
     let b = consts.seed2 >>> 0;
     let c = 0 >>> 0;
@@ -94,22 +98,41 @@ function ${fnMain}(s) {
   };
 }
 
-const { hasherCode, buildHash, runtimeHasherName } = generateRandomHasher();
+let hashingAlgorithms = [];
+
+for (let i = 0; i < 10; i++) {
+  const { hasherCode, buildHash, runtimeHasherName } = generateRandomHasher(hashingAlgorithms?.[i - 1]);
+  hashingAlgorithms.push({ hasherCode, buildHash, runtimeHasherName });
+};
+
+function getHasherName() {
+  const len = hashingAlgorithms.length;
+  if (len < 2) throw new Error("Need at least 2 hashing algorithms");
+
+  const i1 = Math.floor(Math.random() * len);
+
+  let i2 = Math.floor(Math.random() * (len - 1));
+  if (i2 >= i1) i2++;
+
+  return [
+    hashingAlgorithms[i1].runtimeHasherName,
+    hashingAlgorithms[i2].runtimeHasherName
+  ];
+};
+
+function buildHashFromName(str, name) {
+  return hashingAlgorithms.find(alg => alg.runtimeHasherName === name).buildHash(str);
+}
 
 // ---------- Helper: random name generator ----------
 function randomName(prefix = "_x") {
   return prefix + Math.floor(Math.random() * 0x1000000).toString(36);
 }
 
-const EXPECT_PREFIX = "_e"; // prefix for expected-value variables
+const EXPECT_PREFIX = "_e";
 
 // ---------- Randomized check snippet generator with bounded opaque loops ----------
-function generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName }) {
-  // fnRef: string denoting how to reference function at runtime (e.g. "myFn")
-  // expectedVarName: placeholder variable name (not the numeric literal)
-  // runtimeHasherName: injected runtime hasher function name
-
-  // Different ways to coerce fn to string (varied)
+function generateCheckSnippet({ fnRef, expectedVarName, secondExpectedVarName, runtimeHasherName, secondRuntimeHasherName }) {
   const fnForms = [
     `${fnRef}.toString()`,
     `(${fnRef} + "")`,
@@ -119,8 +142,6 @@ function generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName }) {
     '`${' + fnRef + '}`'
   ];
 
-  // Bounded loop templates that operate only on local variables (no external side effects)
-  // We reference __BOUND__ and __ITER__ placeholders which we will substitute in.
   function randomLoopTemplate() {
     const randIdent = () => '_' + Math.random().toString(36).slice(2, 6);
     const randNum = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -130,64 +151,47 @@ function generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName }) {
         const v = randIdent(), i = randIdent(), L = randIdent();
         const mul = randNum(100000, 999999);
         const mask = randNum(1, 16);
-        // Note: __ITER__ expected replaced by a concrete small value at runtime/build
-        return `(function(){var ${v}=0|0; for(var ${i}=0, ${L}=Math.min((__ITER__), ${randNum(10, 10000)}); ${i}<${L}; ${i}++){ ${v} = (${v} ^ Math.imul(${i}+1, ${mul})) >>> 0; ${v} = (${v} + (${v}<<3))>>>0; if ((${v} & ${mask}) === ${mask}) break; } return ${v}; })()`;
+        return `(function(){var ${v}=0|0; for(var ${i}=0, ${L}=Math.min((__ITER__), ${randNum(10, 10000)}); ${i}<${L}; ${i}++){ ${v} = (${v} ^ Math.imul(${i}+1, ${mul})) >>> 0; ${v} = (${v} + (${v}<<3))>>>0; while (${mul} < ${mask} + ${v}) { ${v}+=${mul} } } return ${v}; })()`;
       },
       () => {
         const v = randIdent(), i = randIdent(), L = randIdent();
         const mul = randNum(2, 10);
-        // bounded iterations via Math.min
-        return `(function(){var ${v}=1; var ${i}=0; var ${L}=Math.min((__ITER__), ${randNum(10, 5000)}); while(${i}++<${L}){ ${v} = (Math.imul(${v}, ${mul}) ^ ${i}) >>> 0; ${i} -= (${v} & ${randNum(0, 7)}); if (${i} < 0) break; } return ${v}; })()`;
+        return `(function(){var ${v}=1; var ${i}=0; var ${L}=Math.min((__ITER__), ${randNum(10, 5000)}); while(${v}++!==${L}){ ${v} = (Math.imul(${v}, ${mul}) ^ ${i}) >>> 0; ${i} -= (${v} & ${randNum(0, 7)}); if (${i} < 0) { ${v} += ${i} } } return ${v}; })()`;
       },
       () => {
         const v = randIdent(), i = randIdent(), L = randIdent();
         const cap = randNum(10, 5000);
-        return `(function(){var ${v}=${randNum(2, 20)}; var ${i}=0; var ${L}=Math.min((__ITER__), ${cap}); do{ ${v} = ((${v}<<5)-${v}) ^ ${i}; ${i}++; if (${i} > ${cap}) break; } while(${i} < ${L}); return ${v}; })()`;
+        return `(function(){var ${v}=${randNum(2, 20)}; var ${i}=0; var ${L}=Math.min((__ITER__), ${cap}); do{ ${v} = ((${v}<<5)-${v}) ^ ${i}; ${i}++; if (${i} > ${cap}) { ${v}=Math.floor(${v} - 10.2); } else for (;;) {} } while(${i} < ${L}); return ${v}; })()`;
       },
       () => {
         const v = randIdent(), i = randIdent(), L = randIdent();
         const mul = randNum(3, 13), modulus = randNum(2, 10);
-        return `(function(){var ${v}=0; var ${L}=Math.min((__ITER__), ${randNum(10, 5000)}); for(var ${i}=0;${i}<${L};${i}++){ ${v} += ((${i}&3)?Math.imul(${i},${mul}):${i}); ${v} = ${v} >>> 0; if (${v} % ${modulus} === 0) break; } return ${v}; })()`;
+        return `(function(){var ${v}=0; var ${L}=Math.min((__ITER__), ${randNum(10, 5000)}); for(var ${i}=0;${i}<${L};${i}++){ ${v} += ((${i}&3)?Math.imul(${i},${mul}):${i}); ${v} = ${v} >>> 0; ${i}--; if (${v} % ${modulus} === 0) ${v}++; } return ${v}; })()`;
       }
     ];
     const pick = templates[Math.floor(Math.random() * templates.length)];
     return pick();
   }
 
-
-  // Patterns that use the hash expression and conditionally execute the loop expression
   const patterns = [
-    // call hasher against fn form, if mismatch compute opaque loop result and discard
-    `if (${runtimeHasherName}(${fnForms[0]}) !== ${expectedVarName}) { __LOOP__; }`,
-    `if (!(${runtimeHasherName}(${fnForms[1]}) === ${expectedVarName})) { var __r = __LOOP__; }`,
-    `(()=>{ if (${runtimeHasherName}(${fnForms[2]}) != ${expectedVarName}) { var __z = __LOOP__; } })();`,
-    `try { if (${runtimeHasherName}(${fnForms[3]}) !== ${expectedVarName}) throw __LOOP__; } catch(e) {  __LOOP__ }`,
-    `if (${expectedVarName} != ${runtimeHasherName}(${fnForms[4]})) { var __x = __LOOP__; }`,
-    `if (void 0 === (${runtimeHasherName}(${fnForms[0]})===${expectedVarName}?${expectedVarName}:(parseInt(${expectedVarName} + "_")["${Math.floor(Math.random() * 10000)}"]))) { var __y = __LOOP__; }`
+    `if (Math.random() < Math.random() ? ${runtimeHasherName}(${fnForms[0]}) !== ${expectedVarName} : ${secondRuntimeHasherName}(${fnForms[4]}) !== ${secondExpectedVarName}) { __LOOP__; };`,
+    `if (Math.random() < Math.random() ? !(${runtimeHasherName}(${fnForms[1]}) === ${expectedVarName}) : ${secondRuntimeHasherName}(${fnForms[2]}) != ${secondExpectedVarName}) { var __r = __LOOP__; };`,
+    `(()=>{ if (Math.random() < Math.random() ? ${runtimeHasherName}(${fnForms[2]}) != ${expectedVarName} :  ${secondRuntimeHasherName}(${fnForms[0]}) !== ${secondExpectedVarName}) { var __z = __LOOP__; } })();`,
+    `if (Math.random() < Math.random() ? ${expectedVarName} != ${runtimeHasherName}(${fnForms[4]}) : !(${secondRuntimeHasherName}(${fnForms[1]}) === ${secondExpectedVarName})) { var __x = __LOOP__; };`,
+    `if (void 0 === (${runtimeHasherName}(${fnForms[0]})===${expectedVarName}?${expectedVarName}:(parseInt(${expectedVarName} + "_")["${Math.floor(Math.random() * 10000)}"]))) { var __y = __LOOP__; };;`
   ];
 
-  // choose random pattern and loop template
   const pattern = patterns[Math.floor(Math.random() * patterns.length)];
   const loopTpl = randomLoopTemplate();
 
-  // compute an iteration expression that uses the hash/expected placeholder
-  // We'll define __ITER__ as `(((${runtimeHasherName}(${fnForms[0]})^${expectedVarName})&0x3ff)+64)` which is bounded and appears complex.
-  // Use the same fnForms[0] inside iteration expression to keep variety.
-  const iterExpr = `(((${runtimeHasherName}(${fnForms[0]}) ^ ${expectedVarName}) & 0x3ff) + 64)`;
+  const iterExpr = `(((${runtimeHasherName}(${fnForms[0]}) ^ ${expectedVarName}) & 0x3ff) + 64) ** 25`;
 
-  // substitute placeholders
   let loopExpr = loopTpl.replace(/__ITER__/g, iterExpr);
-  // ensure no leftover placeholder names
   let result = pattern.replace(/__LOOP__/g, loopExpr);
 
-  // Replace any remaining fnForms in pattern (some patterns included direct fnForms earlier)
-  // (pattern templates already included fnForms inline where needed)
-
-  // Clean up temporary locals naming: to reduce collisions, rename __r/__z/etc to randomized names
   const tmpName = randomName("_t");
   result = result.replace(/\b__r\b/g, tmpName + "r").replace(/\b__z\b/g, tmpName + "z").replace(/\b__x\b/g, tmpName + "x").replace(/\b__y\b/g, tmpName + "y");
 
-  // Finally return as a statement (no leading/trailing newlines)
   return result;
 }
 
@@ -195,66 +199,45 @@ function generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName }) {
 const ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "script", locations: false });
 const surfaceFunctions = [];
 
-// collect top-level function declarations and variable-declared functions
+function digestSelfInvokers(parent) {
+  for (const node of parent.body) {
+    if (node.type === "ExpressionStatement" && node.expression.callee && ['ArrowFunctionExpression', 'FunctionExpression', 'FunctionDeclaration'].includes(node.expression.callee.type)) digestSelfInvokers(node.expression.callee.body);
+
+    if (node.type === "FunctionDeclaration" && node.id && node.id.name) {
+      surfaceFunctions.push({ kind: "decl", name: node.id.name, start: node.start, end: node.end });
+    } else if (node.type === "VariableDeclaration") {
+      for (const decl of node.declarations) {
+        if (!decl.init) continue;
+
+        const t = decl.init.type;
+        if (t === "FunctionExpression" || t === "ArrowFunctionExpression" || t === "FunctionDeclaration") {
+          surfaceFunctions.push({ kind: "var", varName: decl.id && decl.id.name ? decl.id.name : null, start: decl.start, end: decl.end, initStart: decl.init?.start, initEnd: decl.init?.end });
+        };
+      };
+    };
+  };
+};
+
 for (const node of ast.body) {
-  console.log(node)
+  if (node.type === "ExpressionStatement" && node.expression.callee && ['ArrowFunctionExpression', 'FunctionExpression', 'FunctionDeclaration'].includes(node.expression.callee.type)) digestSelfInvokers(node.expression.callee.body);
+
   if (node.type === "FunctionDeclaration" && node.id && node.id.name) {
-    surfaceFunctions.push({
-      kind: "decl",
-      name: node.id.name,
-      start: node.start,
-      end: node.end
-    });
+    surfaceFunctions.push({ kind: "decl", name: node.id.name, start: node.start, end: node.end });
   } else if (node.type === "VariableDeclaration") {
     for (const decl of node.declarations) {
       if (!decl.init) continue;
+
       const t = decl.init.type;
       if (t === "FunctionExpression" || t === "ArrowFunctionExpression" || t === "FunctionDeclaration") {
-        surfaceFunctions.push({
-          kind: "var",
-          varName: decl.id && decl.id.name ? decl.id.name : null,
-          start: decl.start,
-          end: decl.end,
-          initStart: decl.init?.start,
-          initEnd: decl.init?.end
-        });
-      }
-    }
-  } else if (node.type === "ExpressionStatement") {
-    for (const decl of node.expression.callee.body.body) {
-      console.log(decl)
-      const t = decl.type;
-
-      if (t === "FunctionExpression" || t === "ArrowFunctionExpression" || t === "FunctionDeclaration") {
-        surfaceFunctions.push({
-          kind: "decl",
-          name: decl.id.name,
-          start: decl.start,
-          end: decl.end,
-        });
-      } else if (t === "VariableDeclaration") {
-        for (const var_decl of decl.declarations) {
-          if (!var_decl.init) continue;
-          const t = var_decl.init.type;
-          if (t === "FunctionExpression" || t === "ArrowFunctionExpression" || t === "FunctionDeclaration") {
-            surfaceFunctions.push({
-              kind: "var",
-              varName: var_decl.id && var_decl.id.name ? var_decl.id.name : null,
-              start: var_decl.start,
-              end: var_decl.end,
-              initStart: var_decl.init?.start,
-              initEnd: var_decl.init?.end
-            });
-          }
-        }
-      }
-    }
-  }
-}
+        surfaceFunctions.push({ kind: "var", varName: decl.id && decl.id.name ? decl.id.name : null, start: decl.start, end: decl.end, initStart: decl.init?.start, initEnd: decl.init?.end });
+      };
+    };
+  };
+};
 
 surfaceFunctions.sort((a, b) => a.start - b.start);
 
-console.log(surfaceFunctions)
+// console.log("[FUNCTIONS]:", surfaceFunctions)
 
 if (surfaceFunctions.length === 0) {
   console.log("No top-level functions found. Writing original file unchanged.");
@@ -262,38 +245,31 @@ if (surfaceFunctions.length === 0) {
   process.exit(0);
 }
 
-// Build the injected hasher source (compact but complex)
-const injectedHasherSrc = hasherCode;
+let offset = 0;
 let cachedCode = code;
 
-// Inject hasher at top if not already present
-let injectedTop = false;
-if (!code.includes(`${runtimeHasherName}(`)) {
+for (let hasher of hashingAlgorithms) {
+  const injectedHasherSrc = hasher.hasherCode;
   code = injectedHasherSrc + "\n" + code;
-  injectedTop = true;
-}
-let offset = injectedTop ? injectedHasherSrc.length + 1 : 0;
+  offset += injectedHasherSrc.length + 1;
+};
 
-// Prepare storage for expected variable declarations
-const expectedVars = []; // { varName, value }
+const finalOffset = offset;
+const expectedVars = [];
 
-// Helper: pick an insertion offset inside fnCode that's reasonably between statements
 function pickInsertionOffset(fnCode) {
   const candidates = [];
-  // collect indices after semicolons and newlines and after opening braces inside the function body
   for (let i = 0; i < fnCode.length; i++) {
     const ch = fnCode[i];
-    if (ch === ';' || ch === "\n" || ch === "\r") {
-      // avoid inserting at the very end
+    if (ch === "\n" || ch === "\r") {
       if (i + 1 < fnCode.length - 1) candidates.push(i + 1);
     }
   }
   if (candidates.length === 0) return null;
-  // pick a random candidate
+
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-// For each surface function, we create placeholder expected var and insert randomized bounded checks within the body
 for (const fn of surfaceFunctions) {
   if (fn.kind === "decl") {
     const realStart = fn.start + offset;
@@ -301,42 +277,36 @@ for (const fn of surfaceFunctions) {
     const firstBrace = fnCode.indexOf("{");
     const lastBrace = fnCode.lastIndexOf("}");
 
-    console.log(fnCode, fn)
     if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) continue;
 
-    // unique expected variable name for this function
     const expectedVarName = randomName(EXPECT_PREFIX);
+    const secondExpectedVarName = randomName(EXPECT_PREFIX);
 
-    // how we reference the function at runtime (named decl => direct name)
     const fnRef = fn.name;
+    const [runtimeHasherName, secondRuntimeHasherName] = getHasherName();
 
-    // build randomized check snippet body
-    const checkBody = generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName });
+    const checkBody = generateCheckSnippet({ fnRef, expectedVarName, secondExpectedVarName, runtimeHasherName, secondRuntimeHasherName });
 
-    // choose insertion offset inside the function body (relative to fnCode)
     let insertPosRel = pickInsertionOffset(fnCode);
     if (insertPosRel === null) {
-      // fallback: insert right after opening brace
       insertPosRel = firstBrace + 1;
     }
 
-    // ensure insertion point is within the braces (between firstBrace+1 and lastBrace)
     if (insertPosRel <= firstBrace) insertPosRel = firstBrace + 1;
     if (insertPosRel >= lastBrace) insertPosRel = lastBrace;
 
-    // build snippet with semicolons/newlines around to make it blend in
-    const checkSnippet = `${checkBody}\n`;
-
-    // simulate function source after insertion (for computing expected hash)
-    const simulatedFn = fnCode.slice(0, insertPosRel) + checkSnippet + fnCode.slice(insertPosRel);
+    const simulatedFn = (fnCode.slice(0, insertPosRel) + checkBody + fnCode.slice(insertPosRel));
     const normalized = simulatedFn.replace(/\r/g, "");
-    const expectedValue = buildHash(normalized);
-    expectedVars.push({ varName: expectedVarName, value: expectedValue });
 
-    // now actually insert the snippet into the real code at the correct real offset
+    const firstExpectedValue = buildHashFromName(normalized, runtimeHasherName);
+    expectedVars.push({ varName: expectedVarName, value: firstExpectedValue });
+
+    const secondExpectedValue = buildHashFromName(normalized, secondRuntimeHasherName);
+    expectedVars.push({ varName: secondExpectedVarName, value: secondExpectedValue });
+
     const insertAt = realStart + insertPosRel;
-    code = code.slice(0, insertAt) + checkSnippet + code.slice(insertAt);
-    offset += checkSnippet.length;
+    code = code.slice(0, insertAt) + checkBody + code.slice(insertAt);
+    offset += checkBody.length;
   } else if (fn.kind === "var") {
     const initStart = fn.initStart + offset;
     const initEnd = fn.initEnd + offset;
@@ -344,75 +314,43 @@ for (const fn of surfaceFunctions) {
     const braceIdx = initCode.indexOf("{");
     const lastBraceIdx = initCode.lastIndexOf("}");
 
-    // unique expected var name
     const expectedVarName = randomName(EXPECT_PREFIX);
+    const secondExpectedVarName = randomName(EXPECT_PREFIX);
 
     if (braceIdx !== -1 && lastBraceIdx !== -1 && lastBraceIdx > braceIdx) {
-      // block-bodied function expression / function assigned to variable
-      if (!fn.varName) continue; // can't reference runtime name if absent
+      if (!fn.varName) continue;
       const fnRef = fn.varName;
 
-      // build randomized check snippet
-      const checkBody = generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName });
+      const [runtimeHasherName, secondRuntimeHasherName] = getHasherName();
 
-      // pick insertion position inside initCode
+      const checkBody = generateCheckSnippet({ fnRef, expectedVarName, secondExpectedVarName, runtimeHasherName, secondRuntimeHasherName });
+
       let insertRel = pickInsertionOffset(initCode);
       if (insertRel === null) insertRel = braceIdx + 1;
       if (insertRel <= braceIdx) insertRel = braceIdx + 1;
       if (insertRel >= lastBraceIdx) insertRel = lastBraceIdx;
 
-      const checkSnippet = `${checkBody}`;
-      const simulatedInit = initCode.slice(0, insertRel) + checkSnippet + initCode.slice(insertRel);
+      const simulatedInit = initCode.slice(0, insertRel) + checkBody + initCode.slice(insertRel);
       const normalized = simulatedInit.replace(/\r/g, "");
-      const expectedValue = buildHash(normalized);
-      expectedVars.push({ varName: expectedVarName, value: expectedValue });
 
-      // insert
+      const firstExpectedValue = buildHashFromName(normalized, runtimeHasherName);
+      expectedVars.push({ varName: expectedVarName, value: firstExpectedValue });
+
+      const secondExpectedValue = buildHashFromName(normalized, secondRuntimeHasherName);
+      expectedVars.push({ varName: secondExpectedVarName, value: secondExpectedValue });
+
       const insertAt = initStart + insertRel;
-      code = code.slice(0, insertAt) + checkSnippet + code.slice(insertAt);
-      offset += checkSnippet.length;
-    } else {
-      // concise arrow: convert `(...)=>(expr)` to block body and insert check inside
-      const arrowPos = initCode.indexOf("=>");
-      if (arrowPos === -1) continue; // unexpected; skip
-      if (!fn.varName) continue; // cannot reference runtime name if varName absent
-
-      const left = initCode.slice(0, arrowPos + 2); // includes =>
-      const right = initCode.slice(arrowPos + 2);   // expression
-      const expr = right.trim();
-
-      const fnRef = fn.varName;
-
-      // create randomized check snippet referencing expected var name
-      const checkBody = generateCheckSnippet({ fnRef, expectedVarName, runtimeHasherName });
-      // For concise arrow we'll insert a statement then return the original expression
-      // const checkStatement = `${checkBody}`;
-
-      // replacement block: =>{ <check> return (expr); }
-      const replacement = `{ ${checkBody} return (${expr}); }`;
-
-      // simulate new initCode (we will compute expected over the transformed init code)
-      const simulatedInit = left + replacement;
-      const normalized = simulatedInit.replace(/\r/g, "");
-      const expectedValue = buildHash(normalized);
-      expectedVars.push({ varName: expectedVarName, value: expectedValue });
-
-      // now replace in real code
-      code = code.slice(0, initStart) + left + replacement + code.slice(initEnd);
-      offset += (left + replacement).length - initCode.length;
-    }
+      code = code.slice(0, insertAt) + checkBody + code.slice(insertAt);
+      offset += checkBody.length;
+    };
   }
 }
 
-// After we've injected all check snippets, insert the expected variable assignments at the top
 if (expectedVars.length > 0) {
-  // build var declarations: var _e1=123,_e2=456;
   const decls = expectedVars.map(ev => `${ev.varName}=${ev.value}`).join(",");
-  const varBlock = `var ${decls};\n\n`;
+  const varBlock = `var ${decls};\n`;
 
-  // find insertion point right after injected hasher
-  const insertionPoint = injectedTop ? injectedHasherSrc.length + 1 : 0;
-  code = code.slice(0, insertionPoint) + varBlock + code.slice(insertionPoint);
+  code = code.slice(0, finalOffset) + varBlock + code.slice(finalOffset);
 }
 
 fs.writeFileSync(outputPath, code, "utf8");

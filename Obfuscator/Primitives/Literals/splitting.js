@@ -22,7 +22,9 @@ function splitAndRebuildString(str, isIIFE, stringBuilderModule) {
         prev = cut;
     }
 
-    if (config.stringConcealment && stringBuilderModule) result.push(stringBuilderModule.addString(str.slice(prev), isIIFE));
+    if (!prev) return str
+
+    if (config.stringConcealment && stringBuilderModule) { result.push(stringBuilderModule.addString(str.slice(prev), isIIFE)); }
     else if (config.stringEncoding) result.push(encodeStringContents(str.slice(prev)));
     else result.push(str.slice(prev));
 
