@@ -6,6 +6,8 @@ let stringBuilderModule;
 
 function encodeStringsRandom(str, isIIFE) {
 
+    if (str === "") return { value: "", raw: '""' };
+
     let out = '';
     let fullyStringOut = false;
 

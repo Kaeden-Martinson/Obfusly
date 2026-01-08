@@ -22,7 +22,7 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'decodeURI', 'fileUpload', 'elements', 'embed', 'defaultStatus', 'parseFloat', 'Symbol',
     'Float32Array', 'Float64Array', 'BigUint64Array', 'Uint32Array', 'BigInt64Array', '$',
     'XMLHttpRequest', 'URLSearchParams', 'WeakMap', 'WeakSet', 'URL',
-    'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver'
+    'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver', 'inner'
 ];
 
 const ignoreVariables = ['parent', 'window', 'arguments'];

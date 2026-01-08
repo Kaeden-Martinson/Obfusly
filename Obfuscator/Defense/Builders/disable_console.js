@@ -13,13 +13,6 @@ function buildConsoleDisabler() {
   const payloadRaw = fs.readFileSync(IN, 'utf8');
 
   // ---------- utils ----------
-  function randIdent(len = 8) {
-    const alpha = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const alnum = alpha + '0123456789';
-    let s = alpha[Math.floor(Math.random() * alpha.length)];
-    for (let i = 1; i < len; i++) s += alnum[Math.floor(Math.random() * alnum.length)];
-    return s;
-  }
   function obfNumExpr(byte) {
     const r = Math.floor(Math.random() * 4);
     if (r === 0) return '0x' + byte.toString(16);

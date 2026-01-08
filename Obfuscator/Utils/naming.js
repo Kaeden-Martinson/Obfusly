@@ -52,7 +52,8 @@ function updateNodeName(node, isBeingDefined) {
 
     if (!declarationMapping.has(node.name)) {
         const name = generateObfuscatedName();
-        declarationMapping.set(node.name, name); node.name = name;
+        declarationMapping.set(node.name, name); 
+        node.name = name;
     } else node.name = declarationMapping.get(node.name);
 };
 

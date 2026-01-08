@@ -34,7 +34,7 @@
 
     "wrapInIIFE": false,
 
-    "integrityChecks": false,
+    "integrityChecks": true,
 
     "dispatcher": false,
     "deadCode": false

@@ -59,10 +59,10 @@ function buildBaseInt(declarationMapping) {
 
     if (config.shuffleBaseIntegers) {
         for (let i = 9; i < vars.length; i++) { const j = Math.floor(Math.random() * (i + 1)); if (j <= 10) continue;[vars[i], vars[j]] = [vars[j], vars[i]]; };
-        for (let i = 9; i >= 0; i--) { const j = Math.floor(Math.random() * (i + 1));[vars[i], vars[j]] = [vars[j], vars[i]]; };
+        for (let i = 9; i >= 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [vars[i], vars[j]] = [vars[j], vars[i]]; };
     };
 
-    return vars.map(v => `let ${v.name} = ${v.value};`).join('\n');
+    return vars.map(v => `var ${v.name} = ${v.value};`).join('\n');
 };
 
 module.exports = { buildBaseInt };
