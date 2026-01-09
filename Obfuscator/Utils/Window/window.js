@@ -18,7 +18,7 @@ function createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, en
             [...name].join('__QUOTE_OPERATORS__+__QUOTE_OPERATORS__') +
             `__QUOTE_OPERATORS__+__QUOTE_OPERATORS__ = ${functionName}\`void 0\` || ${declarationMapping.get("Function")};`;
     } else {
-        functionString += `eval(\`(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom('return top').raw})\\\`\\\`})\`);`;
+        functionString += `${declarationMapping.get("Function")}(\`(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom('return top').raw})\\\`\\\`})\`);`;
 
         functionString += `${name} = ${functionName}\`void 0\` || ${declarationMapping.get("Function")};`;
     }
