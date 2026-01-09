@@ -12,7 +12,7 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'clearInterval', 'localStorage', 'JSON', 'Error',
     'sessions_alive', 'self', 'Intl', 'history', 'locationbar',
     'Atomics', 'CSS', 'Reflect', 'screen', 'parent', 'Number',
-    'escape', 'unescape', (config.target === "node" ? "require" : "window" /** Reuse something set */),
+    'escape', 'unescape', 'Blob', 'WeakMap', 'Worker', 'WeakSet',
     'isNaN', 'isFinite', 'Int8Array', 'Int16Array', 'Int32Array',
     'clientInformation', 'confirm', 'close', 'find', 'focus', 'frames',
     'navigation', 'innerHeight', 'innerWidth', 'devicePixelRatio', 'caches',
@@ -25,7 +25,7 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver', 'inner'
 ];
 
-const ignoreVariables = ['parent', 'window', 'arguments'];
+const ignoreVariables = ['parent', 'window', 'arguments', 'module', 'define', 'exports', 'require'];
 
 const newDeclarationVariables = ['Map', 'Set'];
 

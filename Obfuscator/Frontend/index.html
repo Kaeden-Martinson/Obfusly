@@ -1,27 +1,335 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>JS Obfuscator</title>
-</head>
-<body>
-    <h1>JavaScript Obfuscator</h1>
-    <textarea id="inputJs" rows="10" cols="50" placeholder="Enter JS here..."></textarea><br><br>
-    <button onclick="obfuscateJS()">Obfuscate</button>
-    <h2>Obfuscated Output</h2>
-    <textarea id="outputJs" rows="10" cols="50" readonly></textarea>
+<html lang="en">
 
-    <script>
-        async function obfuscateJS() {
-            const code = document.getElementById('inputJs').value;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JsScramble</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; background-color: #1e1e1e; color: #d4d4d4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        header { padding: 15px 20px; background-color: #252526; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); text-align: center; flex-shrink: 0; }
+        h1 { margin: 0; font-size: 24px; color: #ffffff; }
+        .controls { padding: 12px 20px; background-color: #252526; display: flex; justify-content: center; align-items: center; gap: 15px; flex-wrap: wrap; flex-shrink: 0; }
+        button { padding: 10px 20px; background-color: #0e639c; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; }
+        button:hover { background-color: #1177bb; }
+        button:disabled { background-color: #444; cursor: not-allowed; }
+        select { padding: 10px; background-color: #3c3c3c; color: #d4d4d4; border: 1px solid #555; border-radius: 6px; font-size: 14px; }
+        .history-controls { display: flex; gap: 10px; align-items: center; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; flex: 1; overflow: hidden; }
+        .editor-wrapper { display: flex; flex-direction: column; border: 1px solid #3c3c3c; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+        .editor-header { background-color: #252526; padding: 8px 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3c3c3c; }
+        .editor-header-center { flex: 1; text-align: center; font-size: 12px; color: #cccccc; margin: 0 15px; white-space: nowrap; }
+        .editor-container { flex: 1; min-height: 0; }
+        @media (max-width: 1024px) { .container { grid-template-columns: 1fr; } .editor-header-center { font-size: 11px; margin: 0 8px; } }
+        @media (max-width: 768px) { .editor-header-center { display: none; } }
+        .storage-bar-container { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #cccccc; }
+        .storage-bar { flex: 1; max-width: 200px; height: 8px; background-color: #3c3c3c; border-radius: 4px; overflow: hidden; border: 1px solid #555; }
+        .storage-bar-fill { height: 100%; width: 0%; background-color: #0e639c; transition: width 0.4s ease, background-color 0.4s ease; }
+        .storage-bar-fill.warn { background-color: #e0a028; }
+        .storage-bar-fill.danger { background-color: #d14f4d; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>JsScramble</h1>
+    </header>
+
+    <div class="controls">
+        <button onclick="obfuscateJS()" id="obfuscateBtn">Obfuscate</button>
+
+        <div class="history-controls">
+            <label for="historySelect">History:</label>
+            <select id="historySelect">
+                <option value="">-- Select past obfuscation --</option>
+            </select>
+            <button onclick="clearHistory()" id="clearHistoryBtn">Clear History</button>
+        </div>
+
+        <div class="storage-bar-container">
+            <span>History Storage:</span>
+            <div class="storage-bar">
+                <div class="storage-bar-fill" id="storageFill"></div>
+            </div>
+            <span id="storageText">0 B / ~15 MB (0%)</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="editor-wrapper">
+            <div class="editor-header">
+                <span>Input Code</span>
+                <div class="editor-header-center" id="inputSize">0 lines • 0 B</div>
+                <button onclick="copyInput()">Copy</button>
+            </div>
+            <div id="inputEditor" class="editor-container"></div>
+        </div>
+
+        <div class="editor-wrapper">
+            <div class="editor-header">
+                <span>Obfuscated Output</span>
+                <div class="editor-header-center" id="outputSize">0 B</div>
+                <button onclick="copyOutput()" id="copyOutputBtn">Copy</button>
+            </div>
+            <div id="outputEditor" class="editor-container"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+<script>
+    let inputEditor, outputEditor;
+    const MAX_HISTORY = 10;
+    const ENTRY_PREFIX = 'jsScrambleEntry_';
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function saveEntry(index, entry) {
+        try {
+            const json = JSON.stringify(entry);
+            const compressed = LZString.compressToUTF16(json);
+            localStorage.setItem(ENTRY_PREFIX + index, compressed);
+            return true;
+        } catch (e) {
+            console.error('Failed to save entry', e);
+            return false;
+        }
+    }
+
+    function loadEntry(index) {
+        try {
+            const compressed = localStorage.getItem(ENTRY_PREFIX + index);
+            if (!compressed) return null;
+            const json = LZString.decompressFromUTF16(compressed);
+            return json ? JSON.parse(json) : null;
+        } catch (e) {
+            console.warn('Failed to load entry ' + index, e);
+            return null;
+        }
+    }
+
+    function getAllEntries() {
+        const entries = [];
+        for (let i = 0; i < MAX_HISTORY; i++) {
+            const entry = loadEntry(i);
+            if (entry) entries.push(entry);
+        }
+        return entries;
+    }
+
+    function saveToHistory(inputCode, outputCode) {
+        const inputBytes = new TextEncoder().encode(inputCode).length;
+        const outputBytes = new TextEncoder().encode(outputCode).length;
+
+        const newEntry = {
+            timestamp: new Date().toISOString(),
+            inputCode,
+            outputCode,
+            inputBytes,
+            outputBytes
+        };
+
+        for (let i = MAX_HISTORY - 1; i > 0; i--) {
+            const current = loadEntry(i - 1);
+            if (current) {
+                saveEntry(i, current);
+            } else {
+                localStorage.removeItem(ENTRY_PREFIX + i);
+            }
+        }
+
+        if (!saveEntry(0, newEntry)) alert('Failed to save new history entry. Storage may be full.');
+
+        loadHistoryIntoSelect();
+        updateStorageBar();
+    }
+
+    function clearHistory() {
+        if (confirm('Clear all obfuscation history?')) {
+            for (let i = 0; i < MAX_HISTORY; i++) {
+                localStorage.removeItem(ENTRY_PREFIX + i);
+            }
+            loadHistoryIntoSelect();
+            updateStorageBar();
+        }
+    }
+
+    function loadHistoryIntoSelect() {
+        const select = document.getElementById('historySelect');
+        select.innerHTML = '<option value="">-- Select past obfuscation --</option>';
+
+        const entries = getAllEntries();
+        if (entries.length === 0) {
+            select.disabled = true;
+            document.getElementById('clearHistoryBtn').disabled = true;
+            return;
+        }
+
+        select.disabled = false;
+        document.getElementById('clearHistoryBtn').disabled = false;
+
+        entries.forEach((entry, index) => {
+            const date = new Date(entry.timestamp).toLocaleString();
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${date} (${formatBytes(entry.inputBytes)} → ${formatBytes(entry.outputBytes)})`;
+            select.appendChild(option);
+        });
+    }
+
+    function updateStorageBar() {
+        try {
+            let totalBytes = 0;
+            for (let i = 0; i < MAX_HISTORY; i++) {
+                const key = ENTRY_PREFIX + i;
+                const value = localStorage.getItem(key);
+                if (value) totalBytes += new TextEncoder().encode(value).length;
+            }
+
+            const quotaBytes = 15 * 1024 * 1024;
+            const percentage = (totalBytes / quotaBytes) * 100;
+
+            const fill = document.getElementById('storageFill');
+            const text = document.getElementById('storageText');
+
+            fill.style.width = `${Math.min(percentage, 100)}%`;
+            text.textContent = `${formatBytes(totalBytes)} / ~15 MB (${percentage.toFixed(1)}%)`;
+
+            fill.classList.remove('warn', 'danger');
+            if (percentage > 90) fill.classList.add('danger');
+            else if (percentage > 70) fill.classList.add('warn');
+        } catch (e) {
+            console.warn('Could not update storage bar', e);
+        }
+    }
+
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+        inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
+            value: '',
+            language: 'javascript',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            fontSize: 13,
+            lineNumbers: 'on',
+            minimap: { enabled: true },
+            scrollBeyondLastLine: false,
+            wordWrap: 'on'
+        });
+
+        outputEditor = monaco.editor.create(document.getElementById('outputEditor'), {
+            value: '',
+            language: 'javascript',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            fontSize: 13,
+            readOnly: true,
+            minimap: { enabled: true },
+            scrollBeyondLastLine: false,
+            wordWrap: 'on'
+        });
+
+        updateInputSize();
+        updateOutputSize();
+
+        inputEditor.onDidChangeModelContent(() => updateInputSize());
+
+        const originalSetValue = outputEditor.setValue.bind(outputEditor);
+        outputEditor.setValue = function (value) {
+            originalSetValue(value);
+            updateOutputSize();
+        };
+
+        loadHistoryIntoSelect();
+        updateStorageBar();
+    });
+
+    document.getElementById('historySelect').addEventListener('change', function () {
+        const index = parseInt(this.value);
+        if (isNaN(index)) return;
+
+        const entries = getAllEntries();
+        if (index >= entries.length) return;
+
+        const entry = entries[index];
+        inputEditor.setValue(entry.inputCode);
+        outputEditor.setValue(entry.outputCode);
+        this.value = '';
+    });
+
+    async function obfuscateJS() {
+        const code = inputEditor.getValue();
+        if (!code.trim()) {
+            alert('Please load or paste some JavaScript code.');
+            return;
+        }
+
+        const btn = document.getElementById('obfuscateBtn');
+        btn.disabled = true;
+        btn.textContent = 'Obfuscating...';
+        outputEditor.setValue('');
+
+        try {
             const response = await fetch('/obfuscate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code })
             });
 
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
             const result = await response.json();
-            document.getElementById('outputJs').value = result.obfuscatedCode;
+            const obfuscated = result.obfuscatedCode || '// No output';
+
+            outputEditor.setValue(obfuscated);
+            saveToHistory(code, obfuscated);
+
+        } catch (err) {
+            outputEditor.setValue(`// Error: ${err.message}`);
+            console.error(err);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Obfuscate';
         }
-    </script>
+    }
+
+    function updateInputSize() {
+        const code = inputEditor.getValue();
+        const lines = code.split(/\r\n|\r|\n/).length;
+        const bytes = new TextEncoder().encode(code).length;
+        document.getElementById('inputSize').textContent =
+            `${lines} line${lines !== 1 ? 's' : ''} • ${formatBytes(bytes)}`;
+    }
+
+    function updateOutputSize() {
+        const code = outputEditor.getValue();
+        const bytes = new TextEncoder().encode(code).length;
+        document.getElementById('outputSize').textContent = formatBytes(bytes);
+    }
+
+    function copyInput() {
+        const code = inputEditor.getValue();
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Input code copied to clipboard!');
+        });
+    }
+
+    function copyOutput() {
+        const code = outputEditor.getValue();
+        if (!code || code.includes('Error')) return;
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Obfuscated code copied to clipboard!');
+        });
+    }
+</script>
 </body>
+
 </html>

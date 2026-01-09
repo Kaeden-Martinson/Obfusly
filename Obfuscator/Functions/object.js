@@ -22,6 +22,7 @@ function createStringProperty(node, properties) {
 };
 
 function recursiveCallObject(node, properties, isCallee = false) {
+    // console.log(node)
     if (node?.type === "CallExpression") {
         if (node.arguments && node?.callee.type !== "Identifier") {
             for (let i = node.arguments.length - 1; i > -1; i--) {
@@ -43,37 +44,75 @@ function recursiveCallObject(node, properties, isCallee = false) {
     };
 
     if (node.type === "ArrayExpression") {
-        properties.push({ raw: `[${node.elements.map(e => e.raw).join(",")}]` });
+        for (let i = node.elements.length - 1; i > -1; i--) {
+            const element = node.elements[i];
+            if (element.type === "Identifier") {
+                properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.elements.length - 1 ? "]" : "") });
+            } else if (element.type === "Literal") {
+                properties.push({ raw: (i === 0 ? "[" : ", ") + encodeStringsRandom(element.value).raw + (i === node.elements.length - 1 ? "]" : "") });
+            } else {
+                properties.push({ raw: (i === 0 ? "[" : ", ") + sourceCode.slice(element.start, element.end) + (i === node.elements.length - 1 ? "]" : "") });
+            };
+        };
     };
 
     if (node.type === "Literal") { properties.push(node.raw.toString()); return properties || []; };
 
     if (node.type !== "MemberExpression") return properties || [];
 
-    if (node.property.type === "Identifier" && (node.object.type === "Identifier" || node.object.type === "MemberExpression" || node.object.type === "CallExpression") && !node.computed) {
+    if (node.object.type === "FunctionExpression") {
+
+    }
+
+    if (node.property.type === "Identifier" && (node.object.type === "Identifier" || node.object.type === "MemberExpression" || node.object.type === "CallExpression" || node.object.type === "FunctionExpression") && !node.computed) {
         let isEmptyFunction = sourceCode.slice(node.property.end, node.property.end + 2) === "()" && isCallee;
         properties.push({ raw: (("[" + encodeStringsRandom(node.property.name).raw + "]") + (isEmptyFunction ? "()" : "")) });
         properties.push(node.optional);
+        if (node.object.type === "FunctionExpression") {
+            properties.push({ raw: sourceCode.slice(node.object.start, node.object.end) })
+        };
     } else if (node.property.type === "Identifier") {
         if (node.computed) {
             let isEmptyFunction = sourceCode.slice(node.property.end + 1, node.property.end + 3) === "()" && isCallee;
             properties.push({ raw: ("[" + node.property.name + "]" + (isEmptyFunction ? "()" : "")) });
             properties.push(node.optional);
         } else {
+            // console.log(node, properties)
             properties.push(encodeStringsRandom(node.property.name).raw);
             properties.push(node.optional);
         };
     };
 
     if (node.property.type === "CallExpression") {
-        if (node.property.arguments && !node.property?.callee.type === "Identifier") {
+        if (node.property.callee.type === "MemberExpression") {
+            let argumentString = "";
+            if (node.property.arguments) {
+                for (let argument of node.property.arguments) {
+                    if (argument.left) {
+                        let propProperties = [...recursiveCallObject(argument.left, [])].reverse();
+                        let fakePropertyNode = createStringProperty({}, propProperties);
+                        argumentString += fakePropertyNode.name;
+                    };
+
+                    if (argument.operator) argumentString += argument.operator
+
+                    if (argument.right) {
+                        let propProperties = [...recursiveCallObject(argument.right, [])].reverse();
+                        let fakePropertyNode = createStringProperty({}, propProperties);
+                        argumentString += fakePropertyNode.name;
+                    }
+                };
+            }
+
+            let propProperties = [...recursiveCallObject(node.property.callee, [])].reverse();
+            let fakePropertyNode = createStringProperty({}, propProperties);
+            properties.push({ raw: "[" + fakePropertyNode.name + `(${argumentString})` + "]" });
+        } else if (node.property.arguments && node.property?.callee.type !== "Identifier") {
             for (let argument of node.property.arguments) {
                 if (argument.type === "Identifier") properties.push({ raw: "(" + argument.name + ")" });
                 else properties.push({ raw: "(" + sourceCode.slice(argument.start, argument.end) + ")" });
             };
-        };
-
-        if (node.property?.callee.type === "Identifier") properties.push({ raw: "[" + sourceCode.slice(node.property.start, node.property.end) + "]" });
+        } else if (node.property?.callee.type === "Identifier") properties.push({ raw: "[" + sourceCode.slice(node.property.start, node.property.end) + "]" });
     };
 
     if (node.property.type === "Literal") {

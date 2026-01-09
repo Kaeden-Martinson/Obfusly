@@ -263,7 +263,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         code = `
         ${initEncArrName};
         const ${randName} = ${declarationMapping.get("Function")}(${JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
-        let ${getFnName} = (${randName} || ${declarationMapping.get("Function")});`;
+        const ${getFnName} = (${randName} || ${declarationMapping.get("Function")})`;
 
         code = code.replaceAll("__QUOTE_OPERATORS__", '"');
 

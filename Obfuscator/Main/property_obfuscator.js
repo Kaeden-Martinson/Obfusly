@@ -130,7 +130,8 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     estraverse.replace(ast, {
         enter(node) {
             if (node.type === "MemberExpression") {
-                if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, encodeStringsRandom(node.property.name).raw]);
+                console.log(node)
+                if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, !node.computed ? encodeStringsRandom(node.property.name).raw : node.property.type === "Identifier" && node.computed ? node.property.name : node.property.type === "Literal" ? encodeStringsRandom(node.property.value).raw : sourceCode.slice(node.property.start, node.property.end)]);
                 let properties = [...recursiveCallObject(node, [])].reverse();
                 // console.log(properties)
                 if (properties[0] === false) properties.splice(0, 1);
@@ -157,7 +158,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     if (config.stringConcealment) {
         stringBuilderModule.setCommonVariables(declarationMapping);
-        generated = "const __CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();" + generated;
+        generated = "window.__CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();" + generated;
     };
 
     generated = `var ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
@@ -198,8 +199,14 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generated = createIntegrity(generated, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule);
     }
 
+    generated = generated.replace(/__ENCODED_STRINGS__x/g, '\\x');
+    generated = generated.replace(/__ENCODED_STRINGS__u/g, '\\u');
+
     /** Rebuild after integrity */
-    if (config.stringConcealment) generated = generated.split("const __CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_()")[0] + stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule) + generated.split("const __CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_()")[1]
+    if (config.stringConcealment) {
+        let module = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule);
+        generated = generated.split("window.__CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();")[0] + module + generated.split("window.__CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();")[1];
+    }
 
     return generated;
 }

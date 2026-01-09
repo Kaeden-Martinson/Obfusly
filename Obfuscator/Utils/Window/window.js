@@ -8,7 +8,7 @@ function createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, en
     let randInt = Math.floor(Math.random() * 1000) + 10;
     const isNegative = randInt < 0;
     const encodedValue = encodeLocalNumber(randInt);
-
+    
     let functionString = `let ${functionName} = `;
 
     if (isInStringIIFE) {
