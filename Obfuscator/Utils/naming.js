@@ -10,7 +10,7 @@ function isAlreadyObfuscated(name) { return Array.from(declarationMapping.values
 let blacklistLines = {};
 
 function updateNodeName(node, isBeingDefined) {
-    if (!node || node.obfuscated) return;
+    if (!node || node.obfuscated || ignoreVariables.includes(node.name)) return;
 
     if (config.concealGlobalObjects &&
         node.type === "Identifier" &&
