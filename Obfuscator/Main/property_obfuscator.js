@@ -130,8 +130,8 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     estraverse.replace(ast, {
         enter(node) {
             if (node.type === "MemberExpression") {
-                console.log(node)
-                if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, !node.computed ? encodeStringsRandom(node.property.name).raw : node.property.type === "Identifier" && node.computed ? node.property.name : node.property.type === "Literal" ? encodeStringsRandom(node.property.value).raw : sourceCode.slice(node.property.start, node.property.end)]);
+                // console.log(node)
+                if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, (!node.computed ? encodeStringsRandom(node.property.name).raw : node.property.type === "Identifier" && node.computed ? node.property.name : node.property.type === "Literal" ? encodeStringsRandom(node.property.value).raw : sourceCode.slice(node.property.start, node.property.end))]);
                 let properties = [...recursiveCallObject(node, [])].reverse();
                 // console.log(properties)
                 if (properties[0] === false) properties.splice(0, 1);
@@ -158,11 +158,11 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     if (config.stringConcealment) {
         stringBuilderModule.setCommonVariables(declarationMapping);
-        generated = "window.__CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();" + generated;
+        generated = "try{_ANTI_TERSER_}catch(err){};" + generated;
     };
 
     generated = `var ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
-    generated = `let ${declarationMapping.get("Function")} = [+![]+!+![]][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}](${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")})\`\`;` + '\n' + generated;
+    // generated = `let ${declarationMapping.get("Function")} = [+![]+!+![]][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}](${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")})\`\`;` + '\n' + generated;
 
     if (config.numberCalculator) {
         generated = encodingAndDecodingPairs.decoder + '\n' + generated;
@@ -205,7 +205,8 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     /** Rebuild after integrity */
     if (config.stringConcealment) {
         let module = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule);
-        generated = generated.split("window.__CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();")[0] + module + generated.split("window.__CONCEALMENT_PLACEHOLDER__=_ANTI_TERSER_();")[1];
+        /** Work For Commas */
+        generated = generated.split("try{_ANTI_TERSER_}catch(err){}")[0] + module + generated.split("try{_ANTI_TERSER_}catch(err){}")[1];
     }
 
     return generated;

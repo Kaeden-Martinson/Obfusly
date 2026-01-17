@@ -28,13 +28,16 @@
     "concealPrimitives": true,
     "compression": true,
 
+    "disableEval": true,
+    "disableLocalIIFEs": true,
+
     "disableConsoleOutput": false,
     "enableAntiDebugger": false,
     "globalProtection": false,
 
     "wrapInIIFE": false,
 
-    "integrityChecks": false,
+    "integrityChecks": true,
 
     "dispatcher": false
 }

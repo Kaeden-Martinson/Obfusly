@@ -18,6 +18,8 @@ function createStringProperty(node, properties) {
 
     node.name = `${properties[0].raw ? properties[0].raw : properties[0]}${propertyString}`;
 
+    // console.log(node)
+
     return node;
 };
 
@@ -59,10 +61,6 @@ function recursiveCallObject(node, properties, isCallee = false) {
     if (node.type === "Literal") { properties.push(node.raw.toString()); return properties || []; };
 
     if (node.type !== "MemberExpression") return properties || [];
-
-    if (node.object.type === "FunctionExpression") {
-
-    }
 
     if (node.property.type === "Identifier" && (node.object.type === "Identifier" || node.object.type === "MemberExpression" || node.object.type === "CallExpression" || node.object.type === "FunctionExpression") && !node.computed) {
         let isEmptyFunction = sourceCode.slice(node.property.end, node.property.end + 2) === "()" && isCallee;
