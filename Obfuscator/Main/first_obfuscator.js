@@ -50,7 +50,8 @@ function obfuscateEntireSource(code) {
             if (node.type === "ArrayPattern" || node.type === "ArrayExpression") for (let i = 0; i < node.elements.length; i++) updateNodeName(node.elements[i]);
             if (node.type === "TemplateLiteral") for (let i = 0; i < node.expressions.length; i++) updateNodeName(node.expressions[i]);
             if (node.type === "MethodDefinition" && node.key && node.key.type === "Identifier" && node.key.name !== "constructor") node.key.name = `['${node.key.name}']`;
-        
+            if (node.type === "ForStatement" && node.test) { if (node.test.type === "Identifier") updateNodeName(node.test); };
+
             // console.log(node)
         }
     });

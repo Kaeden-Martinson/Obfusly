@@ -25,7 +25,7 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver', 'inner'
 ];
 
-const ignoreVariables = ['parent', 'window', 'arguments', 'module', 'define', 'exports', 'require'];
+const ignoreVariables = ['parent', 'window', 'arguments', 'module', 'define', 'exports', 'require', 'chrome'];
 
 const newDeclarationVariables = ['Map', 'Set'];
 

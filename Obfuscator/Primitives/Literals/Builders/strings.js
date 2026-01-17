@@ -108,7 +108,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         addNoiseCount = 3
     } = opts;
 
-    let builtWindowObject = createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, (config.numberCalculator ? encodeModule.encode : encodeNumber), true);
+    let builtWindowObject = createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, (config.numberCalculator ? encodeModule.encode : encodeNumber), !config.disableEval, !config.disableEval);
 
     if (!builtStrings.length) return '// (no strings added)\n';
 
@@ -262,14 +262,14 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         const randName = rndName();
         code = `
         ${initEncArrName};
-        const ${randName} = ${declarationMapping.get("Function")}(${JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
+        const ${randName} = ${!config.disableEval?"eval":""}(${!config.disableEval ? JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`) : ("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
         const ${getFnName} = (${randName} || ${declarationMapping.get("Function")})`;
 
         code = code.replaceAll("__QUOTE_OPERATORS__", '"');
 
-        let originalIIFECode = "\"(() => {" + code.split("\"(() => {")[1].split("\");")[0] + "\"";
+        let originalIIFECode = `${!config.disableEval?"\"":""}(() => {` + code.split(`${!config.disableEval?"\"":""}(() => {`)[1].split(`${!config.disableEval?"\"":""});`)[0] + `${!config.disableEval?"\"":""}`;
 
-        if (config.breakIIFEString) {
+        if (config.breakIIFEString && !config.disableEval) {
             const iifeBreaks = originalIIFECode.split('"');
 
             const { brokenIIFE, rebuiltCode } = breakShuffleAndBuild(iifeBreaks, declarationMapping, {
@@ -296,7 +296,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
 };
 
 function getBrokenIIFE() {
-    return "window";
+    return "new Blob";
 };
 
 module.exports = { addString, resetStrings, setCommonVariables, buildStringConcealment, encodeNumber, getBrokenIIFE, testBuilder };
