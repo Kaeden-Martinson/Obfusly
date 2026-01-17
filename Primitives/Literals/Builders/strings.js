@@ -262,6 +262,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         const randName = rndName();
         code = `
         ${initEncArrName};
+
         const ${randName} = ${!config.disableEval?"eval":""}(${!config.disableEval ? JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`) : ("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
         const ${getFnName} = (${randName} || ${declarationMapping.get("Function")})`;
 

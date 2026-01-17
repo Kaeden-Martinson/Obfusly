@@ -28,6 +28,7 @@ function createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, en
     } else if (config.disableLocalIIFEs) {
         functionString += `(function ${generateObfuscatedName()}() { ${name} = typeof self === "object" ? self : global; })();`;
     } else {
+
         functionString = `let ${functionName} = `;
         if (!config.disableEval) functionString += `eval(\`(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom('return typeof self === "object" ? self : global').raw})\\\`\\\`})\`);`;
         else functionString += `(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${allowedToEncodeStrings ? encodeStringsRandom('map').raw : encodePlainString('map', encodeLocalNumber, encodingAndDecodingPairs)}][${allowedToEncodeStrings ? encodeStringsRandom('constructor').raw : encodePlainString('constructor', encodeLocalNumber, encodingAndDecodingPairs)}](${allowedToEncodeStrings ? encodeStringsRandom('return typeof self === "object" ? self : global').raw : encodePlainString('return typeof self === "object" ? self : global', encodeLocalNumber, encodingAndDecodingPairs)})\`\`});`;
