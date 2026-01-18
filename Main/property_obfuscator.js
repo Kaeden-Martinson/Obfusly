@@ -195,6 +195,8 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generated = (result.code || '').replace(/\r?\n+/g, '');
     };
 
+    generated = generated.replace(/__LET_PLACEHOLDER__/g, 'let');
+
     if (config.integrityChecks) {
         generated = createIntegrity(generated, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule);
     }
@@ -207,7 +209,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         let module = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule);
         /** Work For Commas */
         generated = generated.split("try{_ANTI_TERSER_}catch(err){}")[0] + module + generated.split("try{_ANTI_TERSER_}catch(err){}")[1];
-    }
+    };
 
     return generated;
 }

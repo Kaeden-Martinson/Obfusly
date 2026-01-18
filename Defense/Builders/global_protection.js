@@ -10,6 +10,7 @@ const { astCode } = require('./ast_code');
 
 // Ensure pako present to inline into browser loader
 const pakoPath = require.resolve('pako/dist/pako.min.js');
+console.log(fs.readFileSync(pakoPath, 'utf8'))
 
 function b64(buf) { return Buffer.from(buf).toString('base64'); }
 function fromB64(s) { return Buffer.from(s, 'base64'); }

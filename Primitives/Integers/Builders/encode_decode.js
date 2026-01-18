@@ -181,7 +181,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
     for (let fi = 0; fi < FUNCTIONS; fi++) {
         const mainParam = generateObfuscatedName();
-        const volumeVariable = generateObfuscatedName();
+        const volumeVariable = config.breakASTs ? "__LET_PLACEHOLDER__" : generateObfuscatedName();
         const valIdx = generateObfuscatedName();
         const sel = generateObfuscatedName();
         const d0 = generateObfuscatedName();
@@ -193,7 +193,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
         const shuffledCases = shuffleArray([...Array(CASES).keys()]);
 
-        decoderOut += `function ${decodeMainFunctionNames[fi]}(${mainParam},${dcParams.join(',')}){\n  let ${volumeVariable}=(${mainParam}>>>${useConfig(0)});\n  const ${sel}=${selTablesVariable}[${useConfig(shuffledFunctionsTables[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}];\n  const ${valIdx}=${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}];\n  let ${d0}=${useConfig(10)} - ${useConfig(9)},${d1}=${useConfig(0)};\n  switch(${sel}){\n`;
+        decoderOut += `function ${decodeMainFunctionNames[fi]}(${mainParam},${dcParams.join(',')}){\n  var ${volumeVariable}=(${mainParam}>>>${useConfig(0)});\n  const ${sel}=${selTablesVariable}[${useConfig(shuffledFunctionsTables[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}];\n  const ${valIdx}=${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}];\n  let ${d0}=${useConfig(10)} - ${useConfig(9)},${d1}=${useConfig(0)};\n  switch(${sel}){\n`;
 
         for (let ci = 0; ci < CASES; ci++) {
             const caseIndex = shuffledCases[ci];
