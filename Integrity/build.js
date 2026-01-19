@@ -294,10 +294,10 @@ function ${fnMain}(${x}) {
 
   surfaceFunctions.sort((a, b) => a.start - b.start);
 
-  console.log("[FUNCTIONS]:", surfaceFunctions)
+  //console.log("[FUNCTIONS]:", surfaceFunctions)
 
   if (surfaceFunctions.length === 0) {
-    console.log("No top-level functions found. Writing original file unchanged.");
+    //console.log("No top-level functions found. Writing original file unchanged.");
     return code;
   };
 
