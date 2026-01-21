@@ -18,8 +18,6 @@ function createStringProperty(node, properties) {
 
     node.name = `${properties[0].raw ? properties[0].raw : properties[0]}${propertyString}`;
 
-    // console.log(node)
-
     return node;
 };
 
@@ -48,7 +46,11 @@ function recursiveCallObject(node, properties, isCallee = false) {
     if (node.type === "ArrayExpression") {
         for (let i = node.elements.length - 1; i > -1; i--) {
             const element = node.elements[i];
-            if (element.type === "Identifier") {
+            if (element.type === "SpreadElement") {
+                let propProperties = [...recursiveCallObject(element.argument, [])].reverse();
+                let fakePropertyNode = createStringProperty({}, propProperties);
+                properties.push({ raw: (i === 0 ? "[..." : ", ...") + fakePropertyNode.name + (i === node.object.elements.length - 1 ? "]" : "") });
+            } else if (element.type === "Identifier") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.elements.length - 1 ? "]" : "") });
             } else if (element.type === "Literal") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + encodeStringsRandom(element.value).raw + (i === node.elements.length - 1 ? "]" : "") });
@@ -130,12 +132,29 @@ function recursiveCallObject(node, properties, isCallee = false) {
 
     if (node?.object?.type === "BinaryExpression" || node?.object?.type === "AssignmentExpression" || node?.object?.type === "LogicalExpression" || node?.object?.type === "ForInStatement" || node?.object?.type === "ForOfStatement") { properties.push({ raw: "(" + sourceCode.slice(node.object.start, node.object.end) + ")" }); properties.push(node.optional); };
 
-    if (node.object && node.object.type === "Identifier") {
+    if (node?.object?.type === "ArrayExpression") {
+        for (let i = node.object.elements.length - 1; i > -1; i--) {
+            const element = node.object.elements[i];
+            if (element.type === "SpreadElement") {
+                let propProperties = [...recursiveCallObject(element.argument, [])].reverse();
+                let fakePropertyNode = createStringProperty({}, propProperties);
+                properties.push({ raw: (i === 0 ? "[..." : ", ...") + fakePropertyNode.name + (i === node.object.elements.length - 1 ? "]" : "") });
+            } else if (element.type === "Identifier") {
+                properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.object.elements.length - 1 ? "]" : "") });
+            } else if (element.type === "Literal") {
+                properties.push({ raw: (i === 0 ? "[" : ", ") + encodeStringsRandom(element.value).raw + (i === node.object.elements.length - 1 ? "]" : "") });
+            } else {
+                properties.push({ raw: (i === 0 ? "[" : ", ") + sourceCode.slice(element.start, element.end) + (i === node.object.elements.length - 1 ? "]" : "") });
+            };
+        };
+
+        return properties;
+    } else if (node.object && node.object.type === "Identifier") {
         properties.push(node.object.name); return properties;
     } else if (node.object && node.object.type === "NewExpression") {
         properties.push(sourceCode.slice(node.object.start, node.object.end)); return properties;
     } else if (node.object && node.object.type === "ThisExpression") {
-        properties.push('this'); return properties;
+        properties.push({ raw: 'this' }); return properties;
     } else return recursiveCallObject(node.object, properties);
 };
 

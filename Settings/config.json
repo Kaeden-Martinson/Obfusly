@@ -27,10 +27,10 @@
     "breakIIFEString": true,
     "concealPrimitives": true,
     "compression": true,
-    "disableEval": true,
-    "disableLocalIIFEs": true,
+    "disableEval": false,
+    "disableLocalIIFEs": false,
     "integrityChecks": true,
-    "breakASTs": true,
+    "breakASTs": false,
 
     "wrapInIIFE": false,
     "disableConsoleOutput": false,

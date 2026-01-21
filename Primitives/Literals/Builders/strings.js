@@ -264,14 +264,14 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         ${initEncArrName};
 
         const ${randName} = ${!config.disableEval?"eval":""}(${!config.disableEval ? JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`) : ("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
-        const ${getFnName} = (${randName} || ${declarationMapping.get("Function")})`;
+        const ${getFnName} = (${randName} || ${declarationMapping.get("null")})`;
 
         code = code.replaceAll("__QUOTE_OPERATORS__", '"');
 
         let originalIIFECode = `${!config.disableEval?"\"":""}(() => {` + code.split(`${!config.disableEval?"\"":""}(() => {`)[1].split(`${!config.disableEval?"\"":""});`)[0] + `${!config.disableEval?"\"":""}`;
 
         if (config.breakIIFEString && !config.disableEval) {
-            const iifeBreaks = originalIIFECode.split('"');
+            var iifeBreaks = originalIIFECode.split('"');
 
             const { brokenIIFE, rebuiltCode } = breakShuffleAndBuild(iifeBreaks, declarationMapping, {
                 maxChunks: 5,
@@ -280,7 +280,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
 
             const key = generateRandomKey(30);
             const encoded = encodeParts(brokenIIFE, key);
-            const decoderSnippet = buildDecoderSnippet(encoded, key,declarationMapping.get("IIFEstringBreaker"));
+            const decoderSnippet = buildDecoderSnippet(encoded, key, declarationMapping.get("IIFEstringBreaker"));
 
             localBrokenIIFE = "window";
 

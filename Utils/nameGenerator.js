@@ -30,31 +30,85 @@ function shuffleAndSort(arr) {
 
 /* AZ variable generator (475,254 Variables) */
 function generateAZVariables() {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const letters = '_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const numbers = "0123456789".split('');
+    const combined = [...letters, ...numbers];
     let AZCombinations = [];
+
     for (let i = 0; i < letters.length; i++) {
         let a = letters[i];
         AZCombinations.push(a);
-        for (let j = 0; j < letters.length; j++) {
-            let b = a + letters[j];
+        for (let j = 0; j < combined.length; j++) {
+            let b = a + combined[j];
             AZCombinations.push(b);
-            for (let k = 0; k < letters.length; k++) {
-                let c = b + letters[k];
+            for (let k = 0; k < combined.length; k++) {
+                let c = b + combined[k];
                 AZCombinations.push(c);
-                for (let l = 0; l < letters.length; l++) {
-                    let d = c + letters[l];
+                for (let l = 0; l < combined.length; l++) {
+                    let d = c + combined[l];
                     AZCombinations.push(d);
                 };
             };
         };
     };
+
+    const reserved = [
+        "break", "case", "catch", "class", "const", "continue", "debugger", "default",
+        "delete", "do", "else", "export", "extends", "finally", "for", "function",
+        "if", "import", "in", "instanceof", "new", "return", "super", "switch",
+        "this", "throw", "try", "typeof", "var", "void", "while", "with", "yield"
+    ];
+
+    const strictReserved = [
+        "implements", "interface", "let", "package", "private",
+        "protected", "public", "static"
+    ];
+
+    const futureReserved = [
+        "enum", "await"
+    ];
+
+    const literals = [
+        "true", "false", "null"
+    ];
+
+    const globals = [
+        "top", "Object", "Function", "Array", "Number", "String", "Boolean", "BigInt",
+        "Symbol", "Math", "Date", "RegExp", "Error", "EvalError", "RangeError",
+        "ReferenceError", "SyntaxError", "TypeError", "URIError",
+        "JSON", "Reflect", "Proxy", "Promise", "Map", "Set", "WeakMap", "WeakSet",
+        "Intl", "Atomics", "SharedArrayBuffer", "ArrayBuffer", "DataView",
+        "Uint8Array", "Int8Array", "Uint16Array", "Int16Array", "Uint32Array",
+        "Int32Array", "Float32Array", "Float64Array",
+        "parseInt", "parseFloat", "isNaN", "isFinite", "eval"
+    ];
+
+    const runtimeGlobals = [
+        "window", "document", "globalThis", "global", "self", "console",
+        "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+        "requestAnimationFrame", "cancelAnimationFrame",
+        "process", "require", "module", "exports", "__dirname", "__filename"
+    ];
+
+    const INVALID_NAMES = new Set([
+        ...reserved,
+        ...strictReserved,
+        ...futureReserved,
+        ...literals,
+        "undefined",
+        ...globals,
+        ...runtimeGlobals
+    ]);
+
+    AZCombinations = AZCombinations.filter(name => !INVALID_NAMES.has(name));
+
     return shuffleAndSort(AZCombinations);
 };
 
 /* Invisible variable generator (17,476 Variables) */
 function generateInvisibleVariables() {
     let InvisableCombinations = [];
-    let firstInvisableChar = ['ㅤ', 'ᅟ', 'ᅠ', 'ﾠ']; 
+    let firstInvisableChar = ['ㅤ', 'ᅟ', 'ᅠ', 'ﾠ'];
     let zeroWidthChar = ["‍", "︀", "︁", "︂", "︃", "︄", "︅", "︆", "︇", "︈", "︉", "︊", "︋", "︌", "︍", "︎"];
     for (let i = 0; i < firstInvisableChar.length; i++) {
         InvisableCombinations.push(firstInvisableChar[i]);
@@ -78,6 +132,7 @@ let InvisableCombinations = generateInvisibleVariables();
 let InvisableCount = 0;
 
 let generateObfuscatedName = () => {
+    // console.log(AZCombinations[AZCount])
     switch ('minify') {
         case 'zalgo': return generateZalgoVariable();
         case 'minify': return AZCombinations[AZCount++];

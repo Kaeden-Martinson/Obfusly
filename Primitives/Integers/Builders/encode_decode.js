@@ -114,13 +114,15 @@ function createEncodeAndDecodingPairs(declarationMapping) {
         valueIndexes.push(idxs);
     }
 
-    function applyOpCode(op, varName = 'v') { switch (op.type) { case 'add': return `((${varName}+${useConfig(op.c)})>>>${useConfig(0)})`; case 'xor': return `((${varName}^${useConfig(op.c)})>>>${useConfig(0)})`; case 'mul': return `(Math.imul(${varName},${useConfig(op.c)})>>>${useConfig(0)})`; } }
+    function applyOpCode(op, varName = 'v') { switch (op.type) { case 'add': return `((${varName}+${(op.c)})>>>${(0)})`; case 'xor': return `((${varName}^${(op.c)})>>>${(0)})`; case 'mul': return `(Math.imul(${varName},${(op.c)})>>>${(0)})`; } }
     function inverseOpCode(op, varName = 'v') { switch (op.type) { case 'add': return `((${varName}-${useConfig(op.c)})>>>${useConfig(0)})`; case 'xor': return `((${varName}^${useConfig(op.c)})>>>${useConfig(0)})`; case 'mul': return `(Math.imul(${varName},${op.inv})>>>${useConfig(0)})`; } }
 
     const selTablesVariable = generateObfuscatedName();
     const valueIndexesVariable = generateObfuscatedName();
     let out = `\n`;
     out += `const ${selTablesVariable}=[${selTables.map(t => '[' + t.join(',') + ']').join(',')}];\nconst ${valueIndexesVariable}=[${valueIndexes.map(t => '[' + t.join(',') + ']').join(',')}];\n\n`;
+
+    let encoderOut = out + "\n";
 
     for (let fi = 0; fi < FUNCTIONS; fi++) {
         for (let ci = 0; ci < CASES; ci++) {
@@ -134,7 +136,6 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
     out += '\n';
 
-    let encoderOut = out;
     let decoderOut = out;
 
     function deadExpr(varName = 'v') {
@@ -157,24 +158,24 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
     for (let fi = 0; fi < FUNCTIONS; fi++) {
         const dcCount = deadcodeCounts[fi];
-        const dcParams = Array.from({ length: dcCount }, (_, i) => `dead${i}=${DEADCODE_VARIABLES[fi][i]}`).join(',');
+        const dcParams = Array.from({ length: dcCount }, (_, i) => `dead${i}`).join(',');
 
         const shuffledCases = shuffleArray([...Array(CASES).keys()]);
 
-        encoderOut += `function encode${fi}(x,${dcParams}){\n  let v=(x>>>${useConfig(0)});\n  const sel=${selTablesVariable}[${useConfig(shuffledFunctionsTables[fi])}][x&${useConfig(casesSubtractOne[fi])}];\n  const valIdx=${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][x&${useConfig(casesSubtractOne[fi])}];\n  let d0=${useConfig(10)} - ${useConfig(9)},d1=${useConfig(0)};\n  switch(sel){\n`;
+        encoderOut += `function encode${fi}(x,${dcParams}){\n  let v=(x>>>0);\n  const sel=${selTablesVariable}[${(shuffledFunctionsTables[fi])}][x&${(casesSubtractOne[fi])}];\n  const valIdx=${valueIndexesVariable}[${(shuffledFunctionsCases[fi])}][x&${(casesSubtractOne[fi])}];\n  let d0=${(10)} - 9,d1=${0};\n  switch(sel){\n`;
 
         for (let ci = 0; ci < CASES; ci++) {
             const caseIndex = shuffledCases[ci];
             const ops = allFunctions[fi][caseIndex];
             const [dExpr0, dExpr1] = deadExpr();
-            encoderOut += `    case ${useConfig(caseIndex)}:\n`;
-            encoderOut += `      d0=(d0 + ${dExpr0} + dead${randInt(0, dcCount - 1)})>>>${useConfig(0)};\n`;
-            encoderOut += `      d1=(d1 + ${dExpr1} + dead${randInt(0, dcCount - 1)})>>>${useConfig(0)};\n`;
+            encoderOut += `    case ${(caseIndex)}:\n`;
+            encoderOut += `      d0=(d0 + dead${randInt(0, dcCount - 1)})>>>${0};\n`;
+            encoderOut += `      d1=(d1 + dead${randInt(0, dcCount - 1)})>>>${0};\n`;
             for (let oi = 0; oi < ops.length; oi++) encoderOut += `      v=${applyOpCode(ops[oi], 'v')};\n`;
             encoderOut += `      break;\n`;
         }
 
-        encoderOut += `    default:v=v;}\n  const arr=[]; for(let i=${useConfig(0)};i<${useConfig(dcCount + 2)};i++)arr[i]=${useConfig(0)};\n  arr[valIdx]=v; arr[(valIdx+${useConfig(1)})%arr.length]=d0; arr[(valIdx+${useConfig(2)})%arr.length]=d1;\n  return arr;\n}\n\n`;
+        encoderOut += `    default:v=v;}\n  const arr=[]; for(let i=${0};i<${(dcCount + 2)};i++)arr[i]=${0};\n  arr[valIdx]=v; arr[(valIdx+${1})%arr.length]=d0; arr[(valIdx+${2})%arr.length]=d1;\n  return arr;\n}\n\n`;
     }
 
     const decodeMainFunctionNames = Array.from({ length: FUNCTIONS }, (_, i) => generateObfuscatedName());
@@ -187,6 +188,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
         const d0 = generateObfuscatedName();
         const d1 = generateObfuscatedName();
         const arr = generateObfuscatedName();
+        const i_var = generateObfuscatedName();
 
         const dcCount = deadcodeCounts[fi];
         const dcParams = Array.from({ length: dcCount }, (_, i) => `${generateObfuscatedName()}=${DEADCODE_VARIABLES[fi][i]}`);
@@ -210,12 +212,12 @@ function createEncodeAndDecodingPairs(declarationMapping) {
             decoderOut += `      break;\n`;
         }
 
-        decoderOut += `    default:${volumeVariable}=${volumeVariable};}\n  const ${arr}=[]; for(let i=${useConfig(0)};i<${useConfig(dcCount + 2)};i++)${arr}[i]=${useConfig(0)};\n  ${arr}[${valIdx}]=${volumeVariable}; ${arr}[(${valIdx}+${useConfig(1)})%${arr}.length]=${d0}; ${arr}[(${valIdx}+${useConfig(2)})%${arr}.length]=${d1};\n  return ${arr};\n};\n\n`;
+        decoderOut += `    default:${volumeVariable}=${volumeVariable};}\n  const ${arr}=[]; for(let ${i_var}=${useConfig(0)};${i_var}<${useConfig(dcCount + 2)};${i_var}++)${arr}[${i_var}]=${useConfig(0)};\n  ${arr}[${valIdx}]=${volumeVariable}; ${arr}[(${valIdx}+${useConfig(1)})%${arr}.length]=${d0}; ${arr}[(${valIdx}+${useConfig(2)})%${arr}.length]=${d1};\n  return ${arr};\n};\n\n`;
     }
 
     const decoderFunctionNames = Array.from({ length: FUNCTIONS }, (_, i) => generateObfuscatedName());
 
-    for (let fi = 0; fi < FUNCTIONS; fi++) encoderOut += `function chainEncode${fi}(v){v=encode${fi}(v,${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][v&${useConfig(casesSubtractOne[fi])}]];${fi + 1 < FUNCTIONS ? `return chainEncode${fi + 1}(v);` : `return v>>>${useConfig(0)};`}}\n\n`;
+    for (let fi = 0; fi < FUNCTIONS; fi++) encoderOut += `function chainEncode${fi}(v){v=encode${fi}(v,${generateRandomArgs()})[${valueIndexesVariable}[${(shuffledFunctionsCases[fi])}][v&${(casesSubtractOne[fi])}]];${fi + 1 < FUNCTIONS ? `return chainEncode${fi + 1}(v);` : `return v>>>${(0)};`}}\n\n`;
     for (let fi = FUNCTIONS - 1; fi >= 0; fi--) {
         const mainParam = generateObfuscatedName();
         decoderOut += `var ${decoderFunctionNames[fi]} = (${mainParam})=>{${mainParam}=${decodeMainFunctionNames[fi]}(${mainParam},${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}]];${fi - 1 >= 0 ? `return ${decoderFunctionNames[fi - 1]}(${mainParam});` : `return ${mainParam}>>>${useConfig(0)};`}}\n\n`;
