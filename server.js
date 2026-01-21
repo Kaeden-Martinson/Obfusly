@@ -8,6 +8,8 @@ const __obfuscator_2 = require('./Main/property_obfuscator');
 const app = express();
 const PORT = 3000;
 
+console.log(1)
+
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'Frontend')));
