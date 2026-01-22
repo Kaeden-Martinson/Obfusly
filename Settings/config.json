@@ -32,8 +32,8 @@
     "disableLocalIIFEs": false,
     "integrityChecks": false,
     "breakASTs": true,
+    "wrapInIIFE": true,
 
-    "wrapInIIFE": false,
     "disableConsoleOutput": false,
     "enableAntiDebugger": false,
     "globalProtection": false,
