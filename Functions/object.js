@@ -6,6 +6,8 @@ function createStringProperty(node, properties) {
     node.type = "Identifier";
     node.computed = true;
 
+    // console.log(properties)
+
     const rest = properties.slice(1);
     const propertyString = rest
         .map(property =>
@@ -47,9 +49,13 @@ function recursiveCallObject(node, properties, isCallee = false) {
         for (let i = node.elements.length - 1; i > -1; i--) {
             const element = node.elements[i];
             if (element.type === "SpreadElement") {
-                let propProperties = [...recursiveCallObject(element.argument, [])].reverse();
-                let fakePropertyNode = createStringProperty({}, propProperties);
-                properties.push({ raw: (i === 0 ? "[..." : ", ...") + fakePropertyNode.name + (i === node.object.elements.length - 1 ? "]" : "") });
+                if (element.argument.type === "Identifier") {
+                    properties.push({ raw: (i === 0 ? "[..." : ", ...") + element.argument.name + (i === node.object.elements.length - 1 ? "]" : "") });
+                } else {
+                    let propProperties = [...recursiveCallObject(element.argument, [])].reverse();
+                    let fakePropertyNode = createStringProperty({}, propProperties);
+                    properties.push({ raw: (i === 0 ? "[..." : ", ...") + fakePropertyNode.name + (i === node.object.elements.length - 1 ? "]" : "") });
+                };
             } else if (element.type === "Identifier") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.elements.length - 1 ? "]" : "") });
             } else if (element.type === "Literal") {
@@ -117,7 +123,7 @@ function recursiveCallObject(node, properties, isCallee = false) {
 
     if (node.property.type === "Literal") {
         let isEmptyFunction = sourceCode.slice(node.property.end + (node.computed ? 1 : 0), node.property.end + 2 + (node.computed ? 1 : 0)) === "()" && isCallee;
-        if (typeof node.property.value === "string") properties.push({ raw : "[" + encodeStringsRandom(node.property.value).raw + "]" + (isEmptyFunction ? "()" : "") });
+        if (typeof node.property.value === "string") properties.push({ raw: "[" + encodeStringsRandom(node.property.value).raw + "]" + (isEmptyFunction ? "()" : "") });
         else properties.push(encodeStringsRandom(node.property.raw).raw);
         properties.push(node.optional);
     };
@@ -136,9 +142,13 @@ function recursiveCallObject(node, properties, isCallee = false) {
         for (let i = node.object.elements.length - 1; i > -1; i--) {
             const element = node.object.elements[i];
             if (element.type === "SpreadElement") {
-                let propProperties = [...recursiveCallObject(element.argument, [])].reverse();
-                let fakePropertyNode = createStringProperty({}, propProperties);
-                properties.push({ raw: (i === 0 ? "[..." : ", ...") + fakePropertyNode.name + (i === node.object.elements.length - 1 ? "]" : "") });
+                if (element.argument.type === "Identifier") {
+                    properties.push({ raw: (i === 0 ? "[..." : ", ...") + element.argument.name + (i === node.object.elements.length - 1 ? "]" : "") });
+                } else {
+                    let propProperties = [...recursiveCallObject(element.argument, [])].reverse();
+                    let fakePropertyNode = createStringProperty({}, propProperties);
+                    properties.push({ raw: (i === 0 ? "[..." : ", ...") + fakePropertyNode.name + (i === node.object.elements.length - 1 ? "]" : "") });
+                };
             } else if (element.type === "Identifier") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.object.elements.length - 1 ? "]" : "") });
             } else if (element.type === "Literal") {

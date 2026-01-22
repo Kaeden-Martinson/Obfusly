@@ -211,6 +211,10 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generated = generated.split("try{_ANTI_TERSER_}catch(err){}")[0] + module + generated.split("try{_ANTI_TERSER_}catch(err){}")[1];
     };
 
+    if (config.wrapInIIFE) {
+        generated = `new Function(${JSON.stringify(generated)})();`
+    };
+
     return generated;
 }
 
