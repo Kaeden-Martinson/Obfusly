@@ -1,4 +1,4 @@
-const config = require("../../../Settings/config.json");
+const config = require("../../../Settings/config");
 const { generateObfuscatedName } = require("../../../Utils/nameGenerator");
 
 function buildBaseNames(declarationMapping) {

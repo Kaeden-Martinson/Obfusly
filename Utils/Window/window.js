@@ -1,4 +1,4 @@
-const config = require("../../Settings/config.json");
+const config = require("../../Settings/config");
 
 const { encodeStringsRandom } = require("../../Primitives/Literals/strings");
 const { generateObfuscatedName } = require("../nameGenerator");

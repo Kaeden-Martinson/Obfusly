@@ -9,7 +9,7 @@ const { toBinary } = require('../Primitives/Integers/binary');
 const { toRefractal } = require('../Primitives/Integers/refractal');
 const { pickWeightedRandom } = require('../Utils/weights');
 
-const config = require('../Settings/config.json');
+const config = require('../Settings/config');
 const { compress } = require("../Utils/compressor");
 let numberCache = {};
 

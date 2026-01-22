@@ -1,5 +1,4 @@
-const config = require('../Settings/config.json');
-
+const config = require('../Settings/config');
 const fs = require('fs').promises;
 const terser = require('terser');
 
