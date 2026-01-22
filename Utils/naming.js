@@ -1,4 +1,4 @@
-const config = require('../Settings/config.json');
+const config = require('../Settings/config');
 const { generateObfuscatedName } = require('./nameGenerator');
 const { windowVariables, defaultedValues, ignoreVariables, newDeclarationVariables } = require('./Window/window_variables');
 

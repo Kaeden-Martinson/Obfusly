@@ -1,4 +1,4 @@
-const config = require('../../Settings/config.json');
+const config = require('../../Settings/config');
 const { pickWeightedRandom } = require('../../Utils/weights');
 
 const { toBinary } = require('./binary');
