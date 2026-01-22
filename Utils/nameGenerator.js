@@ -30,24 +30,22 @@ function shuffleAndSort(arr) {
 
 /* AZ variable generator (475,254 Variables) */
 function generateAZVariables() {
-    const letters = '_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-    const numbers = "0123456789".split('');
-    const combined = [...letters, ...numbers];
+    const letters = '_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$'.split('');
     let AZCombinations = [];
 
     for (let i = 0; i < letters.length; i++) {
         let a = letters[i];
         AZCombinations.push(a);
-        for (let j = 0; j < combined.length; j++) {
-            let b = a + combined[j];
+        for (let j = 0; j < letters.length; j++) {
+            let b = a + letters[j];
             AZCombinations.push(b);
-            for (let k = 0; k < combined.length; k++) {
-                let c = b + combined[k];
+            for (let k = 0; k < letters.length; k++) {
+                let c = b + letters[k];
                 AZCombinations.push(c);
-                for (let l = 0; l < combined.length; l++) {
-                    let d = c + combined[l];
-                    AZCombinations.push(d);
-                };
+                // for (let l = 0; l < letters.length; l++) {
+                //     let d = c + letters[l];
+                //     AZCombinations.push(d);
+                // };
             };
         };
     };

@@ -1,5 +1,6 @@
 {
-    "numberEncoding": true,
+    "numberEncoding": false,
+    "optimzedNumberCache": true,
     "numberCalculator": true,
     "globalBaseIntegerConcealment": true,
     "multipleVariableAssignments": true,
@@ -29,8 +30,8 @@
     "compression": true,
     "disableEval": false,
     "disableLocalIIFEs": false,
-    "integrityChecks": true,
-    "breakASTs": false,
+    "integrityChecks": false,
+    "breakASTs": true,
 
     "wrapInIIFE": false,
     "disableConsoleOutput": false,
