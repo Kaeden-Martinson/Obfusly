@@ -32,7 +32,7 @@ function astCode(code) {
     'document', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'fetch', 'XMLHttpRequest',
     'Promise', 'URL', 'URLSearchParams', 'Math', 'JSON', 'Date', 'RegExp', 'Error', 'Map', 'Set', 'WeakMap', 'WeakSet',
     'TextEncoder', 'TextDecoder', 'btoa', 'atob', 'Intl', 'performance', 'localStorage', 'sessionStorage',
-    '__DECODED_PAYLOAD__', '__decodePayload'
+    '__OBFUSCATED_PLACEHOLER__', '__decodePayload'
   ]);
 
   const src = code;

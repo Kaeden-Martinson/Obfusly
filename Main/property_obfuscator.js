@@ -26,6 +26,8 @@ const { createObfuscatedWindow } = require('../Utils/Window/window');
 const { defaultedValues } = require('../Utils/Window/window_variables');
 const { generateObfuscatedName } = require('../Utils/nameGenerator');
 const { createIntegrity } = require('../Integrity/build');
+const { buildConsoleDisabler } = require('../Defense/Builders/disable_console');
+const { createDebuggerBundle } = require('../Defense/Builders/debugger');
 
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
     updateSourceCode(sourceCode);
@@ -161,7 +163,6 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     };
 
     generated = `var ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
-    // generated = `let ${declarationMapping.get("Function")} = [+![]+!+![]][${[...'find'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}][${[...'constructor'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")}](${[...'return eval'].map(v => `String.fromCharCode(${encodeLocalNumber(v.charCodeAt())})`).join("+")})\`\`;` + '\n' + generated;
 
     if (config.numberCalculator) {
         generated = encodingAndDecodingPairs.decoder + '\n' + generated;
@@ -208,6 +209,17 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         let module = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule);
         /** Work For Commas */
         generated = generated.split("try{_ANTI_TERSER_}catch(err){}")[0] + module + generated.split("try{_ANTI_TERSER_}catch(err){}")[1];
+    };
+
+    if (config.disableConsoleOutput) {
+        generated = buildConsoleDisabler(config) + generated;
+    };
+
+    if (config.enableAntiDebugger) {
+        const [code, obfuscatedName, PASSPHRASE] = createDebuggerBundle(config);
+        let passVar = generateObfuscatedName();
+        const generatedIIFE = `((${passVar}) => { ${obfuscatedName}({ pass: ${passVar}, exec: true }); })("${PASSPHRASE}");`
+        generated = code + generated + generatedIIFE;
     };
 
     if (config.wrapInIIFE) {

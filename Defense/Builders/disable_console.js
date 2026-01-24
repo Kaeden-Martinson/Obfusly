@@ -3,10 +3,11 @@ const path = require('path');
 const crypto = require('crypto');
 
 const { generateObfuscatedName } = require('../../Utils/nameGenerator');
+const { compress } = require('../../Utils/compressor');
 
-function buildConsoleDisabler() {
+function buildConsoleDisabler(config) {
 
-  const IN = path.resolve(process.cwd(), '../Payloads/console.js');
+  const IN = path.resolve(__dirname, '../Payloads/console.js');
   const CHUNKS = Math.max(1, Math.min(16, parseInt(4, 10)));
   const KEY_CHUNKS = Math.max(1, Math.min(16, parseInt(3, 10)));
 
@@ -170,8 +171,7 @@ function buildConsoleDisabler() {
      the randomized globals in the order: ENV_BUFFER, ENV_ATOB, ENV_CONSOLE, ENV_WEBASSEMBLY
      Internals use randomized local identifiers from L.
   */
-  const runtime = `
-(function({${G.ENV_BUFFER},${G.ENV_ATOB},${G.ENV_CONSOLE},${G.ENV_WEBASSEMBLY}}){
+  const runtime = `(function({${G.ENV_BUFFER},${G.ENV_ATOB},${G.ENV_CONSOLE},${G.ENV_WEBASSEMBLY}}){
   const ${L.BUF} = ${G.ENV_BUFFER};
   const ${L.ATOB} = ${G.ENV_ATOB};
   const ${L.CON} = ${G.ENV_CONSOLE};
@@ -288,7 +288,7 @@ function buildConsoleDisabler() {
 );
 `;
 
-  return runtime;
+  return config.compression ? compress(runtime) : runtime;
 };
 
 module.exports = { buildConsoleDisabler };
