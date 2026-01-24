@@ -28,15 +28,13 @@ const config = {
     breakIIFEString: true,
     concealPrimitives: true,
     compression: true,
-    disableEval: false,
-    disableLocalIIFEs: false,
-    integrityChecks: false,
+    disableEval: true,
+    disableLocalIIFEs: true,
+    integrityChecks: true,
     breakASTs: true,
     wrapInIIFE: true,
-    disableConsoleOutput: false,
-    enableAntiDebugger: false,
-    globalProtection: false,
-    dispatcher: false
+    disableConsoleOutput: true,
+    enableAntiDebugger: true,
 };
 
 module.exports = config;

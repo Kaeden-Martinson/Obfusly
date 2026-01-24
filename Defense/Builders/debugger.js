@@ -1,64 +1,70 @@
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
 const { astCode } = require('./ast_code');
+const { generateObfuscatedName } = require('../../Utils/nameGenerator');
+const { compress } = require('../../Utils/compressor');
 
 function generatePassKey(lengthBytes = 32) {
   if (!Number.isInteger(lengthBytes) || lengthBytes <= 0) throw new TypeError('lengthBytes must be a positive integer');
   const bytes = crypto.randomBytes(lengthBytes);
   const hex = bytes.toString('hex');
   const b64 = bytes.toString('base64');
-  const b64url = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/,'');
+  const b64url = b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   return { bytes, hex, b64, b64url, lengthBytes };
 }
 
-function createDebuggerBundle(payload) {
-    const MODE = "passphrase"
-    const PASSPHRASE = generatePassKey().hex || null;
+function createDebuggerBundle(config) {
+  const MODE = "passphrase"
+  const PASSPHRASE = generatePassKey().hex || null;
 
-    function bytesToB64(buf) { return Buffer.from(buf).toString('base64'); }
-    function b64ToBytes(b64) { return Buffer.from(b64, 'base64'); }
+  function bytesToB64(buf) { return Buffer.from(buf).toString('base64'); }
 
-    function sha256(buf) {
-        return crypto.createHash('sha256').update(buf).digest();
+  function sha256(buf) {
+    return crypto.createHash('sha256').update(buf).digest();
+  }
+
+  function xorBytes(buf, key) {
+    const out = Buffer.alloc(buf.length);
+    for (let i = 0; i < buf.length; i++) out[i] = buf[i] ^ key[i % key.length];
+    return out;
+  }
+
+  const payloadBuf = Buffer.from(fs.readFileSync(path.resolve(__dirname, "../Payloads/debugger.js"), "utf-8"), 'utf8');
+  const payloadHash = sha256(payloadBuf);
+
+  let xorKey;
+  let salt;
+  let iter = 100000;
+
+  if (MODE === 'embed-key') {
+    const keyLen = 16 + Math.floor(Math.random() * 17);
+    xorKey = crypto.randomBytes(keyLen);
+  } else if (MODE === 'passphrase') {
+    if (!PASSPHRASE) {
+      console.error('passphrase mode requires --pass "your-passphrase"');
+      process.exit(1);
     }
+    salt = crypto.randomBytes(16);
 
-    function xorBytes(buf, key) {
-        const out = Buffer.alloc(buf.length);
-        for (let i = 0; i < buf.length; i++) out[i] = buf[i] ^ key[i % key.length];
-        return out;
-    }
+    xorKey = crypto.pbkdf2Sync(PASSPHRASE, salt, iter, 32, 'sha256');
+  } else {
+    console.error('Unknown mode', MODE);
+    process.exit(1);
+  }
 
-    const payloadBuf = Buffer.from(payload, 'utf8');
-    const payloadHash = sha256(payloadBuf);
+  const enc = xorBytes(payloadBuf, xorKey);
 
-    let xorKey;
-    let salt;
-    let iter = 100000;
+  const encB64 = bytesToB64(enc);
+  const hashB64 = bytesToB64(payloadHash);
+  const xorKeyB64 = MODE === 'embed-key' ? bytesToB64(xorKey) : null;
+  const saltB64 = MODE === 'passphrase' ? bytesToB64(salt) : null;
 
-    if (MODE === 'embed-key') {
-        const keyLen = 16 + Math.floor(Math.random() * 17);
-        xorKey = crypto.randomBytes(keyLen);
-    } else if (MODE === 'passphrase') {
-        if (!PASSPHRASE) {
-            console.error('passphrase mode requires --pass "your-passphrase"');
-            process.exit(1);
-        }
-        salt = crypto.randomBytes(16);
+  let obfuscatedName = generateObfuscatedName();
 
-        xorKey = crypto.pbkdf2Sync(PASSPHRASE, salt, iter, 32, 'sha256');
-    } else {
-        console.error('Unknown mode', MODE);
-        process.exit(1);
-    }
-
-    const enc = xorBytes(payloadBuf, xorKey);
-
-    const encB64 = bytesToB64(enc);
-    const hashB64 = bytesToB64(payloadHash);
-    const xorKeyB64 = MODE === 'embed-key' ? bytesToB64(xorKey) : null;
-    const saltB64 = MODE === 'passphrase' ? bytesToB64(salt) : null;
-
-    const runtime = `
-let __decodePayload;
+  const runtime = `
+let __OBFUSCATED_PLACEHOLER__;
 (function(){
   'use strict';
 
@@ -167,14 +173,14 @@ let __decodePayload;
     }
   }
 
-  __decodePayload = decodeAndOptionallyRun;
+  __OBFUSCATED_PLACEHOLER__ = decodeAndOptionallyRun;
 })();`;
 
-    const newCode = astCode(runtime);
+  const newCode = astCode(runtime);
 
-    return [newCode.code, PASSPHRASE];
+  newCode.code = newCode.code.replaceAll("__OBFUSCATED_PLACEHOLER__", obfuscatedName);
+
+  return [(config.compression ? compress(newCode.code) : newCode.code), obfuscatedName, PASSPHRASE];
 };
-
-createDebuggerBundle("console.log(1)")
 
 module.exports = { createDebuggerBundle };
