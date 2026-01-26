@@ -408,7 +408,7 @@ function ${fnMain}(${x}) {
     const injectedHasherSrc = compress(hasher.hasherCode);
 
     if (!validFunctions.length) {
-      code = injectedHasherSrc + "\n" + code;
+      code = injectedHasherSrc + (config.compression ? "" : "\n") + code;
       continue;
     }
 
@@ -431,11 +431,11 @@ function ${fnMain}(${x}) {
     }
 
     if (!fnSrc) {
-      code = injectedHasherSrc + "\n" + code;
+      code = injectedHasherSrc + (config.compression ? "" : "\n") + code;
       continue;
     }
 
-    code = code.split(fnSrc)[0] + (Math.random() < 0.5 ? injectedHasherSrc + "\n" + fnSrc : fnSrc + "\n" + injectedHasherSrc) + code.split(fnSrc)[1];
+    code = code.split(fnSrc)[0] + (Math.random() < 0.5 ? injectedHasherSrc + (config.compression ? "" : "\n") + fnSrc : fnSrc + (config.compression ? "" : "\n") + injectedHasherSrc) + code.split(fnSrc)[1];
   };
 
   let codeLines = code.split("\n");
@@ -488,7 +488,7 @@ function ${fnMain}(${x}) {
 
     let functionUsed = validFunctions.find(r => r.name === functionName);
     if (!functionUsed || functionUsed.calledIndex === -1 || err) {
-      __CachedCode__ = `let ${Var.varName} = ${Var.value};\n` + __CachedCode__;
+      __CachedCode__ = `let ${Var.varName} = ${Var.value};${config.compression ? "" : "\n"}` + __CachedCode__;
       continue;
     };
 
@@ -501,8 +501,8 @@ function ${fnMain}(${x}) {
       ? proximityCandidates[Math.floor(Math.random() * proximityCandidates.length)]
       : null;
 
-    if (!proximityFunction) __CachedCode__ = `let ${Var.varName} = ${Var.value};\n` + __CachedCode__;
-    else __CachedCode__ = __CachedCode__.replace(codeLines[proximityFunction.createdIndex], `let ${Var.varName} = ${Var.value};\n${codeLines[proximityFunction.createdIndex]}`)
+    if (!proximityFunction) __CachedCode__ = `let ${Var.varName} = ${Var.value};${config.compression ? "" : "\n"}` + __CachedCode__;
+    else __CachedCode__ = __CachedCode__.replace(codeLines[proximityFunction.createdIndex], `let ${Var.varName} = ${Var.value};${config.compression ? "" : "\n"}${codeLines[proximityFunction.createdIndex]}`)
   };
 
   return __CachedCode__;
