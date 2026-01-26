@@ -1,4 +1,5 @@
 const config = {
+    nameGenerationStyle: "minify", // Options: 'zalgo', 'minify', 'invisible'
     numberEncoding: false,
     optimzedNumberCache: true,
     numberCalculator: true,
@@ -28,13 +29,13 @@ const config = {
     breakIIFEString: true,
     concealPrimitives: true,
     compression: true,
-    disableEval: true,
-    disableLocalIIFEs: true,
+    disableEval: false,
+    disableLocalIIFEs: false,
     integrityChecks: true,
     breakASTs: true,
     wrapInIIFE: true,
     disableConsoleOutput: true,
-    enableAntiDebugger: true,
+    enableAntiDebugger: false,
 };
 
 module.exports = config;

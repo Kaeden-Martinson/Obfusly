@@ -1,4 +1,1 @@
-setInterval(() => {
-    var before = new Date().getTime(); debugger;
-    if (new Date().getTime() - before > 10) for (; ;) { }
-}, 1000);
+setInterval(_=>{t=new Date;debugger;if(new Date-t>99)for(;;);},1e3)

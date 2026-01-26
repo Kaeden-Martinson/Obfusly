@@ -1,3 +1,4 @@
+const config = require('../Settings/config');
 
 /* Zalgo variable generator */
 let usedZalgoVariableNames = new Set();
@@ -131,10 +132,12 @@ let InvisableCount = 0;
 
 let generateObfuscatedName = () => {
     // console.log(AZCombinations[AZCount])
-    switch ('minify') {
+    switch (config.nameGenerationStyle) {
         case 'zalgo': return generateZalgoVariable();
         case 'minify': return AZCombinations[AZCount++];
-        case 'invisable': return InvisableCombinations[InvisableCount++];
+        case 'invisible': return InvisableCombinations[InvisableCount++];
+        /* Default to minify if config is invalid */
+        default: return AZCombinations[AZCount++];
     };
 };
 
