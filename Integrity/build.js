@@ -240,7 +240,7 @@ function ${fnMain}(${x}) {
     const iterExpr = `(((${runtimeHasherName}(${fnForms[0]}) ^ ${expectedVarName}) & ${encodeLocalNumber(Math.floor(Math.random() * 10), true)}) + ${encodeLocalNumber(Math.floor(Math.random() * 10), true)}) ** ${encodeLocalNumber(Math.floor(Math.random() * 10), true)}`;
 
     let loopExpr = loopTpl.replace(/__ITER__/g, iterExpr);
-    let result = "\n" + pattern.replace(/__LOOP__/g, loopExpr);
+    let result = (config.compression ? "" : "\n") + pattern.replace(/__LOOP__/g, loopExpr);
 
     const tmpName = generateObfuscatedName();
     result = result.replace(/\b__r\b/g, tmpName).replace(/\b__z\b/g, tmpName).replace(/\b__x\b/g, tmpName).replace(/\b__y\b/g, tmpName);
