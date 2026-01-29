@@ -2,7 +2,6 @@ const runtimeConfig = require('./Settings/config');
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-
 const __obfuscator_1 = require('./Main/first_obfuscator');
 const __obfuscator_2 = require('./Main/property_obfuscator');
 
@@ -42,7 +41,8 @@ app.post('/obfuscate', (req, res) => {
         });
 });
 
-const DEFAULT_CONFIG = structuredClone(runtimeConfig);
+const DEFAULT_CONFIG = globalThis.structuredClone ? structuredClone(runtimeConfig) : JSON.parse(JSON.stringify(runtimeConfig));
+
 async function handleObfuscation(req, res) {
     const { code, config: incomingConfig } = req.body;
     if (!code) {
