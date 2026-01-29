@@ -1,6 +1,6 @@
 const config = {
     nameGenerationStyle: "minify", // Options: 'zalgo', 'minify', 'invisible'
-    numberEncoding: false,
+    numberEncoding: true,
     optimzedNumberCache: true,
     numberCalculator: true,
     globalBaseIntegerConcealment: true,
@@ -8,7 +8,7 @@ const config = {
     shuffleBaseIntegers: true,
     baseIntegersDefault: "JSFuck",
     integerPrecentage: {
-        Refractal: 60,
+        Refractal: 10,
         JSFuck: 10,
         Hexadecimal: 10,
         Octal: 10,
@@ -18,7 +18,7 @@ const config = {
     concealGlobalObjects: true,
     target: "browser",
     stringEncoding: true,
-    stringSplitting: true,
+    stringSplitting: 5, /* 0 - disabled, n - max splits */
     optimizedStringCache: true,
     stringConcealment: true,
     stringConcealmentSettings: {
@@ -34,7 +34,7 @@ const config = {
     integrityChecks: true,
     breakASTs: true,
     wrapInIIFE: true,
-    disableConsoleOutput: true,
+    disableConsoleOutput: false,
     enableAntiDebugger: false,
 };
 

@@ -11,7 +11,7 @@ function encodeStringsRandom(str, isIIFE) {
     let out = '';
     let fullyStringOut = false;
 
-    if (config.stringSplitting) out = splitAndRebuildString(str, isIIFE, stringBuilderModule);
+    if (config.stringSplitting > 0) out = splitAndRebuildString(str, isIIFE, stringBuilderModule);
     else if (config.stringConcealment && stringBuilderModule) {
         out = stringBuilderModule.addString(str, isIIFE);
     } else if (config.stringEncoding) {
