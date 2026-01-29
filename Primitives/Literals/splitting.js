@@ -1,10 +1,12 @@
 const config = require('../../Settings/config');
 const { encodeStringContents } = require('./encode');
 
+const MAX_SPLITS = config.stringSplitting;
+
 function splitAndRebuildString(str, isIIFE, stringBuilderModule) {
     if (!str || str.length < 2) return "('" + encodeStringContents(str) + "')";;
 
-    const splits = Math.floor(Math.random() * (str.length - 1)) + 1;
+    let splits = Math.min(MAX_SPLITS, Math.max(1, Math.floor(Math.log2(str.length))));
 
     let cutPoints = new Set();
     while (cutPoints.size < splits) {
