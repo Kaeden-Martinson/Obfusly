@@ -8,17 +8,17 @@ const config = {
     shuffleBaseIntegers: true,
     baseIntegersDefault: "JSFuck",
     integerPrecentage: {
-        Refractal: 10,
+        Refractal: 5,
         JSFuck: 10,
-        Hexadecimal: 10,
-        Octal: 10,
-        Binary: 10
+        Hexadecimal: 15,
+        Octal: 20,
+        Binary: 25
     },
     encodedFunctionStrength: 5,
     concealGlobalObjects: false,
     target: "browser",
     stringEncoding: true,
-    stringSplitting: 5, /* 0 - disabled, n - max splits */
+    stringSplitting: 3, /* 0 - disabled, n - max splits */
     optimizedStringCache: true,
     stringConcealment: true,
     stringConcealmentSettings: {
