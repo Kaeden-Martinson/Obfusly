@@ -387,14 +387,33 @@ function ${fnMain}(${x}) {
     }
   }
 
+  function parseArguments(code, _i) {
+    let count = -1;
+    let newCode = "";
+
+    for (let i = _i; i < code.length; i++) {
+      let char = code[i];
+
+      newCode += char;
+      if (char === "(") { if (count === -1) { count = 0 }; count++ };
+      if (char === ")") { count-- };
+      if (count === 0) {
+        return newCode;
+      };
+    };
+  }
+
   function parseFunction(code) {
     let count = -1;
     let newCode = "";
-    for (let char of code) {
+    for (let i = 0; i < code.length; i++) {
+      let char = code[i];
+
       newCode += char;
       if (char === "{") { if (count === -1) { count = 0 }; count++ };
       if (char === "}") { count-- };
       if (count === 0) {
+        if (code[i + 1] == "(") { let args =  parseArguments(code, i); newCode += args; console.log(args) };
         return newCode;
       };
     };
