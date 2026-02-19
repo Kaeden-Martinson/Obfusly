@@ -15,7 +15,7 @@ const config = {
         Binary: 10
     },
     encodedFunctionStrength: 5,
-    concealGlobalObjects: true,
+    concealGlobalObjects: false,
     target: "browser",
     stringEncoding: true,
     stringSplitting: 5, /* 0 - disabled, n - max splits */
