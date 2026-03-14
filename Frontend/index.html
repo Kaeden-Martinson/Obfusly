@@ -290,7 +290,8 @@
             const obfuscated = result.obfuscatedCode || '// No output';
 
             outputEditor.setValue(obfuscated);
-            saveToHistory(code, obfuscated);
+            /* Wait until result is rendered before saving to history */
+            setTimeout(() => { saveToHistory(code, obfuscated); }, 2500);
 
         } catch (err) {
             outputEditor.setValue(`// Error: ${err.message}`);
