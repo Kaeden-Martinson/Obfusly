@@ -8,22 +8,22 @@ const config = {
     shuffleBaseIntegers: false,
     baseIntegersDefault: "JSFuck",
     integerPrecentage: {
-        Refractal: 5,
-        JSFuck: 10,
-        Hexadecimal: 15,
+        Refractal: 20,
+        JSFuck: 20,
+        Hexadecimal: 20,
         Octal: 20,
-        Binary: 25
+        Binary: 20
     },
-    encodedFunctionStrength: 5,
-    concealGlobalObjects: false,
+    encodedFunctionStrength: 1,
+    concealGlobalObjects: true,
     target: "browser",
     stringEncoding: false,
     stringSplitting: 3, /* 0 - disabled, n - max splits */
     optimizedStringCache: false,
     stringConcealment: false,
     stringConcealmentSettings: {
-        decodersCount: 5,
-        addNoiseCount: 5
+        decodersCount: 1,
+        addNoiseCount: 1
     },
     wrapStringsInIIFE: false,
     breakIIFEString: false,
