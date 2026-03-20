@@ -423,6 +423,8 @@ function ${fnMain}(${x}) {
     f => f.kind === "decl" && !f.dontTouch
   );
 
+  console.clear();
+
   for (let hasher of hashingAlgorithms) {
     const injectedHasherSrc = compress(hasher.hasherCode);
 
@@ -433,18 +435,20 @@ function ${fnMain}(${x}) {
 
     const functionUsed = validFunctions[Math.floor(Math.random() * validFunctions.length)];
 
+    console.log(functionUsed)
+
     let fnSrc = null;
 
-    if (code.includes(`async function ${functionUsed.name}`)) {
+    if (code.includes(`async function ${functionUsed.name}(`)) {
       fnSrc = "async function " + functionUsed.name +
         parseFunction(code.split(`function ${functionUsed.name}`)[1]);
-    } else if (code.includes(`function ${functionUsed.name}`)) {
+    } else if (code.includes(`function ${functionUsed.name}(`)) {
       fnSrc = "function " + functionUsed.name +
         parseFunction(code.split(`function ${functionUsed.name}`)[1]);
-    } else if (code.includes(`async function* ${functionUsed.name}`)) {
+    } else if (code.includes(`async function* ${functionUsed.name}(`)) {
       fnSrc = "async function* " + functionUsed.name +
         parseFunction(code.split(`function ${functionUsed.name}`)[1]);
-    } else if (code.includes(`function* ${functionUsed.name}`)) {
+    } else if (code.includes(`function* ${functionUsed.name}(`)) {
       fnSrc = "function* " + functionUsed.name +
         parseFunction(code.split(`function* ${functionUsed.name}`)[1]);
     }
@@ -515,6 +519,8 @@ function ${fnMain}(${x}) {
       f.createdIndex !== -1 &&
       f.createdIndex < functionUsed.calledIndex
     );
+
+    console.log(proximityCandidates)
 
     let proximityFunction = proximityCandidates.length
       ? proximityCandidates[Math.floor(Math.random() * proximityCandidates.length)]

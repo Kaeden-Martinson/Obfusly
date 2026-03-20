@@ -278,6 +278,8 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
                 reinsertQuotes: true
             });
 
+            console.log(brokenIIFE, rebuiltCode)
+
             const key = generateRandomKey(30);
             const encoded = encodeParts(brokenIIFE, key);
             const decoderSnippet = buildDecoderSnippet(encoded, key, declarationMapping.get("IIFEstringBreaker"));
@@ -287,6 +289,8 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
             let output = rebuiltCode.replace(/\[(\d+)\]/g, (_, num) => {
                 return `[${config.numberCalculator ? `${encodingAndDecodingPairs.decodeName}(${encodeModule.encode(Number(num))})` : encodeNumber(Number(num))}]`;
             });
+
+            console.log("Output", output)
 
             code = code.replace(originalIIFECode, output);
             code = `${decoderSnippet}` + code;
