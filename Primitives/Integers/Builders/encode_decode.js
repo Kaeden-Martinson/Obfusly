@@ -215,8 +215,11 @@ function createEncodeAndDecodingPairs(declarationMapping) {
         decoderOut += `    default:${volumeVariable}=${volumeVariable};}\n  const ${arr}=[]; for(let ${i_var}=${useConfig(0)};${i_var}<${useConfig(dcCount + 2)};${i_var}++)${arr}[${i_var}]=${useConfig(0)};\n  ${arr}[${valIdx}]=${volumeVariable}; ${arr}[(${valIdx}+${useConfig(1)})%${arr}.length]=${d0}; ${arr}[(${valIdx}+${useConfig(2)})%${arr}.length]=${d1};\n  return ${arr};\n};\n\n`;
     }
 
-    const decoderFunctionNames = Array.from({ length: FUNCTIONS }, (_, i) => generateObfuscatedName());
-
+    const decoderFunctionNames = Array.from({ length: FUNCTIONS }, (_, i) => {
+        return i === FUNCTIONS - 1
+            ? declarationMapping.get("decodeFunctionName")
+            : generateObfuscatedName();
+    });
     for (let fi = 0; fi < FUNCTIONS; fi++) encoderOut += `function chainEncode${fi}(v){v=encode${fi}(v,${generateRandomArgs()})[${valueIndexesVariable}[${(shuffledFunctionsCases[fi])}][v&${(casesSubtractOne[fi])}]];${fi + 1 < FUNCTIONS ? `return chainEncode${fi + 1}(v);` : `return v>>>${(0)};`}}\n\n`;
     for (let fi = FUNCTIONS - 1; fi >= 0; fi--) {
         const mainParam = generateObfuscatedName();

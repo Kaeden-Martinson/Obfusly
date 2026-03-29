@@ -294,10 +294,7 @@ function ${fnMain}(${x}) {
 
   surfaceFunctions.sort((a, b) => a.start - b.start);
 
-  // console.log("[FUNCTIONS]:", surfaceFunctions)
-
   if (surfaceFunctions.length === 0) {
-    //console.log("No top-level functions found. Writing original file unchanged.");
     return code;
   };
 
@@ -413,7 +410,7 @@ function ${fnMain}(${x}) {
       if (char === "{") { if (count === -1) { count = 0 }; count++ };
       if (char === "}") { count-- };
       if (count === 0) {
-        if (code[i + 1] == "(") { let args =  parseArguments(code, i); newCode += args; console.log(args) };
+        if (code[i + 1] == "(") { let args =  parseArguments(code, i); newCode += args; };
         return newCode;
       };
     };
@@ -434,8 +431,6 @@ function ${fnMain}(${x}) {
     }
 
     const functionUsed = validFunctions[Math.floor(Math.random() * validFunctions.length)];
-
-    console.log(functionUsed)
 
     let fnSrc = null;
 
@@ -519,8 +514,6 @@ function ${fnMain}(${x}) {
       f.createdIndex !== -1 &&
       f.createdIndex < functionUsed.calledIndex
     );
-
-    console.log(proximityCandidates)
 
     let proximityFunction = proximityCandidates.length
       ? proximityCandidates[Math.floor(Math.random() * proximityCandidates.length)]

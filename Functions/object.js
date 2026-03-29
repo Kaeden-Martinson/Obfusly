@@ -6,8 +6,6 @@ function createStringProperty(node, properties) {
     node.type = "Identifier";
     node.computed = true;
 
-    // console.log(properties)
-
     const rest = properties.slice(1);
     const propertyString = rest
         .map(property =>
@@ -24,7 +22,6 @@ function createStringProperty(node, properties) {
 };
 
 function recursiveCallObject(node, properties, isCallee = false) {
-    // console.log(node)
     if (node?.type === "CallExpression") {
         if (node.arguments && node?.callee.type !== "Identifier") {
             for (let i = node.arguments.length - 1; i > -1; i--) {
@@ -83,7 +80,6 @@ function recursiveCallObject(node, properties, isCallee = false) {
             properties.push({ raw: ("[" + node.property.name + "]" + (isEmptyFunction ? "()" : "")) });
             properties.push(node.optional);
         } else {
-            // console.log(node, properties)
             properties.push(encodeStringsRandom(node.property.name).raw);
             properties.push(node.optional);
         };

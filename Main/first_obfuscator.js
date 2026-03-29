@@ -25,10 +25,17 @@ function obfuscateEntireSource(code) {
     clearDeclarationMapping(code);
     for (let name of windowVariables) setDeclarationMapping(name, (config.concealPrimitives && defaultedValues.includes(name) ? generateObfuscatedName() : name));
     if (config.concealGlobalObjects) setDeclarationMapping("window", windowName);
+    if (config.numberCalculator) {
+        const decoderName = generateObfuscatedName();
+        setDeclarationMapping("decodeFunctionName", decoderName);
+    };
+    if (config.stringEncoding) {
+        const stringAccessorName = generateObfuscatedName();
+        setDeclarationMapping("stringAccessor", stringAccessorName);
+    };
 
     estraverse.replace(ast, {
         enter(node) {
-            // console.log(node)
             if (node.type === 'VariableDeclarator') encodeVariable(node);
             if (node.type === 'FunctionDeclaration' || node.type === "ArrowFunctionExpression" || node.type === "FunctionExpression") encodeFunction(node);
             if (node.type === "CallExpression" && node.callee) { updateNodeName(node.callee); for (let i = 0; i < node.arguments.length; i++) updateNodeName(node.arguments[i]); };
@@ -51,8 +58,6 @@ function obfuscateEntireSource(code) {
             if (node.type === "TemplateLiteral") for (let i = 0; i < node.expressions.length; i++) updateNodeName(node.expressions[i]);
             if (node.type === "MethodDefinition" && node.key && node.key.type === "Identifier" && node.key.name !== "constructor") node.key.name = `['${node.key.name}']`;
             if (node.type === "ForStatement" && node.test) { if (node.test.type === "Identifier") updateNodeName(node.test); };
-
-            // console.log(node)
         }
     });
 
