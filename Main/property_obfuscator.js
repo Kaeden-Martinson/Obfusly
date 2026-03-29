@@ -38,6 +38,17 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     clearStringBuilder();
     stringBuilderModule.resetStrings();
 
+    const decoderName = previousDeclarationMapping.get("decodeFunctionName") || generateObfuscatedName();
+      if (config.numberCalculator) {
+        declarationMapping.set("decodeFunctionName", decoderName);
+        setDeclarationMapping("decodeFunctionName", decoderName);
+      };
+      if (config.stringEncoding) {
+        const stringAccessorName = previousDeclarationMapping.get("stringAccessor") || generateObfuscatedName();
+        declarationMapping.set("stringAccessor", stringAccessorName);
+        setDeclarationMapping("stringAccessor", stringAccessorName);
+      };
+
     let numberCache = {};
     let encodeModule;
 
@@ -131,10 +142,8 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     estraverse.replace(ast, {
         enter(node) {
             if (node.type === "MemberExpression") {
-                // console.log(node)
                 if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, (!node.computed ? encodeStringsRandom(node.property.name).raw : node.property.type === "Identifier" && node.computed ? node.property.name : node.property.type === "Literal" ? encodeStringsRandom(node.property.value).raw : sourceCode.slice(node.property.start, node.property.end))]);
                 let properties = [...recursiveCallObject(node, [])].reverse();
-                // console.log(properties)
                 if (properties[0] === false) properties.splice(0, 1);
                 return createStringProperty(node, properties);
             };

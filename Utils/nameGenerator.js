@@ -131,7 +131,6 @@ let InvisableCombinations = generateInvisibleVariables();
 let InvisableCount = 0;
 
 let generateObfuscatedName = () => {
-    // console.log(AZCombinations[AZCount])
     switch (config.nameGenerationStyle) {
         case 'zalgo': return generateZalgoVariable();
         case 'minify': return AZCombinations[AZCount++];

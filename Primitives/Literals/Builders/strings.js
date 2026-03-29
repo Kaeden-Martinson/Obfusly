@@ -27,7 +27,7 @@ function generateRandomKey(length = 16) {
   return key;
 };
 
-let getFnName = rndName();
+let getFnName = "__STRING__ACCESSOR__";
 let iifeFnName = config.wrapStringsInIIFE ? rndName() : getFnName;
 
 let localBrokenIIFE = [];
@@ -36,7 +36,7 @@ let declarationMapping = new Map();
 
 function resetStrings() { builtStrings = []; declarationMapping = new Map(); getFnName = rndName(); iifeFnName = config.wrapStringsInIIFE ? rndName() : getFnName; localBrokenIIFE = []; };
 
-function setCommonVariables(declarationMapping_) { declarationMapping = declarationMapping_; }
+function setCommonVariables(declarationMapping_) { declarationMapping = declarationMapping_; getFnName = declarationMapping.get("stringAccessor") || getFnName; };
 
 function encodeNumber(num) {
     if (config.globalBaseIntegerConcealment) {
@@ -278,8 +278,6 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
                 reinsertQuotes: true
             });
 
-            console.log(brokenIIFE, rebuiltCode)
-
             const key = generateRandomKey(30);
             const encoded = encodeParts(brokenIIFE, key);
             const decoderSnippet = buildDecoderSnippet(encoded, key, declarationMapping.get("IIFEstringBreaker"));
@@ -289,8 +287,6 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
             let output = rebuiltCode.replace(/\[(\d+)\]/g, (_, num) => {
                 return `[${config.numberCalculator ? `${encodingAndDecodingPairs.decodeName}(${encodeModule.encode(Number(num))})` : encodeNumber(Number(num))}]`;
             });
-
-            console.log("Output", output)
 
             code = code.replace(originalIIFECode, output);
             code = `${decoderSnippet}` + code;
