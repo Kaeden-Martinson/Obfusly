@@ -12,8 +12,8 @@
 
     <style>
         :root {
-            --color-primary-red: #0891b2 ;
-            --color-light-red: #22d3ee ;
+            --color-primary-red: #0891b2;
+            --color-light-red: #22d3ee;
             --color-dark-red: #0e7490;
             --color-red-rgb: 0, 102, 204;
         }
@@ -235,7 +235,7 @@
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(var(--color-red-rgb), 0.3);
+            /* box-shadow: 0 4px 15px rgba(var(--color-red-rgb), 0.3); */
             text-transform: uppercase;
             letter-spacing: 0.5px;
             position: relative;
@@ -251,23 +251,14 @@
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(80, 74, 74, 0.3);
             transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+            transition: width 1s, height 1s;
         }
 
         button:hover::before {
-            width: 300px;
+            width: 105%;
             height: 300px;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(var(--color-red-rgb), 0.5);
-        }
-
-        button:active {
-            transform: translateY(-1px);
         }
 
         button:disabled {
@@ -534,9 +525,9 @@
         }
 
         .unprotected-badge {
-            background: rgba(175, 76, 89, 0.2);
-            border: 1px solid #d31616;
-            color: #d31616;
+            background: #4a4a4a;
+            border: 2px solid #d31616;
+            color: #ffffff;
             padding: 4px 12px;
             border-radius: 4px;
             font-size: 12px;
@@ -548,7 +539,7 @@
         .unprotected-code {
             font-family: 'Courier New', monospace;
             background: #0a0a0a;
-            color: #d31616;
+            color: #44c3dc;
             padding: 20px;
             font-size: 13px;
             line-height: 1.8;
@@ -792,27 +783,88 @@
         }
 
         .protected-badge {
-            background: rgba(175, 76, 89, 0.2);
-            border: 1px solid #d31616;
-            color: #d31616;
+            background: #4a4a4a;
+            border: 2px solid #10b981;
+            color: #ffffff;
             padding: 4px 12px;
             border-radius: 4px;
             font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .protected-badge svg {
+            width: 14px;
+            height: 14px;
+            fill: #10b981;
+        }
+
+        .heart-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            margin: 0 4px;
+            color: #d31616;
+            vertical-align: middle;
         }
 
         .obfuscated-code {
             font-family: 'Courier New', monospace;
             background: #0a0a0a;
-            color: #d31616;
+            color: #d0d0d0;
             padding: 20px;
             font-size: 12px;
             line-height: 1.8;
             overflow-x: auto;
             word-break: break-all;
             white-space: pre-wrap;
+        }
+
+        /* Syntax Highlighting for Code Tokens */
+        .token {
+            color: #d0d0d0;
+        }
+
+        .token.keyword {
+            color: #569cd6;
+            font-weight: 600;
+        }
+
+        .token.function {
+            color: #dcdcaa;
+        }
+
+        .token.string {
+            color: #7ec699;
+        }
+
+        .token.number {
+            color: #b5cea8;
+        }
+
+        .token.operator {
+            color: #d4d4d4;
+        }
+
+        .token.comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .token.variable {
+            color: #9cdcfe;
+        }
+
+        .token.punctuation {
+            color: #d4d4d4;
+        }
+
+        .token.class-name {
+            color: #4ec9b0;
         }
 
         /* Footer Styles */
@@ -903,6 +955,7 @@
             flex: 1;
             overflow: hidden;
             animation: slideDown 0.5s ease-out;
+            align-items: stretch;
         }
 
         .editor-wrapper {
@@ -914,6 +967,7 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             transition: all 0.3s ease;
             background: #1a1a1a;
+            min-height: 500px;
         }
 
         .editor-wrapper:hover {
@@ -944,7 +998,8 @@
 
         .editor-container {
             flex: 1;
-            min-height: 0;
+            min-height: 450px;
+            height: 100%;
         }
 
         .history-controls {
@@ -1441,6 +1496,110 @@
             background: linear-gradient(135deg, #5a5a5a 0%, #4a4a4a 100%);
         }
 
+        /* FAQ Accordion Styles */
+        #faq .intro-content h2 {
+            margin-bottom: 30px;
+        }
+
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 60px;
+        }
+
+        .faq-item {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: 1px solid #3a3a3a;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .faq-item:hover .faq-question {
+            background: linear-gradient(135deg, #323232 0%, #272727 100%);
+        }
+
+        .faq-question {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-image 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Baloo Paaji 2', sans-serif;
+            letter-spacing: 0.3px;
+            box-sizing: border-box;
+        }
+
+        .faq-question::after {
+            content: '▼';
+            display: inline-block;
+            margin-left: 15px;
+            font-size: 12px;
+            color: var(--color-primary-red);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 24px;
+            transition: padding 0.15s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+            background: #1a1a1a;
+            border-top: 1px solid transparent;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 1000px;
+            padding: 20px 24px;
+            border-top: 1px solid #2a2a2a;
+            transition: padding 0.15s cubic-bezier(0.4, 0, 0.2, 1) .15s, max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+        }
+
+        .faq-answer p {
+            margin: 0 0 12px 0;
+            color: #d0d0d0;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .faq-answer p:last-child {
+            margin-bottom: 0;
+        }
+
+        .faq-answer ul {
+            margin: 12px 0;
+            padding-left: 25px;
+            color: #d0d0d0;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .faq-answer ul li {
+            margin: 8px 0;
+        }
+
+        .faq-answer strong {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
@@ -1560,20 +1719,9 @@
                 <div class="unprotected-code-section">
                     <div class="unprotected-header">
                         <span class="unprotected-filename">App.unprotected.js</span>
-                        <span class="unprotected-badge">📝 SOURCE</span>
+                        <span class="unprotected-badge">🔓 SOURCE</span>
                     </div>
-                    <div class="unprotected-code">function calculateSum(a, b) {
-    return a + b;
-}
-const greeting = "Hello World";
-console.log(greeting);
-const users = [
-    { id: 1, name: "Alice" },
-    { id: 2, name: "Bob" }
-];
-users.forEach(user => {
-    console.log(user.name);
-});</div>
+                    <div class="unprotected-code">Test source code</div>
                 </div>
             </div>
 
@@ -1581,42 +1729,66 @@ users.forEach(user => {
             <h2>Why JsScramble?</h2>
             <div class="benefits-grid">
                 <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/><path d="M12 1v3m0 14v3M23 12h-3m-14 0H1M19.07 4.93l-2.12 2.12M7.05 16.95l-2.12 2.12M19.07 19.07l-2.12-2.12M7.05 7.05L4.93 4.93" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2" />
+                            <path
+                                d="M12 1v3m0 14v3M23 12h-3m-14 0H1M19.07 4.93l-2.12 2.12M7.05 16.95l-2.12 2.12M19.07 19.07l-2.12-2.12M7.05 7.05L4.93 4.93"
+                                stroke="white" stroke-width="2" stroke-linecap="round" />
+                        </svg></div>
                     <div class="benefit-content">
                         <h3>Advanced Obfuscation</h3>
-                        <p>Industry-leading techniques that make your code nearly impossible to reverse engineer or analyze.</p>
+                        <p>Industry-leading techniques that make your code nearly impossible to reverse engineer or
+                            analyze.</p>
                     </div>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 6v6c0 7 8 10 8 10s8-3 8-10V6l-8-4z" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg></div>
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L4 6v6c0 7 8 10 8 10s8-3 8-10V6l-8-4z" stroke="white" stroke-width="2"
+                                stroke-linejoin="round" />
+                        </svg></div>
                     <div class="benefit-content">
                         <h3>IP Protection</h3>
-                        <p>Safeguard your intellectual property from malicious actors and unauthorized access attempts.</p>
+                        <p>Safeguard your intellectual property from malicious actors and unauthorized access attempts.
+                        </p>
                     </div>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9h-7V2z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M13 2v7h7M9 13h6M9 18h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9h-7V2z" stroke="white"
+                                stroke-width="2" stroke-linejoin="round" />
+                            <path d="M13 2v7h7M9 13h6M9 18h6" stroke="white" stroke-width="2" stroke-linecap="round" />
+                        </svg></div>
                     <div class="benefit-content">
                         <h3>Licensing Control</h3>
-                        <p>Enforce licensing restrictions and prevent unauthorized distribution of your applications.</p>
+                        <p>Enforce licensing restrictions and prevent unauthorized distribution of your applications.
+                        </p>
                     </div>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg></div>
                     <div class="benefit-content">
                         <h3>Integrity Verification</h3>
                         <p>Detect and prevent real-time tampering with your code to ensure application integrity.</p>
                     </div>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="12" width="14" height="9" rx="2" stroke="white" stroke-width="2"/><path d="M7 12V8a5 5 0 0 1 10 0v4M12 16v3" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="12" width="14" height="9" rx="2" stroke="white" stroke-width="2" />
+                            <path d="M7 12V8a5 5 0 0 1 10 0v4M12 16v3" stroke="white" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg></div>
                     <div class="benefit-content">
                         <h3>Security Hardening</h3>
                         <p>Add multiple layers of protection including anti-debugging and console output detection.</p>
                     </div>
                 </div>
                 <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white"/></svg></div>
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white" />
+                        </svg></div>
                     <div class="benefit-content">
                         <h3>Performance Optimized</h3>
                         <p>Obfuscate your code with minimal performance impact and automatic compression options.</p>
@@ -1629,67 +1801,12 @@ users.forEach(user => {
             <div class="obfuscated-code-section">
                 <div class="obfuscated-header">
                     <span class="obfuscated-filename">App.obfuscated.js</span>
-                    <span class="protected-badge">🔒 PROTECTED</span>
+                    <span class="protected-badge"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5s-5 2.24-5 5v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg> PROTECTED</span>
                 </div>
-                <div class="obfuscated-code">7++JObVyxFl
-                    D3uK8u_<br>zZ+)Q8jvxF[D3uK8u_]<br>[D3uK8u_.charAT(E80X0zZ)]=E80X0zZ}return
-                    QBjvxF<br>[D3uK8u_.compress...]<br>MGYx6j]},D3uK8u_={compress<br>ToBase64:function(QBjvxF){var
-                    MGYx6j;if(hJ0s_t[0x3]<br>==QBjvxF)return
-                    MGYx6j=D3uK8u_.<br>compress(QBjvxF,hJ0s_t[0x7],functio<br>n(...THpLBVV){THpLBVV[hJ0s_t[0x2]]=hJ0s_t<br>[0x1];return
-                    hJ0s_t[0x3]=<br>\\"\\";}</div>
+                <div class="obfuscated-code">Test obfuscated code</div>
             </div>
-
-            <!-- How It Works Section -->
-            <h2>How It Works</h2>
-            <p>JsScramble uses a multi-stage obfuscation pipeline:</p>
-            <ul>
-                <li><strong>Stage 1:</strong> Parse your JavaScript and build an Abstract Syntax Tree (AST)</li>
-                <li><strong>Stage 2:</strong> Transform identifiers, strings, and numbers according to your
-                    configuration</li>
-                <li><strong>Stage 3:</strong> Apply integrity checks and anti-debugging measures if enabled</li>
-                <li><strong>Stage 4:</strong> Wrap code in IIFEs (Immediately Invoked Function Expressions) for
-                    additional obfuscation</li>
-                <li><strong>Stage 5:</strong> Obfuscate object properties and methods</li>
-                <li><strong>Stage 6:</strong> Compress the final output</li>
-            </ul>
         </div>
 
-        <!-- Footer -->
-        <footer class="landing-footer">
-            <div class="footer-content">
-                <div class="footer-section footer-brand">
-                    <h3>JsScramble</h3>
-                    <p>A powerful JavaScript obfuscation tool designed to protect your source code from reverse
-                        engineering and unauthorized access.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a onclick="switchPage('obfuscate')">Obfuscate Tool</a></li>
-                        <li><a onclick="switchPage('settings')">Settings</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Documentation</h3>
-                    <ul>
-                        <li><a onclick="switchPage('docs')">Getting Started</a></li>
-                        <li><a onclick="switchPage('docs')">Configuration Guide</a></li>
-                        <li><a onclick="switchPage('docs')">Obfuscation Modes</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Resources</h3>
-                    <ul>
-                        <li><a onclick="switchPage('faq')">FAQ</a></li>
-                        <li><a onclick="switchPage('best-practices')">Performance Tips</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>Created with ❤️ for developers who care about code security | © 2026 JsScramble - All rights reserved
-                </p>
-            </div>
-        </footer>
     </div>
 
     <!-- Obfuscation Page -->
@@ -1753,7 +1870,8 @@ users.forEach(user => {
                     </select>
                     <label for="target">Target</label>
                     <div class="info-icon">
-                        <div class="tooltip">Choose the target environment for obfuscation. Browser for web, Node.js for server.</div>
+                        <div class="tooltip">Choose the target environment for obfuscation. Browser for web, Node.js for
+                            server.</div>
                     </div>
                 </div>
 
@@ -1767,7 +1885,8 @@ users.forEach(user => {
                     </select>
                     <label for="nameGenerationStyle">Naming Style</label>
                     <div class="info-icon">
-                        <div class="tooltip">Choose how variable and function names are transformed. Minify is fastest, Zalgo is chaotic, Invisible uses zero-width characters.</div>
+                        <div class="tooltip">Choose how variable and function names are transformed. Minify is fastest,
+                            Zalgo is chaotic, Invisible uses zero-width characters.</div>
                     </div>
                 </div>
 
@@ -1777,42 +1896,48 @@ users.forEach(user => {
                     <input type="checkbox" id="numberEncoding">
                     <label for="numberEncoding">Enable Number Encoding</label>
                     <div class="info-icon">
-                        <div class="tooltip">Convert numeric literals into complex expressions using multiple base systems.</div>
+                        <div class="tooltip">Convert numeric literals into complex expressions using multiple base
+                            systems.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
                     <input type="checkbox" id="optimzedNumberCache">
                     <label for="optimzedNumberCache">Optimize Number Cache</label>
                     <div class="info-icon">
-                        <div class="tooltip">Cache frequently used numbers to reduce code size while maintaining obfuscation.</div>
+                        <div class="tooltip">Cache frequently used numbers to reduce code size while maintaining
+                            obfuscation.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
                     <input type="checkbox" id="numberCalculator">
                     <label for="numberCalculator">Use Number Calculator</label>
                     <div class="info-icon">
-                        <div class="tooltip">Enable mathematical expressions for number encoding instead of direct literals.</div>
+                        <div class="tooltip">Enable mathematical expressions for number encoding instead of direct
+                            literals.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
                     <input type="checkbox" id="globalBaseIntegerConcealment">
                     <label for="globalBaseIntegerConcealment">Global Base Integer Concealment</label>
                     <div class="info-icon">
-                        <div class="tooltip">Conceal base integers globally to prevent pattern recognition across the code.</div>
+                        <div class="tooltip">Conceal base integers globally to prevent pattern recognition across the
+                            code.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
                     <input type="checkbox" id="shuffleBaseIntegers">
                     <label for="shuffleBaseIntegers">Shuffle Base Integers</label>
                     <div class="info-icon">
-                        <div class="tooltip">Randomize the order of base integers to increase obfuscation complexity.</div>
+                        <div class="tooltip">Randomize the order of base integers to increase obfuscation complexity.
+                        </div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
                     <input type="checkbox" id="multipleVariableAssignments">
                     <label for="multipleVariableAssignments">Multiple Variable Assignments</label>
                     <div class="info-icon">
-                        <div class="tooltip">Use multiple assignments for single variables to complicate variable tracking.</div>
+                        <div class="tooltip">Use multiple assignments for single variables to complicate variable
+                            tracking.</div>
                     </div>
                 </div>
                 <div class="setting-item select-item">
@@ -1825,14 +1950,16 @@ users.forEach(user => {
                     </select>
                     <label for="baseIntegersDefault">Default Base System</label>
                     <div class="info-icon">
-                        <div class="tooltip">Primary encoding format for numbers. JSFuck is most obfuscated; Hexadecimal/Octal/Binary are faster.</div>
+                        <div class="tooltip">Primary encoding format for numbers. JSFuck is most obfuscated;
+                            Hexadecimal/Octal/Binary are faster.</div>
                     </div>
                 </div>
                 <div class="setting-item number-item">
                     <input type="number" id="encodedFunctionStrength" min="1" max="5" value="5">
                     <label for="encodedFunctionStrength">Function Encoding Strength (1-5)</label>
                     <div class="info-icon">
-                        <div class="tooltip">Higher values increase obfuscation complexity but also processing time. Range 1-5.</div>
+                        <div class="tooltip">Higher values increase obfuscation complexity but also processing time.
+                            Range 1-5.</div>
                     </div>
                 </div>
 
@@ -1849,7 +1976,8 @@ users.forEach(user => {
                     <input type="checkbox" id="optimizedStringCache">
                     <label for="optimizedStringCache">Optimize String Cache</label>
                     <div class="info-icon">
-                        <div class="tooltip">Cache repeated strings to reduce code size while maintaining obfuscation.</div>
+                        <div class="tooltip">Cache repeated strings to reduce code size while maintaining obfuscation.
+                        </div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
@@ -1877,21 +2005,24 @@ users.forEach(user => {
                     <input type="number" id="stringSplitting" min="0" max="100" value="0">
                     <label for="stringSplitting">String Splitting (0-100, 0 = disabled)</label>
                     <div class="info-icon">
-                        <div class="tooltip">Split strings into multiple parts. Higher values increase obfuscation and code size.</div>
+                        <div class="tooltip">Split strings into multiple parts. Higher values increase obfuscation and
+                            code size.</div>
                     </div>
                 </div>
                 <div class="setting-item number-item">
                     <input type="number" id="decodersCount" min="1" max="10" value="3">
                     <label for="decodersCount">Decoders Count (1-10)</label>
                     <div class="info-icon">
-                        <div class="tooltip">Number of decoder functions to generate. More decoders increase obfuscation complexity.</div>
+                        <div class="tooltip">Number of decoder functions to generate. More decoders increase obfuscation
+                            complexity.</div>
                     </div>
                 </div>
                 <div class="setting-item number-item">
                     <input type="number" id="addNoiseCount" min="1" max="10" value="3">
                     <label for="addNoiseCount">Add Noise Count (1-10)</label>
                     <div class="info-icon">
-                        <div class="tooltip">Number of decoy/noise decoder functions. Confuses static analysis tools.</div>
+                        <div class="tooltip">Number of decoy/noise decoder functions. Confuses static analysis tools.
+                        </div>
                     </div>
                 </div>
 
@@ -1901,7 +2032,8 @@ users.forEach(user => {
                     <input type="checkbox" id="concealPrimitives">
                     <label for="concealPrimitives">Conceal Primitives</label>
                     <div class="info-icon">
-                        <div class="tooltip">Hide primitive values (true, false, null, undefined) behind encoded expressions.</div>
+                        <div class="tooltip">Hide primitive values (true, false, null, undefined) behind encoded
+                            expressions.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
@@ -1915,14 +2047,16 @@ users.forEach(user => {
                     <input type="checkbox" id="breakASTs">
                     <label for="breakASTs">Break ASTs</label>
                     <div class="info-icon">
-                        <div class="tooltip">Disrupt Abstract Syntax Trees to prevent static analysis and decompilation.</div>
+                        <div class="tooltip">Disrupt Abstract Syntax Trees to prevent static analysis and decompilation.
+                        </div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
                     <input type="checkbox" id="wrapInIIFE">
                     <label for="wrapInIIFE">Wrap in IIFE</label>
                     <div class="info-icon">
-                        <div class="tooltip">Wrap entire code in Immediately Invoked Function Expression for scope isolation.</div>
+                        <div class="tooltip">Wrap entire code in Immediately Invoked Function Expression for scope
+                            isolation.</div>
                     </div>
                 </div>
 
@@ -1939,7 +2073,8 @@ users.forEach(user => {
                     <input type="checkbox" id="enableAntiDebugger">
                     <label for="enableAntiDebugger">Enable Anti-Debugger</label>
                     <div class="info-icon">
-                        <div class="tooltip">Add code that detects and prevents debugger tools from attaching to the code.</div>
+                        <div class="tooltip">Add code that detects and prevents debugger tools from attaching to the
+                            code.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
@@ -1960,7 +2095,8 @@ users.forEach(user => {
                     <input type="checkbox" id="disableLocalIIFEs">
                     <label for="disableLocalIIFEs">Disable Local IIFEs</label>
                     <div class="info-icon">
-                        <div class="tooltip">Reduce scope pollution by disabling local IIFE wrapping for smaller code.</div>
+                        <div class="tooltip">Reduce scope pollution by disabling local IIFE wrapping for smaller code.
+                        </div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
@@ -2021,41 +2157,73 @@ users.forEach(user => {
     <div id="faq" class="page">
         <div class="intro-content">
             <h2>Frequently Asked Questions</h2>
-
-            <h3>What is code obfuscation?</h3>
-            <p>Code obfuscation is the process of intentionally making code difficult to understand while preserving its
-                functionality. It's used to protect intellectual property and prevent reverse engineering.</p>
-
-            <h3>Will obfuscated code still work the same way?</h3>
-            <p>Yes! JsScramble is designed to preserve 100% of your code's functionality. The output will run
-                identically to the input, just in a harder-to-understand format.</p>
-
-            <h3>Does obfuscation slow down my code?</h3>
-            <p>In most cases, the performance impact is minimal. Some obfuscation techniques may add a small overhead,
-                but the compression features can often offset this.</p>
-
-            <h3>Can obfuscated code be de-obfuscated?</h3>
-            <p>Determined reverse engineers can sometimes analyze obfuscated code, but it's significantly more difficult
-                and time-consuming. JsScramble uses multiple protection layers to maximize this difficulty.</p>
-
-            <h3>What about the code history?</h3>
-            <p>History is stored only in your browser's local storage. You can clear it anytime using the "Clear
-                History" button in the Obfuscate tab.</p>
-
-            <h3>Can I use obfuscated code commercially?</h3>
-            <p>Yes! You can use JsScramble to obfuscate code for any purpose, including commercial projects.</p>
-
-            <h3>Does obfuscation work with frameworks?</h3>
-            <p>JsScramble works with vanilla JavaScript. For framework-specific code, test thoroughly to ensure
-                compatibility with your particular setup.</p>
-
-            <h3>What are the size limitations?</h3>
-            <p>There are no hard limits, but very large files (>1MB) may take longer to process. Compression options can
-                help manage code size.</p>
-
-            <h3>How do I report issues?</h3>
-            <p>Found a bug? Visit our GitHub repository and create an issue with a detailed description and example code
-                that reproduces the problem.</p>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-question">What is code obfuscation?</button>
+                    <div class="faq-answer">
+                        <p>Code obfuscation is the process of intentionally making code difficult to understand while
+                            preserving its functionality. It's used to protect intellectual property and prevent reverse
+                            engineering.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Will obfuscated code still work the same way?</button>
+                    <div class="faq-answer">
+                        <p>Yes! JsScramble is designed to preserve 100% of your code's functionality. The output will
+                            run identically to the input, just in a harder-to-understand format.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does obfuscation slow down my code?</button>
+                    <div class="faq-answer">
+                        <p>In most cases, the performance impact is minimal. Some obfuscation techniques may add a small
+                            overhead, but the compression features can often offset this.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can obfuscated code be de-obfuscated?</button>
+                    <div class="faq-answer">
+                        <p>Determined reverse engineers can sometimes analyze obfuscated code, but it's significantly
+                            more difficult and time-consuming. JsScramble uses multiple protection layers to maximize
+                            this difficulty.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What about the code history?</button>
+                    <div class="faq-answer">
+                        <p>History is stored only in your browser's local storage. You can clear it anytime using the
+                            "Clear History" button in the Obfuscate tab.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I use obfuscated code commercially?</button>
+                    <div class="faq-answer">
+                        <p>Yes! You can use JsScramble to obfuscate code for any purpose, including commercial projects.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does obfuscation work with frameworks?</button>
+                    <div class="faq-answer">
+                        <p>JsScramble works with vanilla JavaScript. For framework-specific code, test thoroughly to
+                            ensure compatibility with your particular setup.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What are the size limitations?</button>
+                    <div class="faq-answer">
+                        <p>There are no hard limits, but very large files (>1MB) may take longer to process. Compression
+                            options can help manage code size.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How do I report issues?</button>
+                    <div class="faq-answer">
+                        <p>Found a bug? Visit our GitHub repository and create an issue with a detailed description and
+                            example code that reproduces the problem.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2198,6 +2366,43 @@ users.forEach(user => {
         </div>
     </div>
 
+    <!-- Shared Footer -->
+    <footer class="landing-footer">
+        <div class="footer-content">
+            <div class="footer-section footer-brand">
+                <h3>JsScramble</h3>
+                <p>A powerful JavaScript obfuscation tool designed to protect your source code from reverse
+                    engineering and unauthorized access.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a onclick="switchPage('obfuscate')">Obfuscate Tool</a></li>
+                    <li><a onclick="switchPage('settings')">Settings</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a onclick="switchPage('docs')">Getting Started</a></li>
+                    <li><a onclick="switchPage('docs')">Configuration Guide</a></li>
+                    <li><a onclick="switchPage('docs')">Obfuscation Modes</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a onclick="switchPage('faq')">FAQ</a></li>
+                    <li><a onclick="switchPage('best-practices')">Performance Tips</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Created with <svg class="heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> for developers who care about code security | © 2026 JsScramble - All rights reserved
+            </p>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
     <script>
         // Initialize settings sections as collapsed
@@ -2208,15 +2413,127 @@ users.forEach(user => {
             });
         }
 
+        // Syntax Highlighting for Code
+        function applySyntaxHighlighting() {
+            const codeBlocks = document.querySelectorAll('.obfuscated-code');
+            
+            codeBlocks.forEach(block => {
+                const code = block.innerHTML;
+                const highlighted = highlightJavaScript(code);
+                block.innerHTML = highlighted;
+            });
+        }
+
+        function highlightJavaScript(code) {
+            // JavaScript syntax highlighting rules
+            const keywords = /\b(function|var|let|const|if|else|for|while|return|new|this|class|extends|static|async|await|try|catch|finally|throw|import|export|default|from|as)\b/g;
+            const strings = /(['"`])(?:(?=(\\?))\2.)*?\1/g;
+            const comments = /(\/\/.*?$|\/\*[\s\S]*?\*\/)/gm;
+            const numbers = /\b(\d+|0x[0-9a-fA-F]+)\b/g;
+            const functions = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g;
+            const operators = /([+\-*/%=!<>&|^~?:]|===|!==|==|!=|<=|>=|&&|\|\||\.\.\.)/g;
+            const punctuation = /([{}()\[\],.;:])/g;
+
+            let result = code;
+
+            // Process comments first (to avoid processing keywords inside comments)
+            const commentMap = new Map();
+            result = result.replace(comments, (match, index) => {
+                const key = `__COMMENT_${commentMap.size}__`;
+                commentMap.set(key, `<span class="token comment">${escapeHtml(match)}</span>`);
+                return key;
+            });
+
+            // Process strings
+            const stringMap = new Map();
+            result = result.replace(strings, (match) => {
+                const key = `__STRING_${stringMap.size}__`;
+                stringMap.set(key, `<span class="token string">${escapeHtml(match)}</span>`);
+                return key;
+            });
+
+            // Process keywords
+            result = result.replace(keywords, '<span class="token keyword">$1</span>');
+
+            // Process functions
+            result = result.replace(functions, '<span class="token function">$1</span>');
+
+            // Process numbers
+            result = result.replace(numbers, '<span class="token number">$1</span>');
+
+            // Process operators
+            result = result.replace(operators, '<span class="token operator">$1</span>');
+
+            // Process punctuation
+            result = result.replace(punctuation, '<span class="token punctuation">$1</span>');
+
+            // Restore strings
+            stringMap.forEach((html, key) => {
+                result = result.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), html);
+            });
+
+            // Restore comments
+            commentMap.forEach((html, key) => {
+                result = result.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), html);
+            });
+
+            return result;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
         // Tooltip Initialization (CSS handles positioning)
         function initializeTooltips() {
             // Tooltips are handled purely by CSS with position: absolute relative to .info-icon
             // No dynamic positioning needed
         }
 
+        // FAQ Accordion Initialization
+        function initializeFAQAccordion() {
+            // Remove old event listeners by cloning and replacing elements
+            const faqItems = document.querySelectorAll('#faq .faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                if (question) {
+                    const newQuestion = question.cloneNode(true);
+                    question.parentNode.replaceChild(newQuestion, question);
+                }
+            });
+
+            // Add new event listeners
+            const updatedFaqItems = document.querySelectorAll('#faq .faq-item');
+            updatedFaqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                if (question) {
+                    question.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        // Close all other items
+                        updatedFaqItems.forEach(otherItem => {
+                            if (otherItem !== item) {
+                                otherItem.classList.remove('active');
+                            }
+                        });
+                        // Toggle current item
+                        item.classList.toggle('active');
+                    });
+                }
+            });
+        }
+
         // Initialize tooltips on page load
         document.addEventListener('DOMContentLoaded', () => {
             initializeTooltips();
+            initializeFAQAccordion();
+            applySyntaxHighlighting();
         });
 
         // Dropdown Toggle Function
@@ -2246,6 +2563,11 @@ users.forEach(user => {
                     if (inputEditor) inputEditor.layout();
                     if (outputEditor) outputEditor.layout();
                 }, 100);
+            }
+
+            // Initialize FAQ accordion if showing FAQ page
+            if (pageName === 'faq') {
+                initializeFAQAccordion();
             }
         }
 
