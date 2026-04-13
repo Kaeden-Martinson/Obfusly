@@ -13,6 +13,7 @@ const { generateObfuscatedName } = require('../../../Utils/nameGenerator');
 const { compress } = require('../../../Utils/compressor');
 
 let builtStrings = [];
+let builtStringsMap = new Map(); // O(1) lookup replacing O(n) includes/indexOf
 
 function rndName() {
     return generateObfuscatedName();
@@ -28,13 +29,15 @@ function generateRandomKey(length = 16) {
 };
 
 let getFnName = "__STRING__ACCESSOR__";
-let iifeFnName = config.wrapStringsInIIFE ? rndName() : getFnName;
+let iifeFnName = rndName();
 
 let localBrokenIIFE = [];
 
 let declarationMapping = new Map();
 
-function resetStrings() { builtStrings = []; declarationMapping = new Map(); getFnName = rndName(); iifeFnName = config.wrapStringsInIIFE ? rndName() : getFnName; localBrokenIIFE = []; };
+function resetStrings() { builtStrings = []; builtStringsMap = new Map(); declarationMapping = new Map(); getFnName = rndName(); iifeFnName = rndName(); localBrokenIIFE = []; };
+
+function getStringCount() { return builtStrings.length; };
 
 function setCommonVariables(declarationMapping_) { declarationMapping = declarationMapping_; getFnName = declarationMapping.get("stringAccessor") || getFnName; };
 
@@ -61,7 +64,7 @@ function encodeNumber(num) {
             return defaultedFunction(num, declarationMapping);
         };
     } else if (config.numberEncoding) {
-        let percentageBasedConfig = config.integerPrecentage;
+        let percentageBasedConfig = { ...config.integerPrecentage };
         if (num <= 10) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
         let choice = pickWeightedRandom(percentageBasedConfig);
@@ -83,11 +86,14 @@ function encodeNumber(num) {
 
 function addString(s, isInIIFE) {
     if (typeof s !== 'string') s = String(s);
-    if (builtStrings.includes(s)) return `${isInIIFE ? iifeFnName : getFnName}(${encodeNumber(builtStrings.indexOf(s))})`;
+    const existing = builtStringsMap.get(s);
+    if (existing !== undefined) return `${isInIIFE ? iifeFnName : getFnName}(${encodeNumber(existing)})`;
     
+    const idx = builtStrings.length;
     builtStrings.push(s);
+    builtStringsMap.set(s, idx);
 
-    return `${isInIIFE ? iifeFnName : getFnName}(${encodeNumber(builtStrings.length - 1)})`;
+    return `${isInIIFE ? iifeFnName : getFnName}(${encodeNumber(idx)})`;
 }
 
 function shuffle(arr) {
@@ -108,7 +114,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         addNoiseCount = 3
     } = opts;
 
-    let builtWindowObject = createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, (config.numberCalculator ? encodeModule.encode : encodeNumber), !config.disableEval, !config.disableEval);
+    let builtWindowObject = createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, (config.numberCalculator ? encodeModule.encode : encodeNumber), !config.strictMode, !config.strictMode);
 
     if (!builtStrings.length) return '// (no strings added)\n';
 
@@ -167,6 +173,10 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
 
     parts.push(`var ${encArrName} = [${encoded.map(s => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`).join(',')}];`);
     parts.push(`var ${cmapName} = '${custom64.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}';`);
+    // Build O(1) reverse lookup object instead of O(64) indexOf per character
+    const lookupName = rndName();
+    const lookupIdx = rndName();
+    parts.push(`var ${lookupName}={};for(var ${lookupIdx}=${encodeNumber(0)};${lookupIdx}<${cmapName}.length;${lookupIdx}++)${lookupName}[${cmapName}.charAt(${lookupIdx})]=${lookupIdx};`);
     parts.push(`var ${cacheName} = new Array(${encodeNumber(encoded.length)}).fill(null);`);
     parts.push(`var ${stdB64Name} = '${STD_B64}';`);
     parts.push(`var ${padName} = '${paddingChar.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}';`);
@@ -213,8 +223,8 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         const posName = rndName();
         fnLines.push(`  for(var ${loopVar}=${encodeNumber(0)}; ${loopVar}<${sVar}.length; ${loopVar}++){`);
         fnLines.push(`    var ${chName} = ${sVar}.charAt(${loopVar});`);
-        fnLines.push(`    var ${posName} = ${cmapName}.indexOf(${chName});`);
-        fnLines.push(`    if(${posName} >= ${encodeNumber(0)}) ${outVar} += ${stdB64Name}.charAt(${posName}); else if(${chName} === ${padName}) ${outVar} += '='; else ${outVar} += ${chName};`);
+        fnLines.push(`    var ${posName} = ${lookupName}[${chName}];`);
+        fnLines.push(`    if(${posName} !== undefined) ${outVar} += ${stdB64Name}.charAt(${posName}); else if(${chName} === ${padName}) ${outVar} += '='; else ${outVar} += ${chName};`);
         fnLines.push(`  };`);
 
         fnLines.push(`  var ${resVar} = '';`);
@@ -237,40 +247,129 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         parts.push(fnLines.join(''));
     }
 
-    parts.push(`var ${decGroupName} = [${decoderNames.join(',')}];`);
-    parts.push(`var ${assignName} = [${assignedDecoder.map(n => encodeNumber(n)).join(",")}];`);
-
     const accessorParamName = rndName();
-    const diName = rndName();
     const resName = rndName();
     const cache = rndName();
 
-    if (config.optimizedStringCache) parts.push(`let ${cache} = [];`);
-    parts.push(`var ${iifeFnName}=(${accessorParamName})=>{`);
-    if (config.optimizedStringCache) parts.push(`if (${cache}[${accessorParamName}]) return ${cache}[${accessorParamName}];`);
-    parts.push(`  var ${diName} = ${assignName}[${accessorParamName}] % ${encodeNumber(decodersCount)};`);
-    parts.push(`  var ${resName} = ${decGroupName}[${diName}](${accessorParamName});`);
-    if (config.optimizedStringCache) parts.push(`  ${cache}[${accessorParamName}] = ${resName};`);
-    parts.push(`  return ${resName};`);
-    parts.push(`};`);
+    if (decodersCount === 1) {
+        // Single decoder — no need for assignment array or decoder group, call directly
+        if (config.optimizedStringCache) parts.push(`let ${cache} = [];`);
+        parts.push(`var ${iifeFnName}=(${accessorParamName})=>{`);
+        if (config.optimizedStringCache) parts.push(`if (${cache}[${accessorParamName}]) return ${cache}[${accessorParamName}];`);
+        parts.push(`  var ${resName} = ${decoderNames[0]}(${accessorParamName});`);
+        if (config.optimizedStringCache) parts.push(`  ${cache}[${accessorParamName}] = ${resName};`);
+        parts.push(`  return ${resName};`);
+        parts.push(`};`);
+    } else {
+        // Multiple decoders — RLE-encode the assignment array into a string
+        parts.push(`var ${decGroupName} = [${decoderNames.join(',')}];`);
+
+        // Build RLE string: "value:count,value:count,..."
+        const rleSegments = [];
+        let ri = 0;
+        while (ri < assignedDecoder.length) {
+            const val = assignedDecoder[ri];
+            let count = 1;
+            while (ri + count < assignedDecoder.length && assignedDecoder[ri + count] === val) count++;
+            rleSegments.push(count === 1 ? `${val}` : `${val}:${count}`);
+            ri += count;
+        }
+        const rleString = rleSegments.join(',');
+
+        // Compare sizes: RLE string + decoder vs plain array
+        const plainArray = assignedDecoder.join(",");
+        const useRLE = rleString.length + 120 < plainArray.length;
+
+        if (useRLE) {
+            // XOR-encode the RLE string with a random multi-byte key
+            const xorKey = [];
+            const keyLen = 4 + Math.floor(Math.random() * 5); // 4-8 byte key
+            for (let ki = 0; ki < keyLen; ki++) xorKey.push(1 + Math.floor(Math.random() * 254));
+
+            const encodedChars = [];
+            for (let ci = 0; ci < rleString.length; ci++) {
+                encodedChars.push(rleString.charCodeAt(ci) ^ xorKey[ci % xorKey.length]);
+            }
+            const encodedHex = encodedChars.map(b => '\\x' + b.toString(16).padStart(2, '0')).join('');
+            const keyArr = xorKey.join(',');
+
+            // Hidden decoder function — placed among the string decoders
+            const rleDecoderFnName = rndName();
+            const rdParam = rndName();
+            const rdKey = rndName();
+            const rdOut = rndName();
+            const rdI = rndName();
+            // Add noise vars to make it look like the other decoder functions
+            const rdNoise1 = rndName();
+            const rdNoise2 = rndName();
+            const rdFake = rndName();
+            const fakeA = Math.floor(Math.random() * 0xffff);
+            const fakeB = Math.floor(Math.random() * 0xff);
+
+            // Insert the decoder function among the existing decoder functions
+            // Pick a random position among the decoder function entries
+            const insertPos = parts.length; // after the decoder functions, before decGroupName
+            // We'll rewrite: insert it right before the decGroupName line (last pushed)
+            const decGroupLine = parts.pop(); // remove the decGroupName line temporarily
+
+            const decoderFnLines = [];
+            decoderFnLines.push(`function ${rleDecoderFnName}(${rdParam}){`);
+            decoderFnLines.push(`  var ${rdNoise1} = ${fakeA} ^ ${fakeB};`);
+            decoderFnLines.push(`  var ${rdNoise2} = (${rdNoise1} * ${Math.floor(Math.random() * 0xff)}) & 0xffff;`);
+            decoderFnLines.push(`  var ${rdKey}=[${keyArr}];`);
+            decoderFnLines.push(`  var ${rdOut}='';`);
+            decoderFnLines.push(`  for(var ${rdI}=0;${rdI}<${rdParam}.length;${rdI}++){`);
+            decoderFnLines.push(`    ${rdOut}+=String.fromCharCode(${rdParam}.charCodeAt(${rdI})^${rdKey}[${rdI}%${rdKey}.length]);`);
+            decoderFnLines.push(`  };`);
+            decoderFnLines.push(`  var ${rdFake} = (${rdNoise2} ^ ${Math.floor(Math.random() * 0xffff)}) & 0xff;`);
+            decoderFnLines.push(`  return ${rdOut};`);
+            decoderFnLines.push(`};`);
+            parts.push(decoderFnLines.join(''));
+
+            parts.push(decGroupLine); // put decGroupName line back
+
+            const rleName = rndName();
+            const pName = rndName();
+            const rName = rndName();
+            const iName = rndName();
+            const vName = rndName();
+            const cName = rndName();
+            const decodedRleName = rndName();
+            parts.push(`var ${rleName}='${encodedHex}';`);
+            parts.push(`var ${decodedRleName}=${rleDecoderFnName}(${rleName});`);
+            parts.push(`var ${assignName}=[];`);
+            parts.push(`${decodedRleName}.split(',').forEach(function(${pName}){var ${rName}=${pName}.split(':');var ${vName}=+${rName}[0];var ${cName}=${rName}[1]?+${rName}[1]:1;for(var ${iName}=0;${iName}<${cName};${iName}++)${assignName}.push(${vName});});`);
+        } else {
+            parts.push(`var ${assignName} = [${plainArray}];`);
+        }
+
+        const diName = rndName();
+        if (config.optimizedStringCache) parts.push(`let ${cache} = [];`);
+        parts.push(`var ${iifeFnName}=(${accessorParamName})=>{`);
+        if (config.optimizedStringCache) parts.push(`if (${cache}[${accessorParamName}]) return ${cache}[${accessorParamName}];`);
+        parts.push(`  var ${diName} = ${assignName}[${accessorParamName}] % ${encodeNumber(decodersCount)};`);
+        parts.push(`  var ${resName} = ${decGroupName}[${diName}](${accessorParamName});`);
+        if (config.optimizedStringCache) parts.push(`  ${cache}[${accessorParamName}] = ${resName};`);
+        parts.push(`  return ${resName};`);
+        parts.push(`};`);
+    }
 
     let code = parts.join("");
 
-    if (config.wrapStringsInIIFE) {
-        // code += ";";
+    if (true) {
         let initEncArrName = code.split(";")[0];
         const randName = rndName();
         code = `
         ${initEncArrName};
 
-        const ${randName} = ${!config.disableEval?"eval":""}(${!config.disableEval ? JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`) : ("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
+        const ${randName} = ${!config.strictMode?"eval":""}(${!config.strictMode ? JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`) : ("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
         const ${getFnName} = (${randName} || ${declarationMapping.get("null")})`;
 
         code = code.replaceAll("__QUOTE_OPERATORS__", '"');
 
-        let originalIIFECode = `${!config.disableEval?"\"":""}(() => {` + code.split(`${!config.disableEval?"\"":""}(() => {`)[1].split(`${!config.disableEval?"\"":""});`)[0] + `${!config.disableEval?"\"":""}`;
+        let originalIIFECode = `${!config.strictMode?"\"":""}(() => {` + code.split(`${!config.strictMode?"\"":""}(() => {`)[1].split(`${!config.strictMode?"\"":""});`)[0] + `${!config.strictMode?"\"":""}`;
 
-        if (config.breakIIFEString && !config.disableEval) {
+        if (!config.strictMode) {
             var iifeBreaks = originalIIFECode.split('"');
 
             const { brokenIIFE, rebuiltCode } = breakShuffleAndBuild(iifeBreaks, declarationMapping, {
@@ -293,6 +392,11 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         };
     };
 
+    // Safety net: if IIFE wrapping didn't create the link, add a direct alias
+    if (getFnName !== iifeFnName && !code.includes(`const ${getFnName}`) && !code.includes(`var ${getFnName}`)) {
+        code += `\nvar ${getFnName} = ${iifeFnName};`;
+    }
+
     return config.compression ? compress(code) : code;
 };
 
@@ -300,4 +404,4 @@ function getBrokenIIFE() {
     return "new Blob";
 };
 
-module.exports = { addString, resetStrings, setCommonVariables, buildStringConcealment, encodeNumber, getBrokenIIFE, testBuilder };
+module.exports = { getStringCount, addString, resetStrings, setCommonVariables, buildStringConcealment, encodeNumber, getBrokenIIFE, testBuilder };

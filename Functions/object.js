@@ -29,7 +29,7 @@ function recursiveCallObject(node, properties, isCallee = false) {
 
                 if (argument.type === "Identifier") {
                     properties.push({ raw: (i === 0 ? "(" : ", ") + argument.name + (i === node.arguments.length - 1 ? ")" : "") });
-                } else if (argument.type === "Literal") {
+                } else if (argument.type === "Literal" && typeof argument.value === "string") {
                     properties.push({ raw: (i === 0 ? "(" : ", ") + encodeStringsRandom(argument.value).raw + (i === node.arguments.length - 1 ? ")" : "") });
                 } else {
                     properties.push({ raw: (i === 0 ? "(" : ", ") + sourceCode.slice(argument.start, argument.end) + (i === node.arguments.length - 1 ? ")" : "") });
@@ -55,7 +55,7 @@ function recursiveCallObject(node, properties, isCallee = false) {
                 };
             } else if (element.type === "Identifier") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.elements.length - 1 ? "]" : "") });
-            } else if (element.type === "Literal") {
+            } else if (element.type === "Literal" && typeof element.value === "string") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + encodeStringsRandom(element.value).raw + (i === node.elements.length - 1 ? "]" : "") });
             } else {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + sourceCode.slice(element.start, element.end) + (i === node.elements.length - 1 ? "]" : "") });
@@ -90,18 +90,20 @@ function recursiveCallObject(node, properties, isCallee = false) {
             let argumentString = "";
             if (node.property.arguments) {
                 for (let argument of node.property.arguments) {
-                    if (argument.left) {
-                        let propProperties = [...recursiveCallObject(argument.left, [])].reverse();
-                        let fakePropertyNode = createStringProperty({}, propProperties);
-                        argumentString += fakePropertyNode.name;
-                    };
-
-                    if (argument.operator) argumentString += argument.operator
-
-                    if (argument.right) {
-                        let propProperties = [...recursiveCallObject(argument.right, [])].reverse();
-                        let fakePropertyNode = createStringProperty({}, propProperties);
-                        argumentString += fakePropertyNode.name;
+                    if (argument.left && argument.operator && argument.right) {
+                        let leftProps = [...recursiveCallObject(argument.left, [])].reverse();
+                        let rightProps = [...recursiveCallObject(argument.right, [])].reverse();
+                        if (leftProps.length > 0 && rightProps.length > 0) {
+                            let leftNode = createStringProperty({}, leftProps);
+                            argumentString += leftNode.name;
+                            argumentString += argument.operator;
+                            let rightNode = createStringProperty({}, rightProps);
+                            argumentString += rightNode.name;
+                        } else {
+                            argumentString += sourceCode.slice(argument.start, argument.end);
+                        }
+                    } else {
+                        argumentString += sourceCode.slice(argument.start, argument.end);
                     }
                 };
             }
@@ -147,7 +149,7 @@ function recursiveCallObject(node, properties, isCallee = false) {
                 };
             } else if (element.type === "Identifier") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + element.name + (i === node.object.elements.length - 1 ? "]" : "") });
-            } else if (element.type === "Literal") {
+            } else if (element.type === "Literal" && typeof element.value === "string") {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + encodeStringsRandom(element.value).raw + (i === node.object.elements.length - 1 ? "]" : "") });
             } else {
                 properties.push({ raw: (i === 0 ? "[" : ", ") + sourceCode.slice(element.start, element.end) + (i === node.object.elements.length - 1 ? "]" : "") });

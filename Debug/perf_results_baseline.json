@@ -1,0 +1,88 @@
+{
+  "label": "Baseline",
+  "results": {
+    "Game Loop (physics+collision)": {
+      "original": {
+        "avg": "10.83",
+        "median": "11.00",
+        "min": "7.00",
+        "max": "14.00"
+      },
+      "obfuscated": {
+        "avg": "79.67",
+        "median": "82.00",
+        "min": "70.00",
+        "max": "86.00"
+      },
+      "overhead": "7.36x",
+      "sizeRatio": "29.3x",
+      "obfuscatedSize": 51031,
+      "originalSize": 1740
+    },
+    "Math Intensive (matrix+path)": {
+      "original": {
+        "avg": "12.33",
+        "median": "13.00",
+        "min": "10.00",
+        "max": "15.00"
+      },
+      "obfuscated": {
+        "error": "node:internal/modules/cjs/loader:1459\n  throw err;\n  ^\n\nError: Cannot find module '/home/motion/Desktop/VoidX/JsScramble/Debug/_bench_tmp/bench_obf_Math_Intensive__matrix_path_.js'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1456:15)\n    at defaultResolveImpl (node:internal/modu"
+      },
+      "overhead": "ERROR",
+      "sizeRatio": "44.6x",
+      "obfuscatedSize": 50710,
+      "originalSize": 1138
+    },
+    "String Heavy (parse+format)": {
+      "original": {
+        "avg": "8.50",
+        "median": "9.00",
+        "min": "7.00",
+        "max": "12.00"
+      },
+      "obfuscated": {
+        "avg": "48.50",
+        "median": "50.00",
+        "min": "38.00",
+        "max": "55.00"
+      },
+      "overhead": "5.71x",
+      "sizeRatio": "39.2x",
+      "obfuscatedSize": 49576,
+      "originalSize": 1265
+    },
+    "Object Access (ECS pattern)": {
+      "original": {
+        "avg": "5.33",
+        "median": "5.00",
+        "min": "5.00",
+        "max": "8.00"
+      },
+      "obfuscated": {
+        "avg": "26.17",
+        "median": "26.00",
+        "min": "25.00",
+        "max": "28.00"
+      },
+      "overhead": "4.91x",
+      "sizeRatio": "37.2x",
+      "obfuscatedSize": 49449,
+      "originalSize": 1331
+    },
+    "Array Intensive (sort+buffer)": {
+      "original": {
+        "avg": "8.00",
+        "median": "9.00",
+        "min": "6.00",
+        "max": "10.00"
+      },
+      "obfuscated": {
+        "error": "Internal error"
+      },
+      "overhead": "N/A",
+      "sizeRatio": "N/A"
+    }
+  },
+  "timestamp": "2026-04-09T11:55:57.745Z"
+}

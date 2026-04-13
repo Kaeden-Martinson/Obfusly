@@ -6,18 +6,17 @@ const { toHex } = require('./hexadecimal');
 const { toJSFuck } = require('./jsfuck');
 const { toOctal } = require('./octal');
 
-let percentageBasedConfig = JSON.parse(JSON.stringify(config.integerPrecentage));
-
 const useConfig = function (num) {
+    let percentageBasedConfig = { ...config.integerPrecentage };
     percentageBasedConfig.Refractal = 0;
-    if (num <= 10) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
+    if (num <= 10 && config.integerPrecentage.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
     let choice = pickWeightedRandom(percentageBasedConfig);
 
     let defaultedFunction;
     switch (choice) {
-        default: case "JSFuck": defaultedFunction = toJSFuck; break;
-        case "Hexadecimal": defaultedFunction = toHex; break;
+        case "JSFuck": defaultedFunction = toJSFuck; break;
+        default: case "Hexadecimal": defaultedFunction = toHex; break;
         case "Octal": defaultedFunction = toOctal; break;
         case "Binary": defaultedFunction = toBinary; break;
     };

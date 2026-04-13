@@ -1,13 +1,14 @@
 const config = require('../../Settings/config');
 const { encodeStringContents } = require('./encode');
 
-const MAX_SPLITS = config.stringSplitting;
+let splitCount = 0;
 
 function splitAndRebuildString(str, isIIFE, stringBuilderModule) {
     if (!str || str.length < 2) return "('" + encodeStringContents(str) + "')";;
 
-    let splits = Math.min(MAX_SPLITS, Math.max(1, Math.floor(Math.log2(str.length))));
+    let splits = Math.min(config.stringSplitting, Math.max(1, Math.floor(Math.log2(str.length))));
 
+    splitCount++;
     let cutPoints = new Set();
     while (cutPoints.size < splits) {
         cutPoints.add(Math.floor(Math.random() * (str.length - 1)) + 1);
@@ -35,4 +36,7 @@ function splitAndRebuildString(str, isIIFE, stringBuilderModule) {
     return `(${quoteVarible}` + result.join(`${quoteVarible}+${quoteVarible}`) + `${quoteVarible})`;
 }
 
-module.exports = { splitAndRebuildString };
+function getSplitCount() { return splitCount; };
+function resetSplitCount() { splitCount = 0; };
+
+module.exports = { splitAndRebuildString, getSplitCount, resetSplitCount };

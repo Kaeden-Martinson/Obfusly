@@ -15,7 +15,19 @@ const { encodeFunction } = require('../Functions/function');
 const { encodeExtra, encodeRecursiveExtra } = require('../Functions/extra');
 const { generateObfuscatedName, clearOldNames } = require('../Utils/nameGenerator');
 
+function _log(msg) { console.log(`[step ${++global.__jsscramble_step}] ${msg}`); }
+function _stat(label, value) { console.log(`  ${label}: ${value}`); }
+
 function obfuscateEntireSource(code) {
+    const _t0 = Date.now();
+    global.__jsscramble_start = _t0;
+
+    global.__jsscramble_step = 0;
+    console.log();
+    console.log('JsScramble Obfuscation');
+    _stat('Naming style', config.nameGenerationStyle);
+    _stat('Mode', config.strictMode ? 'Strict Mode' : 'Non-Strict (Function wrapper)');
+    _log('Renaming identifiers and variables');
     clearOldNames();
     
     const windowName = generateObfuscatedName();
@@ -47,11 +59,11 @@ function obfuscateEntireSource(code) {
             if (node.type === "ConditionalExpression" && node.test) { if (node.test.type === "Identifier") updateNodeName(node.test); if (node.consequent.type === "Identifier") updateNodeName(node.consequent); if (node.alternate && node.alternate.type === "Identifier") updateNodeName(node.alternate); };
             if (node.type === "SequenceExpression" && node.expressions) { for (let i = 0; i < node.expressions.length; i++) { let expression = node.expressions[i]; if (expression.type === "Identifier") updateNodeName(expression); }; };
             if (node.type === "IfStatement" && node?.test.type === "Identifier") updateNodeName(node.test);
-            if (node.type === "CatchClause" && node.param) updateNodeName(node.param);
+            if (node.type === "CatchClause" && node.param) updateNodeName(node.param, true);
             if (node.type === "NewExpression") { if (node.callee) updateNodeName(node.callee); for (let i = 0; i < node.arguments.length; i++) updateNodeName(node.arguments[i]); };
             if (node.type === "AssignmentExpression" && node.left) updateNodeName(node.left);
             if (node.type === "LogicalExpression" || node.type === "ForInStatement" || node.type === "AssignmentPattern" || node.type === "ForOfStatement" || node.type === "BinaryExpression" || node.type === "AssignmentExpression") encodeRecursiveExtra(node);
-            if (node.type === "ObjectPattern") { for (let i = 0; i < node.properties.length; i++) { let property = node.properties[i]; property.shorthand = false; property.computed = true; property.key.name = `'${property.key.name}'`; updateNodeName(property.value); }; };
+            if (node.type === "ObjectPattern") { for (let i = 0; i < node.properties.length; i++) { let property = node.properties[i]; property.shorthand = false; property.computed = true; property.key.name = `'${property.key.name}'`; updateNodeName(property.value, true); }; };
             if (node.type === "SwitchStatement") updateNodeName(node.discriminant);
             if (node.type === "SwitchCase" && node.test) updateNodeName(node.test);
             if (node.type === "ArrayPattern" || node.type === "ArrayExpression") for (let i = 0; i < node.elements.length; i++) updateNodeName(node.elements[i]);
@@ -61,7 +73,10 @@ function obfuscateEntireSource(code) {
         }
     });
 
-    return [escodegen.generate(ast), windowName, getDeclarationMapping()];
+    const s1code = escodegen.generate(ast);
+    _log(`Stage 1 complete (${(Date.now() - _t0)}ms)`);
+
+    return [s1code, windowName, getDeclarationMapping()];
 };
 
 module.exports = { obfuscateEntireSource };

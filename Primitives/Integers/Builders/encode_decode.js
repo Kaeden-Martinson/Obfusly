@@ -22,7 +22,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
     let DEADCODE_VARIABLES = [];
 
-    let percentageBasedConfig = JSON.parse(JSON.stringify(config.integerPrecentage));
+    let percentageBasedConfig = { ...config.integerPrecentage };
 
     function useConfig(num) {
         if (config.globalBaseIntegerConcealment && num <= 100) {
@@ -223,10 +223,12 @@ function createEncodeAndDecodingPairs(declarationMapping) {
     for (let fi = 0; fi < FUNCTIONS; fi++) encoderOut += `function chainEncode${fi}(v){v=encode${fi}(v,${generateRandomArgs()})[${valueIndexesVariable}[${(shuffledFunctionsCases[fi])}][v&${(casesSubtractOne[fi])}]];${fi + 1 < FUNCTIONS ? `return chainEncode${fi + 1}(v);` : `return v>>>${(0)};`}}\n\n`;
     for (let fi = FUNCTIONS - 1; fi >= 0; fi--) {
         const mainParam = generateObfuscatedName();
-        if (fi === FUNCTIONS - 2 && config.optimzedNumberCache) {
+        if (fi === FUNCTIONS - 1 && config.optimzedNumberCache) {
+            // Cache at outermost level using original input as key for maximum hit rate
             let cacheName = generateObfuscatedName();
             let resName = generateObfuscatedName();
-            decoderOut += `var ${cacheName} = new Map(); var ${decoderFunctionNames[fi]} = (${mainParam})=>{${mainParam}=${decodeMainFunctionNames[fi]}(${mainParam},${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}]];if(${cacheName}.has(${mainParam}))return ${cacheName}.get(${mainParam});${fi - 1 >= 0 ? `let ${resName} = ${decoderFunctionNames[fi - 1]}(${mainParam}); ${cacheName}.set(${mainParam}, ${resName}); return ${resName}` : `return ${mainParam}>>>${useConfig(0)};`}}\n\n`;
+            let origParam = generateObfuscatedName();
+            decoderOut += `var ${cacheName} = new Map(); var ${decoderFunctionNames[fi]} = (${mainParam})=>{if(${cacheName}.has(${mainParam}))return ${cacheName}.get(${mainParam});var ${origParam}=${mainParam};${mainParam}=${decodeMainFunctionNames[fi]}(${mainParam},${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}]];${fi - 1 >= 0 ? `let ${resName} = ${decoderFunctionNames[fi - 1]}(${mainParam}); ${cacheName}.set(${origParam}, ${resName}); return ${resName}` : `${cacheName}.set(${origParam}, ${mainParam}>>>${useConfig(0)}); return ${mainParam}>>>${useConfig(0)};`}}\n\n`;
         }
         else decoderOut += `var ${decoderFunctionNames[fi]} = (${mainParam})=>{${mainParam}=${decodeMainFunctionNames[fi]}(${mainParam},${generateRandomArgs()})[${valueIndexesVariable}[${useConfig(shuffledFunctionsCases[fi])}][${mainParam}&${useConfig(casesSubtractOne[fi])}]];${fi - 1 >= 0 ? `return ${decoderFunctionNames[fi - 1]}(${mainParam});` : `return ${mainParam}>>>${useConfig(0)};`}}\n\n`;
     };

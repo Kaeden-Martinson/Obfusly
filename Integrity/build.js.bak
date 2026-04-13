@@ -1,0 +1,914 @@
+const acorn = require("acorn");
+const { generateObfuscatedName } = require("../Utils/nameGenerator");
+const { encodeStringsRandom } = require("../Primitives/Literals/strings");
+
+const { toJSFuck } = require('../Primitives/Integers/jsfuck');
+const { toHex } = require('../Primitives/Integers/hexadecimal');
+const { toOctal } = require('../Primitives/Integers/octal');
+const { toBinary } = require('../Primitives/Integers/binary');
+const { toRefractal } = require('../Primitives/Integers/refractal');
+const { pickWeightedRandom } = require('../Utils/weights');
+
+const config = require('../Settings/config');
+const { compress } = require("../Utils/compressor");
+let numberCache = {};
+
+function createIntegrity(code, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule) {
+
+  function encodeLocalNumber(number, isAllowCalculator = false) {
+    if (isAllowCalculator && config.numberCalculator && Math.abs(number) <= 4099000000 && number > 100) {
+      if (!numberCache[number]) {
+        const isNegative = number < 0;
+        const encodedValue = encodeModule.encode(number);
+        let res = `${isNegative ? "-" : ""}${encodingAndDecodingPairs.decodeName}(${encodedValue})`;
+        numberCache[number] = res;
+        return res;
+      } else {
+        return numberCache[number];
+      };
+    } else if (config.globalBaseIntegerConcealment) {
+      if (number <= 100) {
+        if (config.multipleVariableAssignments && number !== 100 && number !== 0) {
+          let shuffledVariableName = Math.floor(Math.random() * 4);
+          if (shuffledVariableName !== 0) return declarationMapping.get(`variable_numbers_${shuffledVariableName}_${number}`);
+        };
+
+        return declarationMapping.get(`variable_numbers_${number}`);
+      } else if (config.numberEncoding) {
+        let choice = pickWeightedRandom(config.integerPrecentage);
+
+        let defaultedFunction;
+        switch (choice) {
+          case "Hexadecimal": defaultedFunction = toHex; break;
+          case "Octal": defaultedFunction = toOctal; break;
+          case "Binary": defaultedFunction = toBinary; break;
+          default: case "Refractal": defaultedFunction = toRefractal; break;
+        };
+
+        return defaultedFunction(number, declarationMapping);
+      };
+    } else if (config.numberEncoding) {
+      let percentageBasedConfig = { ...config.integerPrecentage };
+      if (number <= 10) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
+
+      let choice = pickWeightedRandom(percentageBasedConfig);
+
+      let defaultedFunction;
+      switch (choice) {
+        case "JSFuck": defaultedFunction = toJSFuck; break;
+        case "Hexadecimal": defaultedFunction = toHex; break;
+        case "Octal": defaultedFunction = toOctal; break;
+        case "Binary": defaultedFunction = toBinary; break;
+        default: case "Refractal": defaultedFunction = toRefractal; break;
+      };
+
+      return defaultedFunction(number, declarationMapping);
+    } else return number;
+  }
+
+  // ---------- Complex build-time hash function (same algorithm as injected one) ----------
+  function generateRandomHasher() {
+    const rand32 = () => Math.floor(Math.random() * 0xFFFFFFFF) >>> 0;
+    const randShift = () => Math.floor(Math.random() * 24) + 1;
+
+    const consts = {
+      seed1: rand32(),
+      seed2: rand32(),
+      const1: rand32(),
+      const2: rand32(),
+      const3: rand32(),
+      mul: rand32() | 1,
+      shift1: randShift(),
+      shift2: randShift(),
+      shift3: randShift(),
+      shift4: randShift(),
+    };
+
+    const fnXor = generateObfuscatedName();
+    const fnMix = generateObfuscatedName();
+    const fnMain = generateObfuscatedName();
+
+    const a = generateObfuscatedName();
+    const b = generateObfuscatedName();
+    const c = generateObfuscatedName();
+    const x = generateObfuscatedName();
+    const i = generateObfuscatedName();
+    const ch = generateObfuscatedName();
+
+    const hasherCode = `function ${fnXor}(${a}, ${b}) {
+  return (${a} ^ ${b}) >>> 0;
+}
+function ${fnMix}(${x}) {
+  let ${a} = (${x} ^ (${x} >>> ${consts.shift4})) >>> 0;
+  return Math.imul(${a}, ${consts.mul}) >>> 0;
+}
+function ${fnMain}(${x}) {
+  ${x} = (${x} || "").replace(/\\s/g, "");
+  var ${a} = ${consts.seed1} >>> ${encodeLocalNumber(0)}, ${b} = ${consts.seed2} >>> ${encodeLocalNumber(0)}, ${c} = ${encodeLocalNumber(0)} >>> ${encodeLocalNumber(0)};
+  for (var ${i} = ${encodeLocalNumber(0)}; ${i} < ${x}.length; ${i}++) {
+    var ${ch} = ${x}.charCodeAt(${i});
+    ${a} = (${a} ^ ${ch}) + ((${a} << ${consts.shift1}) + (${a} >>> ${consts.shift2})); ${a} >>>= ${encodeLocalNumber(0)};
+    ${b} = (${b} + (${ch} ^ (${b} << ${consts.shift3}))) >>> ${encodeLocalNumber(0)};
+    ${c} = (${c} + ((${ch} * ${consts.const1}) ^ (${a} >>> (${i} & ${encodeLocalNumber(15)})))) >>> ${encodeLocalNumber(0)};
+    ${a} = (${a} + ((${b} << ${encodeLocalNumber(13)}) | (${b} >>> ${encodeLocalNumber(19)}))) >>> ${encodeLocalNumber(0)};
+    ${b} = (${b} ^ ((${a} >>> ${encodeLocalNumber(7)}) + ${consts.const2})) >>> ${encodeLocalNumber(0)};
+  }
+  var ${ch} = ${fnXor}(${a}, (${b} + ${c}));
+  for (var ${i} = ${encodeLocalNumber(0)}; ${i} < ${encodeLocalNumber(3)}; ${i}++) {
+    ${ch} = ${fnXor}((${ch} ^ (${ch} << ${encodeLocalNumber(13)})) + ${consts.const3}, ${encodeLocalNumber(0)});
+    ${ch} = ${fnMix}(${ch});
+  }
+  return ${ch} >>> ${encodeLocalNumber(0)};
+}`.trim();
+
+    const runtimeHasherName = fnMain;
+
+    const buildHash = (str) => {
+      str = (str || "").replace(/\s/g, "");
+
+      let a = consts.seed1 >>> 0;
+      let b = consts.seed2 >>> 0;
+      let c = 0 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        a = (a ^ ch) + ((a << consts.shift1) + (a >>> consts.shift2)); a >>>= 0;
+        b = (b + (ch ^ (b << consts.shift3))) >>> 0;
+        c = (c + ((ch * consts.const1) ^ (a >>> (i & 15)))) >>> 0;
+        a = (a + ((b << 13) | (b >>> 19))) >>> 0;
+        b = (b ^ ((a >>> 7) + consts.const2)) >>> 0;
+      }
+      let r = (a ^ (b + c)) >>> 0;
+      for (let j = 0; j < 3; j++) {
+        r = ((r ^ (r << 13)) + consts.const3) >>> 0;
+        let t = (r ^ (r >>> consts.shift4)) >>> 0;
+        r = Math.imul(t, consts.mul) >>> 0;
+      }
+      return r >>> 0;
+    };
+
+    return {
+      hasherCode,
+      buildHash,
+      runtimeHasherName,
+    };
+  }
+
+  const isOnce = config.integrityChecks === "once";
+
+  // Generate a random infinite-loop trap (uncatchable by try/catch)
+  function generateTrapCode() {
+    const v = generateObfuscatedName();
+    const v2 = generateObfuscatedName();
+    const variants = [
+      `var ${v}=!![];while(${v}){${v}=!![]}`,
+      `for(;;){}`,
+      `while(!![]){}`,
+      `for(var ${v}=0;${v}<1;${v}-=1){}`,
+      `do{}while(!![])`,
+      `(function ${v}(){${v}()})()`,
+      `var ${v}=function(){${v}()};${v}()`,
+      `for(var ${v}=1;${v}>0;${v}=(${v}+1)>>>0){}`,
+      `while(!![]){while(!![]){}}`,
+    ];
+    return variants[Math.floor(Math.random() * variants.length)];
+  }
+
+  let hashingAlgorithms = [];
+
+  for (let i = 0; i < (isOnce ? 5 : 10); i++) {
+    const { hasherCode, buildHash, runtimeHasherName } = generateRandomHasher();
+    hashingAlgorithms.push({ hasherCode, buildHash, runtimeHasherName });
+  };
+
+  // ---------- toString anti-hook guard + timer capture for "once" mode ----------
+  let toStringGuard = null;
+  const deferredChecks = [];
+  let deferredCheckCount = 0;
+  const stealthChecks = [];
+
+  if (isOnce) {
+    const tsName = generateObfuscatedName();
+    const clName = generateObfuscatedName();
+    const apName = generateObfuscatedName();
+    const vfName = generateObfuscatedName();
+    const stName = generateObfuscatedName();
+    const prName = generateObfuscatedName();
+    const paramName = generateObfuscatedName();
+
+    const guardCode = `var ${tsName}=Function.prototype.toString,${clName}=Function.prototype.call,${apName}=Function.prototype.apply,${stName}=typeof setTimeout!=="undefined"?setTimeout:void 0,${prName}=typeof Promise!=="undefined"?Promise:void 0;function ${vfName}(${paramName}){if(Function.prototype.toString!==${tsName}||Function.prototype.call!==${clName}||Function.prototype.apply!==${apName}){${generateTrapCode()}};if(typeof Reflect!=="undefined"&&Reflect.apply!==Reflect.apply){${generateTrapCode()}};return ${clName}.call(${tsName},${paramName})}`;
+
+    toStringGuard = {
+      guardCode: compress(guardCode),
+      verifyCallName: vfName,
+      setTimeoutName: stName,
+      promiseName: prName,
+    };
+  }
+
+  function getHasherName() {
+    const len = hashingAlgorithms.length;
+    if (len < 2) throw new Error("Need at least 2 hashing algorithms");
+
+    const i1 = Math.floor(Math.random() * len);
+
+    let i2 = Math.floor(Math.random() * (len - 1));
+    if (i2 >= i1) i2++;
+
+    return [
+      hashingAlgorithms[i1].runtimeHasherName,
+      hashingAlgorithms[i2].runtimeHasherName
+    ];
+  };
+
+  function buildHashFromName(str, name) {
+    return hashingAlgorithms.find(alg => alg.runtimeHasherName === name).buildHash(str);
+  }
+
+  // ---------- Randomized check snippet generator with bounded opaque loops ----------
+  function generateCheckSnippet({ fnRef, expectedVarName, secondExpectedVarName, runtimeHasherName, secondRuntimeHasherName }) {
+    let fnForms = [
+      `${fnRef}[${encodeStringsRandom("toString").raw}]()`,
+      `(${fnRef} + "")`,
+      `${declarationMapping.get("window")}[${encodeStringsRandom("String").raw}](${fnRef})`,
+      `${fnRef}[${encodeStringsRandom("toString").raw}]()`,
+      `(0, ${fnRef})[${encodeStringsRandom("toString").raw}]()`,
+      '`${' + fnRef + '}`'
+    ];
+
+    function randomLoopTemplate() {
+      const randNum = (min, max) => encodeLocalNumber(Math.floor(Math.random() * (max - min + 1)) + min, true);
+
+      let mathMin = `${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("min").raw}]`;
+      let mathImul = `${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("imul").raw}]`;
+      let mathFloor = `${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("floor").raw}]`;
+
+      const templates = [
+        () => {
+          const v = generateObfuscatedName(), i = generateObfuscatedName(), L = generateObfuscatedName();
+          const mul = randNum(100000, 999999);
+          const mask = randNum(1, 16);
+          return `(function(){var ${v}=${encodeLocalNumber(0, true)}|${encodeLocalNumber(0, true)}; for(var ${i}=${encodeLocalNumber(0, true)}, ${L}=${mathMin}((__ITER__), ${randNum(10, 10000)}); ${i}<${L}; ${i}++){ ${v} = (${v} ^ ${mathImul}(${i}+1, ${mul})) >>> ${encodeLocalNumber(0, true)}; ${v} = (${v} + (${v}<<3))>>>${encodeLocalNumber(0, true)}; ${v} = (${v} ^ ${mask}) >>> ${encodeLocalNumber(0, true)}; } return ${v}; })()`;
+        },
+        () => {
+          const v = generateObfuscatedName(), i = generateObfuscatedName(), L = generateObfuscatedName();
+          const mul = randNum(2, 10);
+          return `(function(){var ${v}=1; var ${i}=${encodeLocalNumber(0, true)}; var ${L}=${mathMin}((__ITER__), ${randNum(10, 5000)}); for(;${i}<${L};${i}++){ ${v} = (${mathImul}(${v}, ${mul}) ^ ${i}) >>> ${encodeLocalNumber(0, true)}; if (${v} < ${encodeLocalNumber(0, true)}) { ${v} = (${v} ^ ${i}) >>> ${encodeLocalNumber(0, true)} } } return ${v}; })()`;
+        },
+        () => {
+          const v = generateObfuscatedName(), i = generateObfuscatedName(), L = generateObfuscatedName();
+          const cap = randNum(10, 5000);
+          return `(function(){var ${v}=${randNum(2, 20)}; var ${i}=${encodeLocalNumber(0, true)}; var ${L}=${mathMin}((__ITER__), ${cap}); do{ ${v} = ((${v}<<5)-${v}) ^ ${i}; ${i}++; if (${i} > ${cap}) { ${v}=${mathFloor}(${v} - 10.2); } } while(${i} < ${L}); return ${v}; })()`;
+        },
+        () => {
+          const v = generateObfuscatedName(), i = generateObfuscatedName(), L = generateObfuscatedName();
+          const mul = randNum(3, 13), modulus = randNum(2, 10);
+          return `(function(){var ${v}=${encodeLocalNumber(0, true)}; var ${L}=${mathMin}((__ITER__), ${randNum(10, 5000)}); for(var ${i}=${encodeLocalNumber(0, true)};${i}<${L};${i}++){ ${v} += ((${i}&3)?${mathImul}(${i},${mul}):${i}); ${v} = ${v} >>> ${encodeLocalNumber(0, true)}; if (${v} % ${modulus} === ${encodeLocalNumber(0, true)}) ${v}++; } return ${v}; })()`;
+        }
+      ];
+      const pick = templates[Math.floor(Math.random() * templates.length)];
+      return pick();
+    }
+
+    let patterns = [
+      `if (${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() < ${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() ? ${runtimeHasherName}(${fnForms[0]}) !== ${expectedVarName} : ${secondRuntimeHasherName}(${fnForms[4]}) !== ${secondExpectedVarName}) { let __r = __LOOP__; __LOGIC__; };`,
+      `if (${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() < ${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() ? !(${runtimeHasherName}(${fnForms[1]}) === ${expectedVarName}) : ${secondRuntimeHasherName}(${fnForms[2]}) != ${secondExpectedVarName}) { let __r = __LOOP__; __LOGIC__; };`,
+      `(()=>{ if (${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() < ${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() ? ${runtimeHasherName}(${fnForms[2]}) != ${expectedVarName} :  ${secondRuntimeHasherName}(${fnForms[0]}) !== ${secondExpectedVarName}) { let __z = __LOOP__; __LOGIC__; } })();`,
+      `if (${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() < ${declarationMapping.get("window")}[${encodeStringsRandom("Math").raw}][${encodeStringsRandom("random").raw}]() ? ${expectedVarName} != ${runtimeHasherName}(${fnForms[4]}) : !(${secondRuntimeHasherName}(${fnForms[1]}) === ${secondExpectedVarName})) { let __x = __LOOP__; __LOGIC__; };`,
+      `if (${runtimeHasherName}(${fnForms[3]}) !== ${expectedVarName} || ${secondRuntimeHasherName}(${fnForms[5]}) !== ${secondExpectedVarName}) { let __y = __LOOP__; __LOGIC__; };`
+    ];
+
+    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+    const loopTpl = randomLoopTemplate();
+
+    const iterExpr = `(((${runtimeHasherName}(${fnForms[0]}) ^ ${expectedVarName}) & ${encodeLocalNumber(Math.floor(Math.random() * 10), true)}) + ${encodeLocalNumber(Math.floor(Math.random() * 10), true)}) ** ${encodeLocalNumber(Math.floor(Math.random() * 10), true)}`;
+
+    let loopExpr = loopTpl.replace(/__ITER__/g, iterExpr);
+    let result = (config.compression ? "" : "\n") + pattern.replace(/__LOOP__/g, loopExpr);
+
+    const tmpName = generateObfuscatedName();
+    result = result.replace(/\b__r\b/g, tmpName).replace(/\b__z\b/g, tmpName).replace(/\b__x\b/g, tmpName).replace(/\b__y\b/g, tmpName);
+
+    result = result.replace(/__LOGIC__/g, generateTrapCode());
+
+    return result;
+  }
+
+  // ---------- Loadtime check snippet: diverse, anti-hook, encoded hashes, stealth ----------
+  function generateLoadtimeCheckSnippet({ fnRef, hash1, hash2, hasherName1, hasherName2, verifyCallName }) {
+    const sVar = generateObfuscatedName();
+    const sep = config.compression ? "" : "\n";
+    const eH1 = encodeLocalNumber(hash1, true);
+    const eH2 = encodeLocalNumber(hash2, true);
+    const getFnStr = verifyCallName ? `${verifyCallName}(${fnRef})` : `${fnRef}+""`;
+
+    const patterns = [
+      // IIFE wrapper with locals
+      () => {
+        const r1 = generateObfuscatedName(), r2 = generateObfuscatedName();
+        return `${sep}(function(){var ${sVar}=${getFnStr};var ${r1}=${hasherName1}(${sVar}),${r2}=${hasherName2}(${sVar});if(${r1}!==(${eH1})||${r2}!==(${eH2})){${generateTrapCode()}}})();`;
+      },
+      // Short-circuit boolean
+      () => {
+        return `${sep}var ${sVar}=${getFnStr};${hasherName1}(${sVar})===(${eH1})&&${hasherName2}(${sVar})===(${eH2})||(function(){${generateTrapCode()}})();`;
+      },
+      // Switch/case
+      () => {
+        const r1 = generateObfuscatedName();
+        return `${sep}var ${sVar}=${getFnStr};var ${r1}=${hasherName1}(${sVar});switch(${r1}){case ${eH1}:break;default:${generateTrapCode()}};switch(${hasherName2}(${sVar})){case ${eH2}:break;default:${generateTrapCode()}};`;
+      },
+      // XOR zero-check
+      () => {
+        const r1 = generateObfuscatedName(), r2 = generateObfuscatedName();
+        return `${sep}var ${sVar}=${getFnStr},${r1}=${hasherName1}(${sVar})^(${eH1}),${r2}=${hasherName2}(${sVar})^(${eH2});if(${r1}|${r2}){${generateTrapCode()}};`;
+      },
+      // Nested ternary
+      () => {
+        return `${sep}var ${sVar}=${getFnStr};${hasherName1}(${sVar})!==(${eH1})?(function(){${generateTrapCode()}})():${hasherName2}(${sVar})!==(${eH2})?(function(){${generateTrapCode()}})():void 0;`;
+      },
+      // Array indexed
+      () => {
+        const arr = generateObfuscatedName();
+        return `${sep}var ${sVar}=${getFnStr},${arr}=[${eH1},${eH2}];if(${hasherName1}(${sVar})!==${arr}[${encodeLocalNumber(0)}]||${hasherName2}(${sVar})!==${arr}[${encodeLocalNumber(1)}]){${generateTrapCode()}};`;
+      },
+      // Disguised as variable initialization (looks like normal assignment with side effect)
+      () => {
+        const d1 = generateObfuscatedName(), d2 = generateObfuscatedName(), d3 = generateObfuscatedName();
+        return `${sep}var ${sVar}=${getFnStr},${d1}=${hasherName1}(${sVar}),${d2}=${hasherName2}(${sVar}),${d3}=(${d1}^(${eH1}))|(${d2}^(${eH2}));${d3}&&(function(${d1}){${d1}[${d1}]=${d1}})(${d3});`;
+      },
+      // Disguised as loop guard computation
+      () => {
+        const d1 = generateObfuscatedName(), d2 = generateObfuscatedName();
+        return `${sep}var ${sVar}=${getFnStr},${d1}=${hasherName1}(${sVar})-(${eH1}),${d2}=${hasherName2}(${sVar})-(${eH2});for(var ${generateObfuscatedName()}=${d1}|${d2};${d1}|${d2};){${generateTrapCode()}};`;
+      },
+      // Disguised as comma expression in void
+      () => {
+        const d1 = generateObfuscatedName(), d2 = generateObfuscatedName();
+        return `${sep}var ${d1}=${getFnStr},${d2}=(${hasherName1}(${d1})-(${eH1}))|(${hasherName2}(${d1})-(${eH2}));void(${d2}&&(function(){${generateTrapCode()}})());`;
+      },
+    ];
+
+    return patterns[Math.floor(Math.random() * patterns.length)]();
+  }
+
+  // ---------- Stealth check snippet: hidden inside function body, looks like normal code ----------
+  function generateStealthCheckSnippet({ fnRef, hash1, hash2, hasherName1, hasherName2, verifyCallName }) {
+    const sep = config.compression ? "" : "\n";
+    const eH1 = encodeLocalNumber(hash1, true);
+    const eH2 = encodeLocalNumber(hash2, true);
+    const getFnStr = verifyCallName ? `${verifyCallName}(${fnRef})` : `${fnRef}+""`;
+    const s = generateObfuscatedName();
+    const v1 = generateObfuscatedName();
+    const v2 = generateObfuscatedName();
+
+    const patterns = [
+      // Looks like a cached computation stored in a local var
+      () => `${sep}var ${s}=${getFnStr},${v1}=(${hasherName1}(${s})^(${eH1}))>>>${encodeLocalNumber(0)},${v2}=(${hasherName2}(${s})^(${eH2}))>>>${encodeLocalNumber(0)};if(${v1}+${v2}){${generateTrapCode()}};`,
+      // Looks like debug/assertion leftover (common in real code)
+      () => `${sep}var ${s}=${getFnStr};(${hasherName1}(${s})===(${eH1})&&${hasherName2}(${s})===(${eH2}))||void function(){${generateTrapCode()}}();`,
+      // Hidden in a try block that looks like error recovery
+      () => {
+        const e = generateObfuscatedName();
+        return `${sep}try{var ${s}=${getFnStr};if((${hasherName1}(${s})^(${eH1}))|(${hasherName2}(${s})^(${eH2}))){throw ${s}}}catch(${e}){${generateTrapCode()}};`;
+      },
+    ];
+
+    return patterns[Math.floor(Math.random() * patterns.length)]();
+  }
+
+  // ---------- Deferred re-check for "once" mode (captures hashers + timer APIs in closure) ----------
+  function generateDeferredRecheck({ fnRef, hash1, hash2, hasherName1, hasherName2, verifyCallName }) {
+    const sep = config.compression ? "" : "\n";
+    const sVar = generateObfuscatedName();
+    const h1Param = generateObfuscatedName();
+    const h2Param = generateObfuscatedName();
+    const vfParam = generateObfuscatedName();
+    const stParam = generateObfuscatedName();
+    const prParam = generateObfuscatedName();
+    const delay = Math.floor(Math.random() * 8000) + 2000;
+    const eH1 = encodeLocalNumber(hash1, true);
+    const eH2 = encodeLocalNumber(hash2, true);
+    const stRef = toStringGuard?.setTimeoutName || 'setTimeout';
+    const prRef = toStringGuard?.promiseName || 'Promise';
+
+    const methods = [
+      // setTimeout via captured ref
+      () => `${sep}(function(${h1Param},${h2Param},${vfParam},${stParam}){${stParam}(function(){var ${sVar}=${vfParam}(${fnRef});if(${h1Param}(${sVar})!==(${eH1})||${h2Param}(${sVar})!==(${eH2})){${generateTrapCode()}}},${encodeLocalNumber(delay, true)})})(${hasherName1},${hasherName2},${verifyCallName},${stRef});`,
+      // Promise.resolve -> setTimeout via captured refs
+      () => `${sep}(function(${h1Param},${h2Param},${vfParam},${stParam},${prParam}){${prParam}.resolve().then(function(){${stParam}(function(){var ${sVar}=${vfParam}(${fnRef});if(${h1Param}(${sVar})!==(${eH1})||${h2Param}(${sVar})!==(${eH2})){${generateTrapCode()}}},${encodeLocalNumber(delay, true)})})})(${hasherName1},${hasherName2},${verifyCallName},${stRef},${prRef});`,
+      // Chained setTimeout with guard re-verification
+      () => {
+        const delay2 = Math.floor(Math.random() * 5000) + delay;
+        return `${sep}(function(${h1Param},${h2Param},${vfParam},${stParam}){${stParam}(function(){${stParam}(function(){var ${sVar}=${vfParam}(${fnRef});if(${h1Param}(${sVar})!==(${eH1})||${h2Param}(${sVar})!==(${eH2})){${generateTrapCode()}}},${encodeLocalNumber(delay2, true)})},${encodeLocalNumber(delay, true)})})(${hasherName1},${hasherName2},${verifyCallName},${stRef});`;
+      },
+    ];
+
+    return methods[Math.floor(Math.random() * methods.length)]();
+  }
+
+  // ---------- parse and find top-level functions ----------
+  const ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "script", locations: false });
+  const surfaceFunctions = [];
+
+  function digestSelfInvokers(parent) {
+    for (const node of parent.body) {
+      if (node.type === "ExpressionStatement" && node.expression.callee && ['ArrowFunctionExpression', 'FunctionExpression', 'FunctionDeclaration'].includes(node.expression.callee.type)) digestSelfInvokers(node.expression.callee.body);
+
+      if (node.type === "FunctionDeclaration" && node.id && node.id.name) {
+        surfaceFunctions.push({ kind: "decl", name: node.id.name, start: node.start, end: node.end });
+      } else if (node.type === "VariableDeclaration") {
+        for (const decl of node.declarations) {
+          if (!decl.init) continue;
+
+          const t = decl.init.type;
+          if (t === "FunctionExpression" || t === "ArrowFunctionExpression" || t === "FunctionDeclaration") {
+            surfaceFunctions.push({ kind: "var", varName: decl.id && decl.id.name ? decl.id.name : null, start: decl.start, end: decl.end, initStart: decl.init?.start, initEnd: decl.init?.end, stmtEnd: node.end });
+          };
+        };
+      };
+    };
+  };
+
+  for (const node of ast.body) {
+    if (node.type === "ExpressionStatement" && node.expression.callee && ['ArrowFunctionExpression', 'FunctionExpression', 'FunctionDeclaration'].includes(node.expression.callee.type)) digestSelfInvokers(node.expression.callee.body);
+
+    if (node.type === "ExpressionStatement" && node.expression && "UnaryExpression" === node.expression.type && node.expression.argument?.type === "CallExpression" && node.expression.argument.callee) digestSelfInvokers(node.expression.argument.callee.body);
+
+    if (node.type === "FunctionDeclaration" && node.id && node.id.name) {
+      surfaceFunctions.push({ kind: "decl", name: node.id.name, start: node.start, end: node.end });
+    } else if (node.type === "VariableDeclaration") {
+      for (const decl of node.declarations) {
+        if (!decl.init) continue;
+
+        const t = decl.init.type;
+        if (t === "FunctionExpression" || t === "ArrowFunctionExpression" || t === "FunctionDeclaration") {
+          surfaceFunctions.push({ kind: "var", varName: decl.id && decl.id.name ? decl.id.name : null, start: decl.start, end: decl.end, initStart: decl.init?.start, initEnd: decl.init?.end, stmtEnd: node.end });
+        };
+      };
+    };
+  };
+
+  surfaceFunctions.sort((a, b) => a.start - b.start);
+
+  if (surfaceFunctions.length === 0) {
+    return code;
+  };
+
+  // Track function names that appear more than once (duplicate declarations in same scope).
+  // For "once" checks, function hoisting causes `fnRef+""` to always resolve to the LAST
+  // declaration, so checks on earlier declarations would hash-mismatch. Skip all duplicates.
+  const fnNameCount = new Map();
+  for (const fn of surfaceFunctions) {
+    const name = fn.kind === "decl" ? fn.name : fn.varName;
+    if (name) fnNameCount.set(name, (fnNameCount.get(name) || 0) + 1);
+  }
+
+  // Track last occurrence of each function name (for duplicate handling)
+  const fnLastOccurrence = new Map();
+  for (const fn of surfaceFunctions) {
+    const name = fn.kind === "decl" ? fn.name : fn.varName;
+    if (name) fnLastOccurrence.set(name, fn);
+  }
+
+  let offset = 0;
+  let cachedCode = code;
+
+  const finalOffset = offset;
+  const expectedVars = [];
+
+  for (const fn of surfaceFunctions) {
+    if (fn.kind === "decl") {
+      const isApartOfMathFunctions = (encodingAndDecodingPairs?.decodeMainFunctionNames.includes(fn.name) || encodingAndDecodingPairs?.decoderFunctionNames.includes(fn.name));
+      if (isApartOfMathFunctions) continue;
+
+      // Skip duplicate function names for "once" mode (hoisting makes fnRef+""
+      // resolve to the last declaration, breaking checks on earlier ones)
+      // Only skip non-last duplicates: the last declaration IS what toString() returns
+      if (isOnce && fnNameCount.get(fn.name) > 1 && fnLastOccurrence.get(fn.name) !== fn) continue;
+
+      const realStart = fn.start + offset;
+      const fnCode = cachedCode.slice(fn.start, fn.end);
+      const firstBrace = fnCode.indexOf("{");
+      const lastBrace = fnCode.lastIndexOf("}");
+
+      if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace || fnCode[firstBrace - 1] === "(") { fn.dontTouch = true; continue; };
+
+      const fnRef = fn.name;
+      const [runtimeHasherName, secondRuntimeHasherName] = getHasherName();
+
+      if (isOnce) {
+        // Once: hash the unmodified function source, inject check right after
+        const fnSrcNormalized = fnCode.replace(/\r/g, "");
+
+        const firstExpectedValue = buildHashFromName(fnSrcNormalized, runtimeHasherName);
+        const secondExpectedValue = buildHashFromName(fnSrcNormalized, secondRuntimeHasherName);
+
+        const snippet = generateLoadtimeCheckSnippet({
+          fnRef,
+          hash1: firstExpectedValue,
+          hash2: secondExpectedValue,
+          hasherName1: runtimeHasherName,
+          hasherName2: secondRuntimeHasherName,
+          verifyCallName: toStringGuard?.verifyCallName,
+        });
+
+        // Inject right after the function declaration (same scope)
+        const insertAt = fn.end + offset;
+        code = code.slice(0, insertAt) + snippet + code.slice(insertAt);
+        offset += snippet.length;
+
+        // Generate a stealth check to be embedded INSIDE a different function body later
+        const [sH1, sH2] = getHasherName();
+        stealthChecks.push({
+          fnRef,
+          hash1: buildHashFromName(fnSrcNormalized, sH1),
+          hash2: buildHashFromName(fnSrcNormalized, sH2),
+          hasherName1: sH1,
+          hasherName2: sH2,
+          verifyCallName: toStringGuard?.verifyCallName,
+        });
+
+        // Add deferred re-check for a subset of functions (performance-conscious)
+        if (toStringGuard && deferredCheckCount < 8 && Math.random() < 0.6) {
+          deferredChecks.push(generateDeferredRecheck({
+            fnRef,
+            hash1: firstExpectedValue,
+            hash2: secondExpectedValue,
+            hasherName1: runtimeHasherName,
+            hasherName2: secondRuntimeHasherName,
+            verifyCallName: toStringGuard.verifyCallName,
+          }));
+          deferredCheckCount++;
+        }
+      } else {
+        // Continuous: inject inside function body
+        const expectedVarName = generateObfuscatedName();
+        const secondExpectedVarName = generateObfuscatedName();
+        const checkBody = generateCheckSnippet({ fnRef, expectedVarName, secondExpectedVarName, runtimeHasherName, secondRuntimeHasherName });
+
+        let insertPosRel = firstBrace + 1;
+
+        if (insertPosRel >= lastBrace) insertPosRel = lastBrace;
+
+        const simulatedFn = (fnCode.slice(0, insertPosRel) + checkBody + fnCode.slice(insertPosRel));
+        if (simulatedFn.includes("async")) {
+          continue;
+        };
+
+        const normalized = simulatedFn.replace(/\r/g, "");
+
+        const firstExpectedValue = buildHashFromName(normalized, runtimeHasherName);
+        expectedVars.push({ varName: expectedVarName, value: firstExpectedValue });
+
+        const secondExpectedValue = buildHashFromName(normalized, secondRuntimeHasherName);
+        expectedVars.push({ varName: secondExpectedVarName, value: secondExpectedValue });
+
+        const insertAt = realStart + insertPosRel;
+        code = code.slice(0, insertAt) + checkBody + code.slice(insertAt);
+        offset += checkBody.length;
+      }
+    } else if (fn.kind === "var") {
+      const isApartOfMathFunctions = (encodingAndDecodingPairs?.decodeMainFunctionNames.includes(fn.varName) || encodingAndDecodingPairs?.decoderFunctionNames.includes(fn.varName));
+      if (isApartOfMathFunctions) continue;
+
+      if (isOnce && fn.varName && fnNameCount.get(fn.varName) > 1 && fnLastOccurrence.get(fn.varName) !== fn) continue;
+
+      const initStart = fn.initStart + offset;
+      const initEnd = fn.initEnd + offset;
+      // For "once": read from cachedCode (original positions) to avoid offset
+      // over-count from sibling checks inserted at stmtEnd (after all inits).
+      // For "continuous": use code+offset (continuous inserts INSIDE function body,
+      // before next sibling, so offset is correct).
+      let initCode = isOnce
+        ? cachedCode.slice(fn.initStart, fn.initEnd)
+        : code.slice(initStart, initEnd);
+      const braceIdx = initCode.indexOf("{");
+      const lastBraceIdx = initCode.lastIndexOf("}");
+
+      if (braceIdx !== -1 && lastBraceIdx !== -1 && lastBraceIdx > braceIdx) {
+        if (!fn.varName) continue;
+        const fnRef = fn.varName;
+
+        const [runtimeHasherName, secondRuntimeHasherName] = getHasherName();
+
+        if (isOnce) {
+          const initNormalized = initCode.replace(/\r/g, "");
+
+          const firstExpectedValue = buildHashFromName(initNormalized, runtimeHasherName);
+          const secondExpectedValue = buildHashFromName(initNormalized, secondRuntimeHasherName);
+
+          const snippet = generateLoadtimeCheckSnippet({
+            fnRef,
+            hash1: firstExpectedValue,
+            hash2: secondExpectedValue,
+            hasherName1: runtimeHasherName,
+            hasherName2: secondRuntimeHasherName,
+            verifyCallName: toStringGuard?.verifyCallName,
+          });
+
+          // Inject right after the variable statement (same scope)
+          const insertAt = fn.stmtEnd + offset;
+          code = code.slice(0, insertAt) + snippet + code.slice(insertAt);
+          offset += snippet.length;
+
+          // Generate a stealth check to be embedded INSIDE a different function body later
+          const [sH1v, sH2v] = getHasherName();
+          stealthChecks.push({
+            fnRef,
+            hash1: buildHashFromName(initNormalized, sH1v),
+            hash2: buildHashFromName(initNormalized, sH2v),
+            hasherName1: sH1v,
+            hasherName2: sH2v,
+            verifyCallName: toStringGuard?.verifyCallName,
+          });
+
+          // Add deferred re-check for a subset of functions
+          if (toStringGuard && deferredCheckCount < 8 && Math.random() < 0.6) {
+            deferredChecks.push(generateDeferredRecheck({
+              fnRef,
+              hash1: firstExpectedValue,
+              hash2: secondExpectedValue,
+              hasherName1: runtimeHasherName,
+              hasherName2: secondRuntimeHasherName,
+              verifyCallName: toStringGuard.verifyCallName,
+            }));
+            deferredCheckCount++;
+          }
+        } else {
+          const expectedVarName = generateObfuscatedName();
+          const secondExpectedVarName = generateObfuscatedName();
+          const checkBody = generateCheckSnippet({ fnRef, expectedVarName, secondExpectedVarName, runtimeHasherName, secondRuntimeHasherName });
+
+          let insertRel = braceIdx + 1;
+          if (insertRel >= lastBraceIdx) insertRel = lastBraceIdx;
+
+          const simulatedInit = initCode.slice(0, insertRel) + checkBody + initCode.slice(insertRel);
+          const normalized = simulatedInit.replace(/\r/g, "");
+
+          const firstExpectedValue = buildHashFromName(normalized, runtimeHasherName);
+          expectedVars.push({ varName: expectedVarName, value: firstExpectedValue });
+
+          const secondExpectedValue = buildHashFromName(normalized, secondRuntimeHasherName);
+          expectedVars.push({ varName: secondExpectedVarName, value: secondExpectedValue });
+
+          const insertAt = initStart + insertRel;
+          code = code.slice(0, insertAt) + checkBody + code.slice(insertAt);
+          offset += checkBody.length;
+        }
+      };
+    }
+  }
+
+  function parseArguments(code, _i) {
+    let count = -1;
+    let newCode = "";
+
+    for (let i = _i; i < code.length; i++) {
+      let char = code[i];
+
+      newCode += char;
+      if (char === "(") { if (count === -1) { count = 0 }; count++ };
+      if (char === ")") { count-- };
+      if (count === 0) {
+        return newCode;
+      };
+    };
+  }
+
+  function parseFunction(code) {
+    let count = -1;
+    let newCode = "";
+    for (let i = 0; i < code.length; i++) {
+      let char = code[i];
+
+      newCode += char;
+      if (char === "{") { if (count === -1) { count = 0 }; count++ };
+      if (char === "}") { count-- };
+      if (count === 0) {
+        if (code[i + 1] == "(") { let args =  parseArguments(code, i); newCode += args; };
+        return newCode;
+      };
+    };
+  };
+
+  const validFunctions = surfaceFunctions.filter(
+    f => f.kind === "decl" && !f.dontTouch
+  );
+
+  // ---------- Inject stealth checks inside random function bodies (cross-function verification) ----------
+  if (isOnce && stealthChecks.length > 0) {
+    // Re-parse the code to find function bodies where we can embed stealth checks
+    const stealthAst = acorn.parse(code, { ecmaVersion: "latest", sourceType: "script", locations: false });
+    const stealthTargets = [];
+    function findStealthTargets(node) {
+      if (node.type === "FunctionDeclaration" && node.body && node.body.body && node.body.body.length > 0) {
+        const bodyStart = node.body.start + 1;
+        stealthTargets.push(bodyStart);
+      }
+      for (const key of Object.keys(node)) {
+        if (key === "type" || key === "start" || key === "end") continue;
+        const child = node[key];
+        if (child && typeof child === "object") {
+          if (Array.isArray(child)) {
+            for (const c of child) { if (c && c.type) findStealthTargets(c); }
+          } else if (child.type) findStealthTargets(child);
+        }
+      }
+    }
+    findStealthTargets(stealthAst);
+
+    // Pair checks to targets, then insert from HIGHEST position to lowest so offsets stay valid
+    if (stealthTargets.length > 0) {
+      const shuffledChecks = stealthChecks.sort(() => Math.random() - 0.5).slice(0, Math.min(stealthChecks.length, stealthTargets.length, 6));
+      // Randomly assign targets to checks
+      const shuffledTargets = stealthTargets.sort(() => Math.random() - 0.5).slice(0, shuffledChecks.length);
+      // Build pairs and sort descending by position so inserts don't shift earlier positions
+      const pairs = shuffledChecks.map((sc, i) => ({ sc, pos: shuffledTargets[i] })).sort((a, b) => b.pos - a.pos);
+      for (const { sc, pos } of pairs) {
+        const snippet = generateStealthCheckSnippet(sc);
+        code = code.slice(0, pos) + snippet + code.slice(pos);
+      }
+    }
+  }
+
+  // Inject hasher functions into the code
+  if (isOnce) {
+    // For "once": prepend toString guard + all hashers at top level
+    for (let hasher of hashingAlgorithms) {
+      const injectedHasherSrc = compress(hasher.hasherCode);
+      code = injectedHasherSrc + (config.compression ? "" : "\n") + code;
+    }
+    if (toStringGuard) {
+      code = toStringGuard.guardCode + (config.compression ? "" : "\n") + code;
+    }
+  } else {
+  // For "continuous": place hashers near function declarations for stealth
+  for (let hasher of hashingAlgorithms) {
+    const injectedHasherSrc = compress(hasher.hasherCode);
+
+    if (!validFunctions.length) {
+      code = injectedHasherSrc + (config.compression ? "" : "\n") + code;
+      continue;
+    }
+
+    const functionUsed = validFunctions[Math.floor(Math.random() * validFunctions.length)];
+
+    let fnSrc = null;
+
+    if (code.includes(`async function ${functionUsed.name}(`)) {
+      fnSrc = "async function " + functionUsed.name +
+        parseFunction(code.split(`function ${functionUsed.name}`)[1]);
+    } else if (code.includes(`function ${functionUsed.name}(`)) {
+      fnSrc = "function " + functionUsed.name +
+        parseFunction(code.split(`function ${functionUsed.name}`)[1]);
+    } else if (code.includes(`async function* ${functionUsed.name}(`)) {
+      fnSrc = "async function* " + functionUsed.name +
+        parseFunction(code.split(`function ${functionUsed.name}`)[1]);
+    } else if (code.includes(`function* ${functionUsed.name}(`)) {
+      fnSrc = "function* " + functionUsed.name +
+        parseFunction(code.split(`function* ${functionUsed.name}`)[1]);
+    }
+
+    if (!fnSrc) {
+      code = injectedHasherSrc + (config.compression ? "" : "\n") + code;
+      continue;
+    }
+
+    code = code.split(fnSrc)[0] + (Math.random() < 0.5 ? injectedHasherSrc + (config.compression ? "" : "\n") + fnSrc : fnSrc + (config.compression ? "" : "\n") + injectedHasherSrc) + code.split(fnSrc)[1];
+  };
+  } // end continuous hasher placement
+
+  // For "once": inject deferred re-checks then scatter neutralization throughout the code
+  if (isOnce) {
+    const sep = config.compression ? "" : "\n";
+
+    // Use AST to find safe top-level statement boundaries for scattering
+    function findTopLevelStatementEnds(src) {
+      try {
+        const a = acorn.parse(src, { ecmaVersion: "latest", sourceType: "script", locations: false });
+        return a.body.map(stmt => stmt.end);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // Inject deferred re-checks BEFORE neutralization (they capture hashers in closures)
+    if (deferredChecks.length > 0) {
+      const stmtEnds = findTopLevelStatementEnds(code);
+      if (stmtEnds.length > 0) {
+        // Pick positions in the latter portion of statements
+        const latterHalf = stmtEnds.filter((_, i) => i >= Math.floor(stmtEnds.length * 0.3));
+        const candidates = latterHalf.length > 0 ? latterHalf : stmtEnds;
+        // Insert from end to start so offsets remain valid
+        const chosen = deferredChecks.map(() => candidates[Math.floor(Math.random() * candidates.length)]);
+        const insertions = deferredChecks.map((dc, i) => ({ pos: chosen[i], snippet: dc })).sort((a, b) => b.pos - a.pos);
+        for (const { pos, snippet } of insertions) {
+          code = code.slice(0, pos) + snippet + code.slice(pos);
+        }
+      } else {
+        code = code + deferredChecks.join('');
+      }
+    }
+
+    // Scatter neutralizers at top-level statement boundaries in last 20% of code
+    const neutralizerSnippets = hashingAlgorithms.map(h => {
+      const v = generateObfuscatedName();
+      const neutralizerVariants = [
+        `${h.runtimeHasherName}=function(${v}){${generateTrapCode()}}`,
+        `${h.runtimeHasherName}=(${encodeLocalNumber(0)},function(${v}){${generateTrapCode()}})`,
+        `${h.runtimeHasherName}=function(){${generateTrapCode()};return ${encodeLocalNumber(0)}}`,
+        `${h.runtimeHasherName}=(function(){return function(${v}){${generateTrapCode()}}})()`,
+      ];
+      return neutralizerVariants[Math.floor(Math.random() * neutralizerVariants.length)] + ';';
+    });
+
+    const stmtEnds2 = findTopLevelStatementEnds(code);
+    if (stmtEnds2.length > 0) {
+      const latterPart = stmtEnds2.filter((_, i) => i >= Math.floor(stmtEnds2.length * 0.8));
+      const candidates = latterPart.length > 0 ? latterPart : [stmtEnds2[stmtEnds2.length - 1]];
+      const insertions = neutralizerSnippets.map(ns => ({
+        pos: candidates[Math.floor(Math.random() * candidates.length)],
+        snippet: sep + ns
+      })).sort((a, b) => b.pos - a.pos);
+      for (const { pos, snippet } of insertions) {
+        code = code.slice(0, pos) + snippet + code.slice(pos);
+      }
+    } else {
+      code = code + sep + neutralizerSnippets.join(sep);
+    }
+  }
+
+  let codeLines = code.split("\n");
+
+  const functionDeclRegex = /^\s*function\s+([A-Za-z_$][\w$]*)\s*\(/;
+
+  for (let fn of validFunctions) {
+    fn.createdIndex = -1;
+    fn.calledIndex = -1;
+
+    const callRegex = new RegExp(`\\b${fn.name}\\s*\\(`);
+
+    for (let i = 0; i < codeLines.length; i++) {
+      const line = codeLines[i];
+
+      if (fn.createdIndex === -1 && functionDeclRegex.test(line)) {
+        const name = line.match(functionDeclRegex)?.[1];
+        if (name === fn.name) {
+          fn.createdIndex = i;
+          continue;
+        }
+      }
+
+      if (functionDeclRegex.test(line)) continue;
+
+      if (/^\s*\/\//.test(line)) continue;
+
+      if (fn.calledIndex === -1 && callRegex.test(line)) {
+        fn.calledIndex = i;
+        break;
+      }
+    }
+  }
+
+  let __CachedCode__ = code;
+
+  if (isOnce) {
+    // For "once", hashes are inlined - no separate expected vars needed
+  } else {
+    for (let Var of expectedVars) {
+    let VarIndex = codeLines.indexOf(codeLines.find(line => (line.includes(`= ${Var.varName} `) || line.includes(`= ${Var.varName})`) || line.includes(` ${Var.varName} !=`))));
+
+    if (VarIndex === -1) continue;
+
+    let err = false;
+    let codeLine = codeLines[VarIndex - 1];
+    let functionName
+    try {
+      functionName = codeLine.includes("=>") ? codeLine.split("=")[0].split(" ")[1] : codeLine.split("function ")[1].split("(")[0];
+    } catch (e) {
+      err = true;
+    };
+
+    let functionUsed = validFunctions.find(r => r.name === functionName);
+    if (!functionUsed || functionUsed.calledIndex === -1 || err) {
+      __CachedCode__ = `let ${Var.varName} = ${Var.value};${config.compression ? "" : "\n"}` + __CachedCode__;
+      continue;
+    };
+
+    const proximityCandidates = validFunctions.filter(f =>
+      f.createdIndex !== -1 &&
+      f.createdIndex < functionUsed.calledIndex
+    );
+
+    let proximityFunction = proximityCandidates.length
+      ? proximityCandidates[Math.floor(Math.random() * proximityCandidates.length)]
+      : null;
+
+    if (!proximityFunction) __CachedCode__ = `let ${Var.varName} = ${Var.value};${config.compression ? "" : "\n"}` + __CachedCode__;
+    else __CachedCode__ = __CachedCode__.replace(codeLines[proximityFunction.createdIndex], `let ${Var.varName} = ${Var.value};${config.compression ? "" : "\n"}${codeLines[proximityFunction.createdIndex]}`)
+  };
+  }
+
+  return __CachedCode__;
+};
+
+module.exports = { createIntegrity };

@@ -57,7 +57,7 @@ function updateNodeName(node, isBeingDefined) {
     } else node.name = declarationMapping.get(node.name);
 };
 
-function clearDeclarationMapping(code) { declarationMapping = new Map(); sourceCode = code; };
+function clearDeclarationMapping(code) { declarationMapping = new Map(); sourceCode = code; blacklistLines = {}; };
 function setDeclarationMapping(cacheName, newName) { declarationMapping.set(cacheName, newName); };
 function getDeclarationMapping() { return declarationMapping };
 

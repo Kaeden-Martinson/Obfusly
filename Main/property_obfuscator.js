@@ -28,6 +28,10 @@ const { generateObfuscatedName } = require('../Utils/nameGenerator');
 const { createIntegrity } = require('../Integrity/build');
 const { buildConsoleDisabler } = require('../Defense/Builders/disable_console');
 const { createDebuggerBundle } = require('../Defense/Builders/debugger');
+const { getSplitCount, resetSplitCount } = require('../Primitives/Literals/splitting');
+
+function _log(msg) { console.log(`[step ${++global.__jsscramble_step}] ${msg}`); }
+function _stat(label, value) { console.log(`  ${label}: ${value}`); }
 
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
     updateSourceCode(sourceCode);
@@ -37,6 +41,10 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     clearDeclarationMapping(sourceCode);
     clearStringBuilder();
     stringBuilderModule.resetStrings();
+    resetSplitCount();
+
+    let numberCount = 0;
+    const _t0 = Date.now();
 
     const decoderName = previousDeclarationMapping.get("decodeFunctionName") || generateObfuscatedName();
       if (config.numberCalculator) {
@@ -84,23 +92,26 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         setStringBuilder(stringBuilderModule);
     };
 
-    if (config.breakIIFEString) declarationMapping.set("IIFEstringBreaker", generateObfuscatedName());
+    if (!config.strictMode) declarationMapping.set("IIFEstringBreaker", generateObfuscatedName());
 
     while (!encodeModule && config.numberCalculator) await new Promise(r => setTimeout(r, 0));
 
     function encodeLocalNumber(number) {
         if (config.numberCalculator && Math.abs(number) <= 4099000000 && number > 100) {
             if (!numberCache[number]) {
+                numberCount++;
                 const isNegative = number < 0;
                 const encodedValue = encodeModule.encode(number);
                 let res = `${isNegative ? "-" : ""}${encodingAndDecodingPairs.decodeName}(${encodedValue})`;
                 numberCache[number] = res;
                 return res;
             } else {
+                numberCount++;
                 return numberCache[number];
             };
         } else if (config.globalBaseIntegerConcealment) {
             if (number <= 100) {
+                numberCount++;
                 if (config.multipleVariableAssignments && number !== 100 && number !== 0) {
                     let shuffledVariableName = Math.floor(Math.random() * 4);
                     if (shuffledVariableName !== 0) return declarationMapping.get(`variable_numbers_${shuffledVariableName}_${number}`);
@@ -118,11 +129,12 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                     default: case "Refractal": defaultedFunction = toRefractal; break;
                 };
 
+                numberCount++;
                 return defaultedFunction(number, declarationMapping);
             };
         } else if (config.numberEncoding) {
-            let percentageBasedConfig = config.integerPrecentage;
-            if (number <= 10) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
+            let percentageBasedConfig = { ...config.integerPrecentage };
+            if (number <= 10 && config.integerPrecentage.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
             let choice = pickWeightedRandom(percentageBasedConfig);
 
@@ -135,9 +147,12 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                 default: case "Refractal": defaultedFunction = toRefractal; break;
             };
 
+            numberCount++;
             return defaultedFunction(number, declarationMapping);
         } else return number;
     }
+
+    _log('Encoding literals and properties');
 
     estraverse.replace(ast, {
         enter(node) {
@@ -164,7 +179,13 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     let generated = escodegen.generate(ast);
 
-    if (!config.wrapStringsInIIFE || !config.stringConcealment) generated = `${createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, encodeLocalNumber, false)}` + '\n' + generated;
+    if (config.numberEncoding || config.numberCalculator || config.globalBaseIntegerConcealment) _stat('Numbers encoded', numberCount);
+    if (config.stringConcealment) _stat('Strings concealed', stringBuilderModule.getStringCount());
+    if (config.stringSplitting > 0) _stat('Split strings created', getSplitCount());
+    if (config.concealGlobalObjects) _log(`Globals concealed (window -> ${windowName})`);
+    if (config.concealPrimitives) _log(`Primitives concealed (${defaultedValues.length} values)`);
+
+    if (!config.stringConcealment) generated = `${createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, encodeLocalNumber, false)}` + '\n' + generated;
 
     if (config.stringConcealment) {
         stringBuilderModule.setCommonVariables(declarationMapping);
@@ -178,11 +199,12 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     };
 
     if (config.globalBaseIntegerConcealment) {
+        _log('Base integers built');
         const generateBaseInts = buildBaseInt(declarationMapping);
         generated = generateBaseInts + '\n' + generated;
     };
 
-    if (config.breakIIFEString) {
+    if (!config.strictMode) {
         generated = `let ${declarationMapping.get("IIFEstringBreaker")} = ${stringBuilderModule.getBrokenIIFE()};` + '\n' + generated;
     };
 
@@ -192,6 +214,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     if (config.concealPrimitives) for (let primitive of defaultedValues) generated = `const ${previousDeclarationMapping.get(primitive)} = ${primitive}\n` + generated;
 
     if (config.compression) {
+        _log('Compressing code');
         const result = await terser.minify(generated, {
             compress: { passes: 1 },
             mangle: false,
@@ -202,11 +225,13 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         });
 
         generated = (result.code || '').replace(/\r?\n+/g, '');
+        _log('Compressed');
     };
 
     generated = generated.replace(/__LET_PLACEHOLDER__/g, 'let');
 
-    if (config.integrityChecks) {
+    if (config.integrityChecks && config.integrityChecks !== 'off') {
+        _log('Injecting integrity checks');
         generated = createIntegrity(generated, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule);
     }
 
@@ -215,25 +240,38 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     /** Rebuild after integrity */
     if (config.stringConcealment) {
+        _log('Building string concealment layer');
         let module = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule);
+        
         /** Work For Commas */
-        generated = generated.split("try{_ANTI_TERSER_}catch(err){}")[0] + module + generated.split("try{_ANTI_TERSER_}catch(err){}")[1];
+        const parts = generated.split("try{_ANTI_TERSER_}catch(err){}");
+        generated = parts[0] + module + (parts[1] || '');
     };
 
-    if (config.disableConsoleOutput) {
+    if (config.disableConsoleOutput && !config.strictMode) {
+        _log('Console output disabled');
         generated = buildConsoleDisabler(config) + generated;
     };
 
-    if (config.enableAntiDebugger) {
+    if (config.enableAntiDebugger && !config.strictMode) {
+        _log('Anti-debugger protection injected');
         const [code, obfuscatedName, PASSPHRASE] = createDebuggerBundle(config);
         let passVar = generateObfuscatedName();
         const generatedIIFE = `((${passVar}) => { ${obfuscatedName}({ pass: ${passVar}, exec: true }); })("${PASSPHRASE}");`
         generated = code + generated + generatedIIFE;
     };
 
-    if (config.wrapInIIFE) {
+    if (!config.strictMode) {
+        _log('Wrapped in Function constructor');
         generated = `new Function(${JSON.stringify(generated)})();`
     };
+
+    const elapsed = Date.now() - (global.__jsscramble_start || _t0);
+    console.log();
+    _stat('Output size', `${(generated.length / 1024).toFixed(1)} KB`);
+    _stat('Time taken', `${elapsed}ms`);
+    console.log('Obfuscation complete');
+    console.log();
 
     return generated;
 }
