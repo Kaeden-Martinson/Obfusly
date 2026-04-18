@@ -1721,7 +1721,15 @@
                         <span class="unprotected-filename">App.unprotected.js</span>
                         <span class="unprotected-badge">🔓 SOURCE</span>
                     </div>
-                    <div class="unprotected-code">Test source code</div>
+                    <div class="unprotected-code">function calculateSum(a, b) {
+                        return a + b;
+                        }
+                        const greeting = "Hello World";
+                        console.log(greeting);
+                        const users = [
+                        { id: 1, name: "Alice" },
+                        { id: 2, name: "Bob" }
+                        ];</div>
                 </div>
             </div>
 
@@ -1963,44 +1971,6 @@
                     </div>
                 </div>
 
-                <!-- Integer Percentages -->
-                <h3 class="settings-category">Integer Encoding Percentages</h3>
-                <div class="setting-item number-item">
-                    <input type="number" id="intPctRefractal" min="0" max="100" value="30">
-                    <label for="intPctRefractal">Refractal %</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Percentage weight for Refractal integer encoding. All percentages should sum to 100.</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="intPctJSFuck" min="0" max="100" value="10">
-                    <label for="intPctJSFuck">JSFuck %</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Percentage weight for JSFuck integer encoding.</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="intPctHexadecimal" min="0" max="100" value="20">
-                    <label for="intPctHexadecimal">Hexadecimal %</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Percentage weight for Hexadecimal integer encoding.</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="intPctOctal" min="0" max="100" value="20">
-                    <label for="intPctOctal">Octal %</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Percentage weight for Octal integer encoding.</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="intPctBinary" min="0" max="100" value="20">
-                    <label for="intPctBinary">Binary %</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Percentage weight for Binary integer encoding.</div>
-                    </div>
-                </div>
-
                 <!-- String Encoding -->
                 <h3 class="settings-category">String Encoding</h3>
                 <div class="setting-item checkbox">
@@ -2023,6 +1993,20 @@
                     <label for="stringConcealment">String Concealment</label>
                     <div class="info-icon">
                         <div class="tooltip">Apply additional concealment layers to string decoders.</div>
+                    </div>
+                </div>
+                <div class="setting-item checkbox">
+                    <input type="checkbox" id="wrapStringsInIIFE">
+                    <label for="wrapStringsInIIFE">Wrap Strings in IIFE</label>
+                    <div class="info-icon">
+                        <div class="tooltip">Wrap string decoders in Immediately Invoked Function Expressions.</div>
+                    </div>
+                </div>
+                <div class="setting-item checkbox">
+                    <input type="checkbox" id="breakIIFEString">
+                    <label for="breakIIFEString">Break IIFE String</label>
+                    <div class="info-icon">
+                        <div class="tooltip">Break IIFE structure patterns to prevent decompilation analysis.</div>
                     </div>
                 </div>
                 <div class="setting-item number-item">
@@ -2075,14 +2059,22 @@
                         </div>
                     </div>
                 </div>
+                <div class="setting-item checkbox">
+                    <input type="checkbox" id="wrapInIIFE">
+                    <label for="wrapInIIFE">Wrap in IIFE</label>
+                    <div class="info-icon">
+                        <div class="tooltip">Wrap entire code in Immediately Invoked Function Expression for scope
+                            isolation.</div>
+                    </div>
+                </div>
 
                 <!-- Security & Integrity -->
                 <h3 class="settings-category">Security & Integrity</h3>
                 <div class="setting-item checkbox">
-                    <input type="checkbox" id="integrityChecks" checked>
-                    <label for="integrityChecks">Integrity Checks</label>
+                    <input type="checkbox" id="integrityChecks">
+                    <label for="integrityChecks">Enable Integrity Checks</label>
                     <div class="info-icon">
-                        <div class="tooltip">Verifies code integrity on script load. Detects and prevents tampering using route-based verification with decoy checks.</div>
+                        <div class="tooltip">Add runtime checks to detect code tampering or modification.</div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
@@ -2101,10 +2093,18 @@
                     </div>
                 </div>
                 <div class="setting-item checkbox">
-                    <input type="checkbox" id="strictMode">
-                    <label for="strictMode">Strict Mode (Eval)</label>
+                    <input type="checkbox" id="disableEval">
+                    <label for="disableEval">Disable Eval</label>
                     <div class="info-icon">
-                        <div class="tooltip">Disables eval(), new Function(), IIFE wrapping, and other features that break Content Security Policy or strict mode environments. Enable this if your target environment blocks dynamic code execution.</div>
+                        <div class="tooltip">Prevent use of eval() function in obfuscated code for security.</div>
+                    </div>
+                </div>
+                <div class="setting-item checkbox">
+                    <input type="checkbox" id="disableLocalIIFEs">
+                    <label for="disableLocalIIFEs">Disable Local IIFEs</label>
+                    <div class="info-icon">
+                        <div class="tooltip">Reduce scope pollution by disabling local IIFE wrapping for smaller code.
+                        </div>
                     </div>
                 </div>
                 <div class="setting-item checkbox">
@@ -2619,24 +2619,15 @@
                 multipleVariableAssignments: true,
                 shuffleBaseIntegers: true,
                 baseIntegersDefault: "JSFuck",
-                integerPrecentage: {
-                    Refractal: 30,
-                    JSFuck: 10,
-                    Hexadecimal: 20,
-                    Octal: 20,
-                    Binary: 20
-                },
                 encodedFunctionStrength: 5,
                 stringEncoding: true,
                 optimizedStringCache: true,
                 stringConcealment: true,
-                stringConcealmentSettings: {
-                    decodersCount: 3,
-                    addNoiseCount: 3
-                },
                 wrapStringsInIIFE: true,
                 breakIIFEString: true,
                 stringSplitting: 0,
+                decodersCount: 3,
+                addNoiseCount: 3,
                 concealPrimitives: true,
                 concealGlobalObjects: true,
                 breakASTs: true,
@@ -2644,7 +2635,6 @@
                 integrityChecks: true,
                 enableAntiDebugger: false,
                 disableConsoleOutput: false,
-                strictMode: false,
                 disableEval: false,
                 disableLocalIIFEs: false,
                 compression: true
@@ -2666,40 +2656,30 @@
             config.shuffleBaseIntegers = document.getElementById('shuffleBaseIntegers').checked;
             config.multipleVariableAssignments = document.getElementById('multipleVariableAssignments').checked;
             config.baseIntegersDefault = document.getElementById('baseIntegersDefault').value;
-            config.integerPrecentage = {
-                Refractal: parseInt(document.getElementById('intPctRefractal').value) || 0,
-                JSFuck: parseInt(document.getElementById('intPctJSFuck').value) || 0,
-                Hexadecimal: parseInt(document.getElementById('intPctHexadecimal').value) || 0,
-                Octal: parseInt(document.getElementById('intPctOctal').value) || 0,
-                Binary: parseInt(document.getElementById('intPctBinary').value) || 0
-            };
             config.encodedFunctionStrength = parseInt(document.getElementById('encodedFunctionStrength').value);
 
             // String Encoding
             config.stringEncoding = document.getElementById('stringEncoding').checked;
             config.optimizedStringCache = document.getElementById('optimizedStringCache').checked;
             config.stringConcealment = document.getElementById('stringConcealment').checked;
-            config.stringConcealmentSettings = {
-                decodersCount: parseInt(document.getElementById('decodersCount').value) || 3,
-                addNoiseCount: parseInt(document.getElementById('addNoiseCount').value) || 3
-            };
-            config.wrapStringsInIIFE = true;
-            config.breakIIFEString = !document.getElementById('strictMode').checked;
+            config.wrapStringsInIIFE = document.getElementById('wrapStringsInIIFE').checked;
+            config.breakIIFEString = document.getElementById('breakIIFEString').checked;
             config.stringSplitting = parseInt(document.getElementById('stringSplitting').value);
+            config.decodersCount = parseInt(document.getElementById('decodersCount').value);
+            config.addNoiseCount = parseInt(document.getElementById('addNoiseCount').value);
 
             // Code Protection
             config.concealPrimitives = document.getElementById('concealPrimitives').checked;
             config.concealGlobalObjects = document.getElementById('concealGlobalObjects').checked;
             config.breakASTs = document.getElementById('breakASTs').checked;
-            config.wrapInIIFE = !document.getElementById('strictMode').checked;
+            config.wrapInIIFE = document.getElementById('wrapInIIFE').checked;
 
             // Security & Integrity
             config.integrityChecks = document.getElementById('integrityChecks').checked;
             config.enableAntiDebugger = document.getElementById('enableAntiDebugger').checked;
             config.disableConsoleOutput = document.getElementById('disableConsoleOutput').checked;
-            config.strictMode = document.getElementById('strictMode').checked;
-            config.disableEval = document.getElementById('strictMode').checked;
-            config.disableLocalIIFEs = document.getElementById('strictMode').checked;
+            config.disableEval = document.getElementById('disableEval').checked;
+            config.disableLocalIIFEs = document.getElementById('disableLocalIIFEs').checked;
             config.compression = document.getElementById('compression').checked;
 
             return config;
@@ -2720,33 +2700,30 @@
             document.getElementById('shuffleBaseIntegers').checked = config.shuffleBaseIntegers;
             document.getElementById('multipleVariableAssignments').checked = config.multipleVariableAssignments;
             document.getElementById('baseIntegersDefault').value = config.baseIntegersDefault || 'JSFuck';
-            const pct = config.integerPrecentage || { Refractal: 30, JSFuck: 10, Hexadecimal: 20, Octal: 20, Binary: 20 };
-            document.getElementById('intPctRefractal').value = pct.Refractal ?? 30;
-            document.getElementById('intPctJSFuck').value = pct.JSFuck ?? 10;
-            document.getElementById('intPctHexadecimal').value = pct.Hexadecimal ?? 20;
-            document.getElementById('intPctOctal').value = pct.Octal ?? 20;
-            document.getElementById('intPctBinary').value = pct.Binary ?? 20;
             document.getElementById('encodedFunctionStrength').value = config.encodedFunctionStrength || 5;
 
             // String Encoding
             document.getElementById('stringEncoding').checked = config.stringEncoding;
             document.getElementById('optimizedStringCache').checked = config.optimizedStringCache;
             document.getElementById('stringConcealment').checked = config.stringConcealment;
-            const scs = config.stringConcealmentSettings || { decodersCount: 3, addNoiseCount: 3 };
-            document.getElementById('decodersCount').value = scs.decodersCount ?? 3;
-            document.getElementById('addNoiseCount').value = scs.addNoiseCount ?? 3;
+            document.getElementById('wrapStringsInIIFE').checked = config.wrapStringsInIIFE;
+            document.getElementById('breakIIFEString').checked = config.breakIIFEString;
             document.getElementById('stringSplitting').value = config.stringSplitting || 0;
+            document.getElementById('decodersCount').value = config.decodersCount || 3;
+            document.getElementById('addNoiseCount').value = config.addNoiseCount || 3;
 
             // Code Protection
             document.getElementById('concealPrimitives').checked = config.concealPrimitives;
             document.getElementById('concealGlobalObjects').checked = config.concealGlobalObjects;
             document.getElementById('breakASTs').checked = config.breakASTs;
+            document.getElementById('wrapInIIFE').checked = config.wrapInIIFE;
 
             // Security & Integrity
-            document.getElementById('integrityChecks').checked = config.integrityChecks !== false;
+            document.getElementById('integrityChecks').checked = config.integrityChecks;
             document.getElementById('enableAntiDebugger').checked = config.enableAntiDebugger;
             document.getElementById('disableConsoleOutput').checked = config.disableConsoleOutput;
-            document.getElementById('strictMode').checked = config.strictMode || false;
+            document.getElementById('disableEval').checked = config.disableEval;
+            document.getElementById('disableLocalIIFEs').checked = config.disableLocalIIFEs;
             document.getElementById('compression').checked = config.compression;
         }
 
