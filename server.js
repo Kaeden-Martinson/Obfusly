@@ -59,6 +59,71 @@ async function handleObfuscation(req, res) {
     }
 }
 
+// Code execution endpoint
+app.post('/execute', (req, res) => {
+    const { code } = req.body;
+    if (!code) {
+        res.status(400).json({ error: 'No code provided', success: false });
+        return;
+    }
+
+    const output = [];
+    const errors = [];
+    
+    // Capture console output
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+
+    console.log = (...args) => {
+        output.push(args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' '));
+    };
+
+    console.error = (...args) => {
+        errors.push(args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' '));
+    };
+
+    console.warn = (...args) => {
+        output.push('[WARNING] ' + args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+        ).join(' '));
+    };
+
+    try {
+        // Execute code in a controlled environment
+        const result = (new Function(code))();
+        
+        // If function returns something, log it
+        if (result !== undefined) {
+            output.push('Return value: ' + (typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)));
+        }
+
+        console.log = originalLog;
+        console.error = originalError;
+        console.warn = originalWarn;
+
+        res.json({
+            success: errors.length === 0,
+            output: output.length > 0 ? output.join('\n') : '(no output)',
+            error: errors.length > 0 ? errors.join('\n') : ''
+        });
+    } catch (err) {
+        console.log = originalLog;
+        console.error = originalError;
+        console.warn = originalWarn;
+
+        res.json({
+            success: false,
+            output: output.join('\n'),
+            error: err.message || String(err)
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
