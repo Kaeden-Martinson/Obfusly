@@ -39,13 +39,84 @@
                     <p>Protect your JavaScript from reverse engineering with industry-leading obfuscation technology. Keep your intellectual property safe while maintaining perfect performance.</p>
                     <div class="hero-buttons">
                         <button class="btn-primary" onclick="navigateTo('obfuscation')">Start Obfuscating</button>
-                        <button class="btn-secondary">Learn More</button>
+                        <button class="btn-secondary" onclick="document.getElementById('info-section').scrollIntoView({behavior: 'smooth'})">Learn More</button>
                     </div>
                 </div>
                 
                 <div class="hero-visual">
                     <div class="code-animation-box">
                         <div class="code-display" id="codeDisplay"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- INFORMATION SECTION -->
+        <section class="info-section" id="info-section">
+            <div class="info-container">
+                <div class="info-grid">
+                    <div class="info-visual">
+                        <svg class="info-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Shield with modern lock -->
+                            <defs>
+                                <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#0066ff;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <!-- Main shield -->
+                            <path class="shield-main" d="M 150 30 L 220 70 L 220 140 C 220 200 150 260 150 260 C 150 260 80 200 80 140 L 80 70 Z" fill="url(#shieldGradient)" stroke="#00d4ff" stroke-width="2"/>
+                            <!-- Lock circle background -->
+                            <circle class="lock-bg" cx="150" cy="150" r="50" fill="#0a0e27" opacity="0.8"/>
+                            <!-- Lock body -->
+                            <rect class="lock-body" x="130" y="140" width="40" height="45" rx="5" fill="none" stroke="#f0f4f8" stroke-width="2"/>
+                            <!-- Lock shackle -->
+                            <path class="lock-shackle" d="M 135 140 Q 135 115 150 115 Q 165 115 165 140" fill="none" stroke="#f0f4f8" stroke-width="2" stroke-linecap="round"/>
+                            <!-- Lock keyhole -->
+                            <circle class="lock-keyhole" cx="150" cy="155" r="3" fill="#f0f4f8"/>
+                            <!-- Animated security rings -->
+                            <circle class="ring-1" cx="150" cy="150" r="75" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0"/>
+                            <circle class="ring-2" cx="150" cy="150" r="90" fill="none" stroke="#0066ff" stroke-width="1" opacity="0"/>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <h2>What is Obfusly?</h2>
+                        <p>Obfusly is a professional-grade JavaScript obfuscation platform designed to protect your code from reverse engineering and intellectual property theft. Using advanced obfuscation algorithms, Obfusly transforms your readable JavaScript into unreadable, functionally equivalent code while maintaining 100% performance parity.</p>
+                        <div class="info-benefits">
+                            <div class="benefit-item">
+                                <div class="benefit-icon-svg">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>Protect IP</h4>
+                                    <p>Safeguard your proprietary algorithms and business logic</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon-svg">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>Production Ready</h4>
+                                    <p>Zero performance impact - your code runs exactly as fast</p>
+                                </div>
+                            </div>
+                            <div class="benefit-item">
+                                <div class="benefit-icon-svg">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>Enterprise Grade</h4>
+                                    <p>Military-strength encryption and multi-layer obfuscation</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -103,27 +174,109 @@
                         <h3>String Array Encoding</h3>
                         <p>All strings extracted into obfuscated arrays, making hardcoded values impossible to find.</p>
                     </div>
+                </div>
+            </div>
+        </section>
 
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                                <path d="M12 15L20 23L28 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                                <rect x="8" y="10" width="24" height="20" rx="2" stroke="white" stroke-width="2" />
-                            </svg>
-                        </div>
-                        <h3>Anti-Debugging Protection</h3>
-                        <p>Detect debugging attempts and prevent execution if developer tools are opened.</p>
-                    </div>
+        <!-- TESTIMONIALS SECTION -->
+        <section class="testimonials">
+            <div class="testimonials-container">
+                <div class="section-title">
+                    <h2>Loved by Developers</h2>
+                    <p>See what developers say about Obfusly</p>
+                </div>
 
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                                <circle cx="20" cy="20" r="12" stroke="white" stroke-width="2" />
-                                <path d="M20 15V20L24 24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
+                <div class="testimonial-carousel">
+                    <div class="testimonial-track" id="testimonialTrack">
+                        <!-- Testimonial 1 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Obfusly is a game-changer! Our API security improved dramatically after implementing it. The code is completely unreadable, yet performs exactly as before."</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M 12 14 C 7 14 3 17 3 21 L 21 21 C 21 17 17 14 12 14 Z"/>
+                                    </svg>
+                                </div>
+                                <div class="author-info">
+                                    <h4>Sarah Chen</h4>
+                                    <p>Lead Developer, TechVenture Inc.</p>
+                                </div>
+                            </div>
                         </div>
-                        <h3>Instant Processing</h3>
-                        <p>Ultra-fast obfuscation engine processes large codebases in seconds without delay.</p>
+
+                        <!-- Testimonial 2 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Finally, a tool that actually protects proprietary code without compromising performance. Our clients are extremely happy with the results. Highly recommended!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M 12 14 C 7 14 3 17 3 21 L 21 21 C 21 17 17 14 12 14 Z"/>
+                                    </svg>
+                                </div>
+                                <div class="author-info">
+                                    <h4>Marcus Johnson</h4>
+                                    <p>CTO, Digital Solutions Co.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 3 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"The level of obfuscation is incredible. We tried other tools before, but Obfusly is by far the most effective. Plus, the settings are incredibly flexible."</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M 12 14 C 7 14 3 17 3 21 L 21 21 C 21 17 17 14 12 14 Z"/>
+                                    </svg>
+                                </div>
+                                <div class="author-info">
+                                    <h4>Emma Rodriguez</h4>
+                                    <p>Security Engineer, CloudNine Systems</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 4 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"We've been using Obfusly for 6 months now across all our projects. It's stable, reliable, and the support team is fantastic. Absolutely worth every penny."</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M 12 14 C 7 14 3 17 3 21 L 21 21 C 21 17 17 14 12 14 Z"/>
+                                    </svg>
+                                </div>
+                                <div class="author-info">
+                                    <h4>David Park</h4>
+                                    <p>Founder, InnovateLabs</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 5 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">"Integrating Obfusly into our CI/CD pipeline was seamless. The API is well-documented and intuitive. Our competitors can't figure out how our code works anymore!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M 12 14 C 7 14 3 17 3 21 L 21 21 C 21 17 17 14 12 14 Z"/>
+                                    </svg>
+                                </div>
+                                <div class="author-info">
+                                    <h4>Jessica Williams</h4>
+                                    <p>DevOps Lead, FutureTech Labs</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,28 +411,19 @@
                     <div class="tabs">
                         <button class="tab-button active" onclick="switchTab('editor')">
                             <span class="tab-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7 8L3 11.6923L7 16M17 8L21 11.6923L17 16M14 4L10 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </span>
                             Editor
                         </button>
                         <button class="tab-button" onclick="switchTab('upload')">
                             <span class="tab-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18.5 20L18.5 14M18.5 14L21 16.5M18.5 14L16 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12 7H19C20.1046 7 21 7.89543 21 9V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </span>
                             Upload
                         </button>
                         <button class="tab-button" onclick="switchTab('output')">
                             <span class="tab-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                                </svg>
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M20.5 7.27783L12 12.0001M12 12.0001L3.49997 7.27783M12 12.0001L12 21.5001M14 20.889L12.777 21.5684C12.4934 21.726 12.3516 21.8047 12.2015 21.8356C12.0685 21.863 11.9315 21.863 11.7986 21.8356C11.6484 21.8047 11.5066 21.726 11.223 21.5684L3.82297 17.4573C3.52346 17.2909 3.37368 17.2077 3.26463 17.0893C3.16816 16.9847 3.09515 16.8606 3.05048 16.7254C3 16.5726 3 16.4013 3 16.0586V7.94153C3 7.59889 3 7.42757 3.05048 7.27477C3.09515 7.13959 3.16816 7.01551 3.26463 6.91082C3.37368 6.79248 3.52345 6.70928 3.82297 6.54288L11.223 2.43177C11.5066 2.27421 11.6484 2.19543 11.7986 2.16454C11.9315 2.13721 12.0685 2.13721 12.2015 2.16454C12.3516 2.19543 12.4934 2.27421 12.777 2.43177L20.177 6.54288C20.4766 6.70928 20.6263 6.79248 20.7354 6.91082C20.8318 7.01551 20.9049 7.13959 20.9495 7.27477C21 7.42757 21 7.59889 21 7.94153L21 12.5001M7.5 4.50008L16.5 9.50008M16 18.0001L18 20.0001L22 16.0001" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                             </span>
                             Output
                         </button>
@@ -294,6 +438,10 @@
                                     <div class="editor-actions">
                                         <button class="btn-small" onclick="loadExample()" title="Load example code">Example</button>
                                         <button class="btn-small" onclick="clearInput()" title="Clear editor">Clear</button>
+                                        <button class="btn-small btn-obfuscate-header" onclick="obfuscateCode()" title="Obfuscate code">
+                                          <svg fill="currentColor" viewBox="0 0 35 35" data-name="Layer 2" id="Layer_2" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M17.5,34.44A3.07,3.07,0,0,1,15.89,34L9.82,30.45A14.79,14.79,0,0,1,2.25,17.7V8A3.2,3.2,0,0,1,4.34,5L16.4.57a3.2,3.2,0,0,1,2.2,0L30.66,5a3.2,3.2,0,0,1,2.09,3V17.7a14.79,14.79,0,0,1-7.57,12.75L19.11,34A3.07,3.07,0,0,1,17.5,34.44Zm0-31.56a.67.67,0,0,0-.24,0L5.2,7.33A.69.69,0,0,0,4.75,8V17.7a12.3,12.3,0,0,0,6.33,10.59l6.07,3.56a.73.73,0,0,0,.7,0l6.07-3.56h0A12.3,12.3,0,0,0,30.25,17.7V8a.69.69,0,0,0-.45-.65L17.74,2.92A.67.67,0,0,0,17.5,2.88Z"></path><path d="M16.4,22.35a1.3,1.3,0,0,1-.81-.29l-4.27-3.6a1.25,1.25,0,0,1,1.61-1.92l3.35,2.82L22,13.06a1.25,1.25,0,0,1,1.86,1.68l-6.48,7.2A1.27,1.27,0,0,1,16.4,22.35Z"></path></g></svg>
+                                            Protect
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="editor-container" id="inputEditor"></div>
@@ -306,9 +454,7 @@
                         <div class="upload-workspace">
                             <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('fileInput').click()">
                                 <div class="upload-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                                    </svg>
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18.5 20L18.5 14M18.5 14L21 16.5M18.5 14L16 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12 7H19C20.1046 7 21 7.89543 21 9V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
                                 </div>
                                 <h3>Drop or Click to Upload</h3>
                                 <p>Select a JavaScript file to obfuscate</p>
@@ -342,7 +488,10 @@
                             </div>
                             <div class="terminal-container" id="terminal">
                                 <div class="terminal-header">
-                                    <h4>Terminal Output</h4>
+                                    <div class="terminal-title">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M22 9H2M6 17.5L8.5 15L6 12.5M11 17.5L15 17.5M2 7.8L2 16.2C2 17.8802 2 18.7202 2.32698 19.362C2.6146 19.9265 3.07354 20.3854 3.63803 20.673C4.27976 21 5.11984 21 6.8 21H17.2C18.8802 21 19.7202 21 20.362 20.673C20.9265 20.3854 21.3854 19.9265 21.673 19.362C22 18.7202 22 17.8802 22 16.2V7.8C22 6.11984 22 5.27977 21.673 4.63803C21.3854 4.07354 20.9265 3.6146 20.362 3.32698C19.7202 3 18.8802 3 17.2 3L6.8 3C5.11984 3 4.27976 3 3.63803 3.32698C3.07354 3.6146 2.6146 4.07354 2.32698 4.63803C2 5.27976 2 6.11984 2 7.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                        <h4>Terminal Output</h4>
+                                    </div>
                                     <button class="terminal-close" onclick="closeTerminal()">×</button>
                                 </div>
                                 <div class="terminal-output" id="terminalOutput"></div>
@@ -351,94 +500,529 @@
                     </div>
                 </div>
 
-                <!-- Obfuscate Button -->
-                <div class="obfuscate-action">
-                    <button class="btn-primary btn-obfuscate" onclick="obfuscateCode()">
-                        <span>Obfuscate Code</span>
-                    </button>
-                </div>
+
 
                 <!-- Settings Panel -->
                 <div class="settings-panel">
-                    <h3>Obfuscation Settings</h3>
+                    <div class="settings-header">
+                        <h3>Obfuscation Settings</h3>
+                        <p>Fine-tune your obfuscation preferences</p>
+                    </div>
                     <div class="settings-grid-pro">
                         <div class="setting-card">
-                            <div class="setting-card-header"><h4>Build Target</h4></div>
+                            <div class="setting-card-header">
+                                <h4>Build Target</h4>
+                            </div>
                             <div class="setting-item">
-                                <select id="target" class="setting-select">
-                                    <option value="browser">Browser</option>
-                                    <option value="node">Node.js</option>
-                                    <option value="universal">Universal</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-card-header"><h4>String Protection</h4></div>
-                            <div class="setting-items">
-                                <div class="setting-item">
-                                    <input type="checkbox" id="stringEncoding" checked>
-                                    <label for="stringEncoding">Encode Strings</label>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Select Target</label>
+                                    <div class="setting-info-tooltip">
+                                        <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                        <span class="tooltip-content">
+                                            <span class="tooltip-title">Build Target</span>
+                                            <span class="tooltip-type">STRING</span>
+                                            <span class="tooltip-default">DEFAULT: BROWSER</span>
+                                            <span class="tooltip-text">Specify the target environment for obfuscation. Choose between Browser, Node.js, or Universal for compatibility across platforms.</span>
+                                        </span>
+                                    </div>
                                 </div>
-                                <div class="setting-item">
-                                    <input type="checkbox" id="stringConcealment">
-                                    <label for="stringConcealment">Conceal String Values</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-card-header"><h4>Number Protection</h4></div>
-                            <div class="setting-items">
-                                <div class="setting-item">
-                                    <input type="checkbox" id="numberEncoding" checked>
-                                    <label for="numberEncoding">Encode Numbers</label>
-                                </div>
-                                <div class="setting-item">
-                                    <input type="checkbox" id="optimizedCache">
-                                    <label for="optimizedCache">Optimize Cache</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-card">
-                            <div class="setting-card-header"><h4>Control Flow</h4></div>
-                            <div class="setting-items">
-                                <div class="setting-item">
-                                    <input type="checkbox" id="wrapIIFE" checked>
-                                    <label for="wrapIIFE">Wrap in IIFE</label>
-                                </div>
-                                <div class="setting-item">
-                                    <input type="checkbox" id="flattenControl">
-                                    <label for="flattenControl">Flatten Control Flow</label>
+                                <div class="custom-dropdown" data-select-id="target">
+                                    <div class="dropdown-trigger">
+                                        <span class="dropdown-value">Browser</span>
+                                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="dropdown-menu">
+                                        <div class="dropdown-option" data-value="browser">
+                                            <span class="option-text">Browser</span>
+                                            <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-option" data-value="node">
+                                            <span class="option-text">Node.js</span>
+                                            <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-option" data-value="universal">
+                                            <span class="option-text">Universal</span>
+                                            <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <select id="target" style="display: none;">
+                                        <option value="browser">Browser</option>
+                                        <option value="node">Node.js</option>
+                                        <option value="universal">Universal</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="setting-card">
-                            <div class="setting-card-header"><h4>Security Features</h4></div>
+                            <div class="setting-card-header">
+                                <h4>String Protection</h4>
+                            </div>
                             <div class="setting-items">
                                 <div class="setting-item">
-                                    <input type="checkbox" id="antiDebugger">
-                                    <label for="antiDebugger">Anti-Debugger</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="stringEncoding" style="margin: 0;">Encode Strings</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Encode Strings</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Encodes all string literals in your code. Makes hardcoded strings impossible to find and reverse engineer.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="stringEncoding" checked>
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
                                 <div class="setting-item">
-                                    <input type="checkbox" id="integrityCheck">
-                                    <label for="integrityCheck">Integrity Verification</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="stringConcealment" style="margin: 0;">Conceal String Values</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Conceal String Values</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Hides the true meaning of string values by applying additional obfuscation layers.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="stringConcealment">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Encoding Method</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Encoding Method</span>
+                                                <span class="tooltip-type">ENUM</span>
+                                                <span class="tooltip-default">DEFAULT: ARRAY</span>
+                                                <span class="tooltip-text">Choose the encoding algorithm for string protection. Array stores strings in a hidden array, Hex uses hexadecimal encoding, Base64 uses base64 encoding.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown" data-select-id="stringMethod">
+                                        <div class="dropdown-trigger">
+                                            <span class="dropdown-value">String Array</span>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="dropdown-option" data-value="array">
+                                                <span class="option-text">String Array</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="hex">
+                                                <span class="option-text">Hex Encoding</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="base64">
+                                                <span class="option-text">Base64</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <select id="stringMethod" style="display: none;">
+                                            <option value="array">String Array</option>
+                                            <option value="hex">Hex Encoding</option>
+                                            <option value="base64">Base64</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="setting-card">
-                            <div class="setting-card-header"><h4>Output Options</h4></div>
+                            <div class="setting-card-header">
+                                <h4>Number Protection</h4>
+                            </div>
                             <div class="setting-items">
                                 <div class="setting-item">
-                                    <input type="checkbox" id="compression">
-                                    <label for="compression">Compress Output</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="numberEncoding" style="margin: 0;">Encode Numbers</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Encode Numbers</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Encodes numeric literals. Prevents extraction of numeric constants from your code.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="numberEncoding" checked>
+                                        <span class="slider"></span>
+                                    </label>
                                 </div>
                                 <div class="setting-item">
-                                    <input type="checkbox" id="mangle" checked>
-                                    <label for="mangle">Mangle Variable Names</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="optimizedCache" style="margin: 0;">Optimize Cache</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Optimize Cache</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Caches decoded numbers during execution for performance optimization. Use for large code bases.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="optimizedCache">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Number Format</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Number Format</span>
+                                                <span class="tooltip-type">ENUM</span>
+                                                <span class="tooltip-default">DEFAULT: DECIMAL</span>
+                                                <span class="tooltip-text">Choose the number encoding format: Decimal (0-9), Hexadecimal (0x...), or Octal (0o...).</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown" data-select-id="numberFormat">
+                                        <div class="dropdown-trigger">
+                                            <span class="dropdown-value">Decimal</span>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="dropdown-option" data-value="decimal">
+                                                <span class="option-text">Decimal</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="hex">
+                                                <span class="option-text">Hexadecimal</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="octal">
+                                                <span class="option-text">Octal</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <select id="numberFormat" style="display: none;">
+                                            <option value="decimal">Decimal</option>
+                                            <option value="hex">Hexadecimal</option>
+                                            <option value="octal">Octal</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header">
+                                <h4>Control Flow</h4>
+                            </div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="wrapIIFE" style="margin: 0;">Wrap in IIFE</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Wrap in IIFE</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Wraps your code in an Immediately Invoked Function Expression for better scope isolation and protection.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="wrapIIFE" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="flattenControl" style="margin: 0;">Flatten Control Flow</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Flatten Control Flow</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-warning">⚠ This option can break your code!</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Flattens control flow structures making the code harder to follow. May cause issues in some codebases.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="flattenControl">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Intensity Level</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Intensity Level</span>
+                                                <span class="tooltip-type">ENUM</span>
+                                                <span class="tooltip-warning">⚠ Higher intensities may break your code!</span>
+                                                <span class="tooltip-default">DEFAULT: NONE</span>
+                                                <span class="tooltip-text">Control the intensity of code flattening. None=disabled, Light=minimal, Medium=moderate, Heavy=aggressive.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown" data-select-id="controlMethod">
+                                        <div class="dropdown-trigger">
+                                            <span class="dropdown-value">None</span>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="dropdown-option" data-value="none">
+                                                <span class="option-text">None</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="light">
+                                                <span class="option-text">Light</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="medium">
+                                                <span class="option-text">Medium</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="heavy">
+                                                <span class="option-text">Heavy</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <select id="controlMethod" style="display: none;">
+                                            <option value="none">None</option>
+                                            <option value="light">Light</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="heavy">Heavy</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header">
+                                <h4>Security Features</h4>
+                            </div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="antiDebugger" style="margin: 0;">Anti-Debugger</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Anti-Debugger</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-warning">⚠ Prevents legitimate debugging! Use with caution.</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Detects and disables browser developer tools and debuggers at runtime.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="antiDebugger">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="integrityCheck" style="margin: 0;">Integrity Verification</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Integrity Verification</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Adds hash-based verification to detect if code has been modified at runtime.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="integrityCheck">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Security Level</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Security Level</span>
+                                                <span class="tooltip-type">ENUM</span>
+                                                <span class="tooltip-default">DEFAULT: MEDIUM</span>
+                                                <span class="tooltip-text">Low=basic checks, Medium=standard protection, High=advanced detection. Higher levels have more runtime overhead.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown" data-select-id="securityLevel">
+                                        <div class="dropdown-trigger">
+                                            <span class="dropdown-value">Medium</span>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="dropdown-option" data-value="low">
+                                                <span class="option-text">Low</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="medium">
+                                                <span class="option-text">Medium</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="high">
+                                                <span class="option-text">High</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <select id="securityLevel" style="display: none;">
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header">
+                                <h4>Output Options</h4>
+                            </div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="compression" style="margin: 0;">Compress Output</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Compress Output</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Removes all unnecessary whitespace and newlines. Results in smaller file sizes.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="compression">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="mangle" style="margin: 0;">Mangle Variable Names</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Mangle Variable Names</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Renames variables and functions to short, meaningless names like _0x1234. Makes code logic very hard to follow.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="mangle" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Output Format</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Output Format</span>
+                                                <span class="tooltip-type">ENUM</span>
+                                                <span class="tooltip-default">DEFAULT: MINIFIED</span>
+                                                <span class="tooltip-text">Minified=smallest size, Readable=formatted for readability, Compact=balanced between size and readability.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown" data-select-id="outputFormat">
+                                        <div class="dropdown-trigger">
+                                            <span class="dropdown-value">Minified</span>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="dropdown-option" data-value="minified">
+                                                <span class="option-text">Minified</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="readable">
+                                                <span class="option-text">Readable</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="compact">
+                                                <span class="option-text">Compact</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <select id="outputFormat" style="display: none;">
+                                            <option value="minified">Minified</option>
+                                            <option value="readable">Readable</option>
+                                            <option value="compact">Compact</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -626,8 +1210,13 @@ for (let i = 0; i < 10; i++) {
                 return;
             }
             navigator.clipboard.writeText(text).then(() => {
-                showToast('✓ Copied to clipboard!', 'success');
+                showToast('✓ Code copied to clipboard!', 'success');
             });
+        }
+        
+        function copyAndRun() {
+            copyToClipboard();
+            runCode();
         }
 
         function downloadOutput() {
@@ -651,6 +1240,7 @@ for (let i = 0; i < 10; i++) {
                 showToast('No code to run', 'error');
                 return;
             }
+            showToast('✓ Running code...', 'success');
             const terminal = document.getElementById('terminal');
             const terminalOutput = document.getElementById('terminalOutput');
             terminal.classList.add('active');
@@ -695,9 +1285,9 @@ for (let i = 0; i < 10; i++) {
             toast.textContent = message;
             container.appendChild(toast);
             setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+                toast.classList.add('fadeOut');
+                setTimeout(() => toast.remove(), 500);
+            }, 2000);
         }
 
         function createToastContainer() {
@@ -760,9 +1350,141 @@ for (let i = 0; i < 10; i++) {
             reader.readAsText(file);
         }
 
+        function startTestimonialScroll() {
+            const track = document.getElementById('testimonialTrack');
+            let scrollAmount = 0;
+            const scrollSpeed = 0.25; // pixels per frame
+            
+            // Get card width + gap
+            const getCardWidth = () => {
+                const card = track.querySelector('.testimonial-card');
+                if (card) {
+                    return card.offsetWidth + 32; // 32px = 2rem gap
+                }
+                return 360;
+            };
+            
+            let cardWidth = getCardWidth();
+
+            function scroll() {
+                scrollAmount += scrollSpeed;
+                track.style.transform = `translateX(-${scrollAmount}px)`;
+
+                // When one card has fully scrolled out, move it to the end
+                if (scrollAmount >= cardWidth) {
+                    // Move first card to end (like array shift + push)
+                    const firstCard = track.querySelector('.testimonial-card');
+                    track.appendChild(firstCard);
+                    
+                    // Reset scroll position seamlessly
+                    scrollAmount = 0;
+                    track.style.transform = 'translateX(0)';
+                }
+
+                requestAnimationFrame(scroll);
+            }
+
+            scroll();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             initCodeAnimation();
+            startTestimonialScroll();
+            initCustomDropdowns();
         });
+
+        // Custom Dropdown Handler
+        function initCustomDropdowns() {
+            const dropdowns = document.querySelectorAll('.custom-dropdown');
+            
+            dropdowns.forEach(dropdown => {
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                const menu = dropdown.querySelector('.dropdown-menu');
+                const options = dropdown.querySelectorAll('.dropdown-option');
+                const hiddenSelect = dropdown.querySelector('select');
+                
+                // Initialize with selected value and mark it with checkmark
+                if (hiddenSelect) {
+                    const selectedValue = hiddenSelect.value;
+                    options.forEach(option => {
+                        if (option.getAttribute('data-value') === selectedValue) {
+                            option.classList.add('selected');
+                        } else {
+                            option.classList.remove('selected');
+                        }
+                    });
+                }
+                
+                // Toggle menu on trigger click
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Check if this menu is already open
+                    const isOpen = menu.classList.contains('active');
+                    
+                    if (isOpen) {
+                        // Close only this dropdown
+                        menu.classList.remove('active');
+                        trigger.classList.remove('active');
+                    } else {
+                        // Close all other dropdowns, then open this one
+                        closeAllDropdowns();
+                        menu.classList.add('active');
+                        trigger.classList.add('active');
+                    }
+                });
+                
+                // Handle option selection
+                options.forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        
+                        if (option.classList.contains('disabled')) return;
+                        
+                        // Update selected state
+                        options.forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        
+                        // Update trigger text
+                        const value = option.getAttribute('data-value');
+                        const text = option.querySelector('.option-text').textContent;
+                        trigger.querySelector('.dropdown-value').textContent = text;
+                        
+                        // Update hidden select
+                        if (hiddenSelect) {
+                            hiddenSelect.value = value;
+                            // Trigger change event for any listeners
+                            hiddenSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        
+                        // Close menu
+                        menu.classList.remove('active');
+                        trigger.classList.remove('active');
+                    });
+                });
+            });
+            
+            // Close all dropdowns when clicking outside
+            document.addEventListener('click', () => {
+                closeAllDropdowns();
+            });
+            
+            // Close dropdowns on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllDropdowns();
+                }
+            });
+        }
+        
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+                trigger.classList.remove('active');
+            });
+        }
     </script>
 </body>
 </html>
