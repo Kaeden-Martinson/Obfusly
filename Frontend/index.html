@@ -3,670 +3,766 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JsScramble - JavaScript Obfuscator</title>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+Paaji+2:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Monaco Editor -->
+    <title>Obfusly - Next-Gen Code Obfuscation & Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-    
-    <!-- LZ String Library -->
-    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
-
-    <!-- External CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <!-- Fixed Navbar -->
-    <nav class="navbar">
-        <div class="navbar-left">
-            <div class="navbar-brand" onclick="switchPage('intro')">JsScramble</div>
-            <div class="navbar-obfuscate" onclick="switchPage('obfuscate')">Obfuscate <span>></span></div>
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <div class="logo" onclick="navigateTo('home')">Obfusly</div>
+            <nav>
+                <a onclick="navigateTo('home')">Home</a>
+                <a onclick="navigateTo('obfuscation')">Obfuscate</a>
+                <a onclick="navigateTo('pricing')">Pricing</a>
+                <a onclick="navigateTo('contact')">Contact</a>
+                <button class="cta-button" onclick="navigateTo('obfuscation')">Get Started</button>
+            </nav>
         </div>
-        <div class="navbar-right">
-            <a class="navbar-link" onclick="switchPage('docs')">DOCS</a>
-            <a class="navbar-link" onclick="switchPage('faq')">FAQ</a>
-            <a class="navbar-link" onclick="switchPage('settings')">CONFIG</a>
-        </div>
-    </nav>
+    </header>
 
-    <!-- Introduction Page (Landing) -->
-    <div id="intro" class="page active">
-        <div class="intro-content">
-            <!-- Hero Section -->
-            <div class="landing-hero">
-                <div class="hero-content">
-                    <h1>Protect your <span>JavaScript</span> with <span>industry-grade</span> obfuscation</h1>
-                    <p>JsScramble is a powerful obfuscation tool designed to protect your JavaScript code from unauthorized access, reverse engineering, and intellectual property theft.</p>
+    <!-- HOME PAGE -->
+    <div id="home" class="page active">
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <div class="hero-background">
+                <div class="hero-grid"></div>
+                <div class="hero-blob blob1"></div>
+                <div class="hero-blob blob2"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Secure Your Code with Next-Gen Obfuscation</h1>
+                    <p>Protect your JavaScript from reverse engineering with industry-leading obfuscation technology. Keep your intellectual property safe while maintaining perfect performance.</p>
                     <div class="hero-buttons">
-                        <button class="hero-btn primary" onclick="switchPage('obfuscate')">Start Obfuscating</button>
-                        <button class="hero-btn secondary" onclick="switchPage('docs')">Learn More</button>
+                        <button class="btn-primary" onclick="navigateTo('obfuscation')">Start Obfuscating</button>
+                        <button class="btn-secondary">Learn More</button>
                     </div>
-
                 </div>
-                <div class="unprotected-code-section">
-                    <div class="unprotected-header">
-                        <span class="unprotected-filename">App.unobfuscated.js</span>
-                        <span class="unprotected-badge">
-                            <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z"/>
-                            </svg>
-                            UNPROTECTED
-                        </span>
+                
+                <div class="hero-visual">
+                    <div class="code-animation-box">
+                        <div class="code-display" id="codeDisplay"></div>
                     </div>
-                    <div class="unprotected-code">const API_KEY = "xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+                </div>
+            </div>
+        </section>
 
-function hash(s) {
-    let h = 0;
-    for (let i = 0; i < s.length; i++) h = (h << 5) + s.charCodeAt(i);
-    return h.toString(16);
+        <!-- FEATURES SECTION -->
+        <section class="features">
+            <div class="features-container">
+                <div class="section-title">
+                    <h2>Powerful Features</h2>
+                    <p>Everything you need to protect your JavaScript code with professional-grade obfuscation.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <path d="M20 5L35 12V20C35 30 20 35 20 35C20 35 5 30 5 20V12L20 5Z" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M15 20L18 23L25 16" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3>Military-Grade Security</h3>
+                        <p>Advanced encryption algorithms provide enterprise-level protection against reverse engineering.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <circle cx="20" cy="20" r="15" stroke="white" stroke-width="2" />
+                                <path d="M20 10V20L28 28" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3>Zero Performance Impact</h3>
+                        <p>Obfuscated code runs at identical speed to original. No overhead, no bloat, pure protection.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <path d="M8 20H32M20 8V32" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" />
+                                <circle cx="20" cy="20" r="15" stroke="white" stroke-width="2" fill="none" />
+                            </svg>
+                        </div>
+                        <h3>Customizable Protection</h3>
+                        <p>Fine-tune every aspect with granular controls. Choose what to protect and how aggressively.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <rect x="8" y="10" width="24" height="20" rx="2" stroke="white" stroke-width="2" />
+                                <path d="M12 15H28M12 20H28M12 25H20" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3>String Array Encoding</h3>
+                        <p>All strings extracted into obfuscated arrays, making hardcoded values impossible to find.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <path d="M12 15L20 23L28 15" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                <rect x="8" y="10" width="24" height="20" rx="2" stroke="white" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <h3>Anti-Debugging Protection</h3>
+                        <p>Detect debugging attempts and prevent execution if developer tools are opened.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                <circle cx="20" cy="20" r="12" stroke="white" stroke-width="2" />
+                                <path d="M20 15V20L24 24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3>Instant Processing</h3>
+                        <p>Ultra-fast obfuscation engine processes large codebases in seconds without delay.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- PRICING PAGE -->
+    <div id="pricing" class="page">
+        <section class="pricing">
+            <div class="pricing-container">
+                <div class="section-title">
+                    <h2>Simple, Transparent Pricing</h2>
+                    <p>Choose the perfect plan for your obfuscation needs. Scale as you grow.</p>
+                </div>
+
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <div class="price-badge">STARTER</div>
+                        <h3>Starter</h3>
+                        <div class="pricing-price">$29</div>
+                        <div class="pricing-period">per month</div>
+                        <ul class="pricing-features">
+                            <li>Up to 5 projects</li>
+                            <li>String encoding</li>
+                            <li>Variable mangling</li>
+                            <li>Community support</li>
+                            <li>Monthly updates</li>
+                        </ul>
+                        <button class="pricing-button">Start Free Trial</button>
+                    </div>
+
+                    <div class="pricing-card popular">
+                        <div class="price-badge">MOST POPULAR</div>
+                        <h3>Professional</h3>
+                        <div class="pricing-price">$79</div>
+                        <div class="pricing-period">per month</div>
+                        <ul class="pricing-features">
+                            <li>Unlimited projects</li>
+                            <li>All basic features</li>
+                            <li>Control flow flattening</li>
+                            <li>Priority email support</li>
+                            <li>Weekly updates</li>
+                            <li>API access</li>
+                        </ul>
+                        <button class="pricing-button">Get Started</button>
+                    </div>
+
+                    <div class="pricing-card">
+                        <div class="price-badge">ENTERPRISE</div>
+                        <h3>Enterprise</h3>
+                        <div class="pricing-price">Custom</div>
+                        <div class="pricing-period">contact for pricing</div>
+                        <ul class="pricing-features">
+                            <li>Unlimited everything</li>
+                            <li>All professional features</li>
+                            <li>Dedicated support</li>
+                            <li>Custom implementations</li>
+                            <li>On-premise deployment</li>
+                            <li>SLA guarantee</li>
+                        </ul>
+                        <button class="pricing-button">Contact Sales</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div id="contact" class="page">
+        <section class="contact">
+            <div class="contact-container">
+                <div class="section-title">
+                    <h2>Get in Touch</h2>
+                    <p>We'd love to hear from you. Reach out with any questions or inquiries.</p>
+                </div>
+
+                <div class="contact-grid">
+                    <div class="contact-form">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" placeholder="john@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" placeholder="How can we help?">
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea placeholder="Tell us your thoughts..."></textarea>
+                        </div>
+                        <button class="btn-primary" style="width: 100%;">Send Message</button>
+                    </div>
+
+                    <div class="contact-info">
+                        <div class="info-item">
+                            <h3>Email</h3>
+                            <p>support@obfusly.dev</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Phone</h3>
+                            <p>+1 (555) 123-4567</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Address</h3>
+                            <p>123 Tech Street, San Francisco, CA 94105</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Hours</h3>
+                            <p>Monday - Friday: 9AM - 6PM PST</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- OBFUSCATION PAGE -->
+    <div id="obfuscation" class="page">
+        <section class="obfuscation">
+            <div class="obfuscation-container">
+                <div class="obf-header">
+                    <h2>JavaScript Obfuscator</h2>
+                    <p>Secure your code with professional-grade obfuscation</p>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab-button active" onclick="switchTab('editor')">
+                            <span class="tab-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </span>
+                            Editor
+                        </button>
+                        <button class="tab-button" onclick="switchTab('upload')">
+                            <span class="tab-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </span>
+                            Upload
+                        </button>
+                        <button class="tab-button" onclick="switchTab('output')">
+                            <span class="tab-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                            </span>
+                            Output
+                        </button>
+                    </div>
+
+                    <!-- Editor Tab -->
+                    <div id="editor-tab" class="tab-content active">
+                        <div class="editor-workspace">
+                            <div class="editor-box">
+                                <div class="editor-header">
+                                    <h3>Source Code</h3>
+                                    <div class="editor-actions">
+                                        <button class="btn-small" onclick="loadExample()" title="Load example code">Example</button>
+                                        <button class="btn-small" onclick="clearInput()" title="Clear editor">Clear</button>
+                                    </div>
+                                </div>
+                                <div class="editor-container" id="inputEditor"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Tab -->
+                    <div id="upload-tab" class="tab-content">
+                        <div class="upload-workspace">
+                            <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('fileInput').click()">
+                                <div class="upload-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3>Drop or Click to Upload</h3>
+                                <p>Select a JavaScript file to obfuscate</p>
+                                <input type="file" id="fileInput" accept=".js,.jsx" style="display: none;" onchange="handleFileSelect(event)">
+                                <div class="upload-info">
+                                    <h4>Supported Formats</h4>
+                                    <ul>
+                                        <li>JavaScript (.js)</li>
+                                        <li>React (.jsx)</li>
+                                    </ul>
+                                    <h4>Max File Size</h4>
+                                    <p>Up to 10MB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Tab -->
+                    <div id="output-tab" class="tab-content">
+                        <div class="editor-workspace">
+                            <div class="editor-box">
+                                <div class="editor-header">
+                                    <h3>Obfuscated Code</h3>
+                                    <div class="editor-actions">
+                                        <button class="btn-small" onclick="runCode()" title="Run code in terminal">Run</button>
+                                        <button class="btn-small" onclick="copyToClipboard()" title="Copy to clipboard">Copy</button>
+                                        <button class="btn-small" onclick="downloadOutput()" title="Download file">Download</button>
+                                    </div>
+                                </div>
+                                <div class="editor-container" id="outputEditor"></div>
+                            </div>
+                            <div class="terminal-container" id="terminal">
+                                <div class="terminal-header">
+                                    <h4>Terminal Output</h4>
+                                    <button class="terminal-close" onclick="closeTerminal()">×</button>
+                                </div>
+                                <div class="terminal-output" id="terminalOutput"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Obfuscate Button -->
+                <div class="obfuscate-action">
+                    <button class="btn-primary btn-obfuscate" onclick="obfuscateCode()">
+                        <span>Obfuscate Code</span>
+                    </button>
+                </div>
+
+                <!-- Settings Panel -->
+                <div class="settings-panel">
+                    <h3>Obfuscation Settings</h3>
+                    <div class="settings-grid-pro">
+                        <div class="setting-card">
+                            <div class="setting-card-header"><h4>Build Target</h4></div>
+                            <div class="setting-item">
+                                <select id="target" class="setting-select">
+                                    <option value="browser">Browser</option>
+                                    <option value="node">Node.js</option>
+                                    <option value="universal">Universal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header"><h4>String Protection</h4></div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <input type="checkbox" id="stringEncoding" checked>
+                                    <label for="stringEncoding">Encode Strings</label>
+                                </div>
+                                <div class="setting-item">
+                                    <input type="checkbox" id="stringConcealment">
+                                    <label for="stringConcealment">Conceal String Values</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header"><h4>Number Protection</h4></div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <input type="checkbox" id="numberEncoding" checked>
+                                    <label for="numberEncoding">Encode Numbers</label>
+                                </div>
+                                <div class="setting-item">
+                                    <input type="checkbox" id="optimizedCache">
+                                    <label for="optimizedCache">Optimize Cache</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header"><h4>Control Flow</h4></div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <input type="checkbox" id="wrapIIFE" checked>
+                                    <label for="wrapIIFE">Wrap in IIFE</label>
+                                </div>
+                                <div class="setting-item">
+                                    <input type="checkbox" id="flattenControl">
+                                    <label for="flattenControl">Flatten Control Flow</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header"><h4>Security Features</h4></div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <input type="checkbox" id="antiDebugger">
+                                    <label for="antiDebugger">Anti-Debugger</label>
+                                </div>
+                                <div class="setting-item">
+                                    <input type="checkbox" id="integrityCheck">
+                                    <label for="integrityCheck">Integrity Verification</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header"><h4>Output Options</h4></div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <input type="checkbox" id="compression">
+                                    <label for="compression">Compress Output</label>
+                                </div>
+                                <div class="setting-item">
+                                    <input type="checkbox" id="mangle" checked>
+                                    <label for="mangle">Mangle Variable Names</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a onclick="navigateTo('home')">Features</a></li>
+                    <li><a onclick="navigateTo('pricing')">Pricing</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Changelog</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy</a></li>
+                    <li><a href="#">Terms</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="mailto:support@obfusly.dev">Email</a></li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">GitHub</a></li>
+                    <li><a href="#">Discord</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Obfusly. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let inputEditor, outputEditor;
+
+        const codeLines = [
+            'POST /api/certificate/validate HTTP/1.1',
+            'Host: secure.example.com',
+            'Content-Type: application/json',
+            'Authorization: Bearer eyJ0eXAi...',
+            '',
+            '{',
+            '  "certificate": "MIIDXTCCAkWgAwIB...",',
+            '  "endpoint": "https://app.example.com",',
+            '  "timestamp": "2026-04-21T10:30:00Z"',
+            '}'
+        ];
+
+        function initCodeAnimation() {
+            const display = document.getElementById('codeDisplay');
+            if (!display) return;
+            display.innerHTML = '';
+            let lineIndex = 0;
+            let charIndex = 0;
+
+            function typeNextChar() {
+                if (lineIndex < codeLines.length) {
+                    if (charIndex === 0) {
+                        const line = document.createElement('div');
+                        line.className = 'code-line';
+                        line.id = `line-${lineIndex}`;
+                        display.appendChild(line);
+                    }
+                    const currentLine = document.getElementById(`line-${lineIndex}`);
+                    const text = codeLines[lineIndex];
+                    if (charIndex < text.length) {
+                        currentLine.textContent += text[charIndex];
+                        charIndex++;
+                        setTimeout(typeNextChar, 30);
+                    } else {
+                        lineIndex++;
+                        charIndex = 0;
+                        setTimeout(typeNextChar, 100);
+                    }
+                } else {
+                    setTimeout(initCodeAnimation, 3000);
+                }
+            }
+            typeNextChar();
+        }
+
+        function navigateTo(pageName) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+            if (pageName === 'obfuscation' && !inputEditor) initializeEditors();
+            window.scrollTo(0, 0);
+        }
+
+        function initializeEditors() {
+            require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+            require(['vs/editor/editor.main'], function() {
+                if (!inputEditor) {
+                    inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
+                        value: '// Enter your JavaScript code here',
+                        language: 'javascript',
+                        theme: 'vs-dark',
+                        automaticLayout: true,
+                        minimap: { enabled: false },
+                        fontSize: 13,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        wordWrap: 'on'
+                    });
+                }
+                if (!outputEditor) {
+                    outputEditor = monaco.editor.create(document.getElementById('outputEditor'), {
+                        value: '// Obfuscated code will appear here',
+                        language: 'javascript',
+                        theme: 'vs-dark',
+                        automaticLayout: true,
+                        minimap: { enabled: false },
+                        fontSize: 13,
+                        fontFamily: '"JetBrains Mono", monospace',
+                        readOnly: true
+                    });
+                }
+            });
+        }
+
+        function obfuscateCode() {
+            const input = inputEditor?.getValue() || '';
+            if (!input.trim()) {
+                showToast('Please enter some code first', 'error');
+                return;
+            }
+            const obfuscated = simulateObfuscation(input);
+            outputEditor?.setValue(obfuscated);
+            switchTab('output');
+            showToast('✓ Code obfuscated successfully!', 'success');
+        }
+
+        function simulateObfuscation(code) {
+            const lines = code.split('\n');
+            return lines.map(line => {
+                if (line.trim().length === 0) return line;
+                return line.replace(/([a-zA-Z_$][a-zA-Z0-9_$]*)/g, match => {
+                    if (/^(function|const|let|var|if|else|for|while|return|class|new)$/.test(match)) return match;
+                    return '_0x' + Math.random().toString(16).substr(2, 6);
+                });
+            }).join('\n');
+        }
+
+        function loadExample() {
+            const code = `function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-function validate(user, key) { return hash(user + API_KEY) === key }
+for (let i = 0; i < 10; i++) {
+  console.log('F(' + i + ') = ' + fibonacci(i));
+}`;
+            inputEditor?.setValue(code);
+            showToast('✓ Example loaded!', 'success');
+        }
 
-const user = "testUser";
-const key = hash(user + API_KEY);
+        function clearInput() {
+            inputEditor?.setValue('');
+        }
 
-if (validate(user, key)) console.log("Access granted");
-    else console.log("Access denied");
-</div>
-                </div>
-            </div>
+        function copyToClipboard() {
+            const text = outputEditor?.getValue();
+            if (!text?.trim()) {
+                showToast('Nothing to copy', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✓ Copied to clipboard!', 'success');
+            });
+        }
 
-            <!-- Why JsScramble Section -->
-            <h2>Why JsScramble?</h2>
-            <div class="benefits-grid">
-                <div class="benefit-item">
-                    <div class="benefit-icon">🔒</div>
-                    <div class="benefit-content">
-                        <h3>Code Protection</h3>
-                        <p>Safeguard your intellectual property with advanced obfuscation techniques that make your code virtually impossible to reverse-engineer.</p>
-                    </div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">⚡</div>
-                    <div class="benefit-content">
-                        <h3>Performance Optimized</h3>
-                        <p>Our obfuscation preserves your code's performance while adding layers of protection, with optional compression to reduce file size.</p>
-                    </div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">🛡️</div>
-                    <div class="benefit-content">
-                        <h3>Anti-Debugging</h3>
-                        <p>Detect and prevent debugging attempts with built-in anti-debugger features that protect your code during runtime.</p>
-                    </div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">🔄</div>
-                    <div class="benefit-content">
-                        <h3>Flexible Configuration</h3>
-                        <p>Customize every aspect of the obfuscation process to match your specific security requirements and performance needs.</p>
-                    </div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">✓</div>
-                    <div class="benefit-content">
-                        <h3>Integrity Verification</h3>
-                        <p>Built-in integrity checks ensure your code hasn't been tampered with, providing an additional layer of security.</p>
-                    </div>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon">🚀</div>
-                    <div class="benefit-content">
-                        <h3>Easy to Use</h3>
-                        <p>Simple and intuitive interface. Paste your code, configure settings, and get protected code in seconds.</p>
-                    </div>
-                </div>
-            </div>
+        function downloadOutput() {
+            const text = outputEditor?.getValue();
+            if (!text?.trim()) {
+                showToast('No output to download', 'error');
+                return;
+            }
+            const blob = new Blob([text], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'obfuscated.js';
+            a.click();
+            showToast('✓ Download started!', 'success');
+        }
 
-            <!-- See It In Action Section -->
-            <h2>See It In Action</h2>
-            <div class="obfuscated-code-section">
-                <div class="obfuscated-header">
-                    <span class="obfuscated-filename">App.obfuscated.js</span>
-                    <span class="protected-badge">
-                        <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1z"/>
-                        </svg>
-                        PROTECTED
-                    </span>
-                </div>
-                <div class="obfuscated-code" id="exampleObfuscatedCode">const _0x4e2a=['getUserData','api.example.com','then','json','catch','error'];(function(_0x2c5a32){const _0x4d8f02=function(_0x5c2e21){while(--_0x5c2e21){_0x2c5a32['push'](_0x2c5a32['shift']());}};_0x4d8f02(++_0x2c5a32);}(_0x4e2a,0x1a7));</div>
-            </div>
+        function runCode() {
+            const code = outputEditor?.getValue();
+            if (!code?.trim()) {
+                showToast('No code to run', 'error');
+                return;
+            }
+            const terminal = document.getElementById('terminal');
+            const terminalOutput = document.getElementById('terminalOutput');
+            terminal.classList.add('active');
+            terminalOutput.innerHTML = '<span style="color: #888;">Running code...</span>';
+            try {
+                const originalLog = console.log;
+                const originalError = console.error;
+                let output = '';
+                console.log = (...args) => {
+                    output += args.map(arg => {
+                        if (typeof arg === 'object') return JSON.stringify(arg, null, 2);
+                        return String(arg);
+                    }).join(' ') + '\n';
+                    originalLog.apply(console, args);
+                };
+                console.error = (...args) => {
+                    output += '<span style="color: #ff6b6b;">ERROR: ' + args.join(' ') + '</span>\n';
+                    originalError.apply(console, args);
+                };
+                (function() { eval(code); })();
+                console.log = originalLog;
+                console.error = originalError;
+                if (output.trim()) {
+                    terminalOutput.innerHTML = `<div style="color: #00d4ff;">$ node obfuscated.js</div><div>${output.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+                } else {
+                    terminalOutput.innerHTML = `<div style="color: #00d4ff;">$ node obfuscated.js</div><div style="color: #888;">(no output)</div>`;
+                }
+            } catch (error) {
+                terminalOutput.innerHTML = `<div style="color: #00d4ff;">$ node obfuscated.js</div><div style="color: #ff6b6b;">ERROR: ${error.message}</div><div style="color: #ff6b6b; font-size: 0.85em; margin-top: 0.5rem;">${error.stack.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+            }
+        }
 
-            <!-- Get Started Button -->
-            <div class="get-started-section">
-                <button class="get-started-btn" onclick="switchPage('obfuscate')">Get Started</button>
-            </div>
+        function closeTerminal() {
+            const terminal = document.getElementById('terminal');
+            terminal.classList.remove('active');
+        }
 
-            <!-- Footer -->
-            <footer class="landing-footer">
-                <div class="footer-content">
-                    <div class="footer-section footer-brand">
-                        <h3>JsScramble</h3>
-                        <p>Professional JavaScript obfuscation and protection for developers who care about security.</p>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Quick Links</h3>
-                        <ul>
-                            <li><a onclick="switchPage('docs')">Documentation</a></li>
-                            <li><a onclick="switchPage('faq')">FAQ</a></li>
-                            <li><a onclick="switchPage('settings')">Settings</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Resources</h3>
-                        <ul>
-                            <li><a href="https://github.com" target="_blank">GitHub</a></li>
-                            <li><a href="https://github.com" target="_blank">Report Issues</a></li>
-                            <li><a onclick="switchPage('community')">Community</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="footer-bottom">
-                    <p>Created with <svg class="heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> for developers who care about code security | © 2026 JsScramble - All rights reserved</p>
-                </div>
-            </footer>
-        </div>
-    </div>
+        function showToast(message, type = 'success') {
+            const container = document.querySelector('.toast-container') || createToastContainer();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-    <!-- Obfuscation Page -->
-    <div id="obfuscate" class="page">
-        <div class="controls">
-            <button onclick="obfuscateJS()" id="obfuscateBtn">Obfuscate Code</button>
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        }
 
-            <div class="history-controls">
-                <select id="historySelect"></select>
-                <button onclick="clearHistory()">Clear History</button>
-            </div>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        }
 
-            <div class="storage-bar-container">
-                <span>Storage: 0 Bytes</span>
-                <div class="storage-bar">
-                    <div class="storage-bar-fill"></div>
-                </div>
-            </div>
-        </div>
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('uploadZone').classList.add('drag-over');
+        }
 
-        <div class="container">
-            <div class="editor-wrapper">
-                <div class="editor-header">
-                    Input Code
-                    <span class="editor-header-center">Size: 0 Bytes</span>
-                    <div class="history-controls">
-                        <button onclick="loadExample()">Example</button>
-                        <button onclick="runCode('input')">Run</button>
-                        <button onclick="copyInput()">Copy</button>
-                    </div>
-                </div>
-                <div class="editor-container" id="inputEditor"></div>
-            </div>
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('uploadZone').classList.remove('drag-over');
+        }
 
-            <div class="editor-wrapper">
-                <div class="editor-header">
-                    Obfuscated Code
-                    <span class="editor-header-center">Size: 0 Bytes</span>
-                    <div class="history-controls">
-                        <button onclick="runCode('output')">Run</button>
-                        <button onclick="copyOutput()">Copy</button>
-                    </div>
-                </div>
-                <div class="editor-container" id="outputEditor"></div>
-            </div>
-        </div>
-    </div>
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('uploadZone').classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) processFile(files[0]);
+        }
 
-    <!-- Settings Page -->
-    <div id="settings" class="page">
-        <div class="settings-content">
-            <h2 class="page-title">Obfuscation Settings</h2>
-            <p style="color: #969696;">Configure how your JavaScript code will be obfuscated. Changes here will apply to all future obfuscations until reset.</p>
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) processFile(files[0]);
+        }
 
-            <div class="settings-flat-list">
-                <!-- Build Settings -->
-                <div class="settings-category">Build Settings</div>
-                <div class="setting-item select-item">
-                    <select id="target">
-                        <option value="browser">Browser</option>
-                        <option value="node">Node.js</option>
-                    </select>
-                    <label for="target">Target Environment</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Choose where your obfuscated code will run</div>
-                    </div>
-                </div>
-                <div class="setting-item select-item">
-                    <select id="nameGenerationStyle">
-                        <option value="minify">Minify</option>
-                        <option value="hexadecimal">Hexadecimal</option>
-                        <option value="mangled">Mangled</option>
-                    </select>
-                    <label for="nameGenerationStyle">Name Generation Style</label>
-                    <div class="info-icon">
-                        <div class="tooltip">How variable and function names are generated</div>
-                    </div>
-                </div>
+        function processFile(file) {
+            if (!file.name.endsWith('.js') && !file.name.endsWith('.jsx')) {
+                showToast('Only .js and .jsx files are supported', 'error');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('File size exceeds 10MB limit', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                inputEditor?.setValue(event.target.result);
+                switchTab('editor');
+                showToast('✓ File loaded successfully!', 'success');
+            };
+            reader.onerror = function() {
+                showToast('Error reading file', 'error');
+            };
+            reader.readAsText(file);
+        }
 
-                <!-- Number Encoding -->
-                <div class="settings-category">Number Encoding</div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="numberEncoding">
-                    <label for="numberEncoding">Enable Number Encoding</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Encode all numbers in your code</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="optimzedNumberCache">
-                    <label for="optimzedNumberCache">Optimized Number Cache</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Cache frequently used numbers for smaller output</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="numberCalculator">
-                    <label for="numberCalculator">Number Calculator</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Use calculations to represent numbers</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="globalBaseIntegerConcealment">
-                    <label for="globalBaseIntegerConcealment">Global Base Integer Concealment</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Hide base integers globally</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="shuffleBaseIntegers">
-                    <label for="shuffleBaseIntegers">Shuffle Base Integers</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Randomize integer base representations</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="multipleVariableAssignments">
-                    <label for="multipleVariableAssignments">Multiple Variable Assignments</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Use multiple assignments for each variable</div>
-                    </div>
-                </div>
-                <div class="setting-item select-item">
-                    <select id="baseIntegersDefault">
-                        <option value="JSFuck">JSFuck</option>
-                        <option value="Binary">Binary</option>
-                        <option value="Hexadecimal">Hexadecimal</option>
-                        <option value="Octal">Octal</option>
-                    </select>
-                    <label for="baseIntegersDefault">Base Integers Default</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Default base system for integer encoding</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="encodedFunctionStrength" min="1" max="10" value="5">
-                    <label for="encodedFunctionStrength">Encoded Function Strength</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Higher values = stronger protection but larger file size (1-10)</div>
-                    </div>
-                </div>
-
-                <!-- String Encoding -->
-                <div class="settings-category">String Encoding</div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="stringEncoding">
-                    <label for="stringEncoding">Enable String Encoding</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Encode all strings in your code</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="optimizedStringCache">
-                    <label for="optimizedStringCache">Optimized String Cache</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Cache frequently used strings</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="stringConcealment">
-                    <label for="stringConcealment">String Concealment</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Hide string values completely</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="wrapStringsInIIFE">
-                    <label for="wrapStringsInIIFE">Wrap Strings in IIFE</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Wrap each string in an immediately invoked function</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="breakIIFEString">
-                    <label for="breakIIFEString">Break IIFE String</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Break string IIFEs into smaller pieces</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="stringSplitting" min="0" max="10" value="2">
-                    <label for="stringSplitting">String Splitting</label>
-                    <div class="info-icon">
-                        <div class="tooltip">How many parts to split strings into (0-10)</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="decodersCount" min="1" max="10" value="1">
-                    <label for="decodersCount">Decoders Count</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Number of decoder functions to generate (1-10)</div>
-                    </div>
-                </div>
-                <div class="setting-item number-item">
-                    <input type="number" id="addNoiseCount" min="0" max="10" value="0">
-                    <label for="addNoiseCount">Add Noise Count</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Add random code noise (0-10)</div>
-                    </div>
-                </div>
-
-                <!-- Code Protection -->
-                <div class="settings-category">Code Protection</div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="concealPrimitives">
-                    <label for="concealPrimitives">Conceal Primitives</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Hide primitive values</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="concealGlobalObjects">
-                    <label for="concealGlobalObjects">Conceal Global Objects</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Hide global object references</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="breakASTs">
-                    <label for="breakASTs">Break ASTs</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Break abstract syntax trees to prevent analysis</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="wrapInIIFE">
-                    <label for="wrapInIIFE">Wrap in IIFE</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Wrap code in an immediately invoked function expression</div>
-                    </div>
-                </div>
-
-                <!-- Security & Integrity -->
-                <div class="settings-category">Security & Integrity</div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="integrityChecks">
-                    <label for="integrityChecks">Enable Integrity Checks</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Verify code hasn't been tampered with</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="enableAntiDebugger">
-                    <label for="enableAntiDebugger">Enable Anti-Debugger</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Detect and prevent debugging attempts</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="disableConsoleOutput">
-                    <label for="disableConsoleOutput">Disable Console Output</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Block all console.log and similar functions</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="disableEval">
-                    <label for="disableEval">Disable Eval</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Prevent use of eval function</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="disableLocalIIFEs">
-                    <label for="disableLocalIIFEs">Disable Local IIFEs</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Don't use local immediately invoked functions</div>
-                    </div>
-                </div>
-                <div class="setting-item checkbox">
-                    <input type="checkbox" id="compression">
-                    <label for="compression">Enable Compression</label>
-                    <div class="info-icon">
-                        <div class="tooltip">Compress obfuscated code to reduce file size</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Actions -->
-            <div class="settings-actions">
-                <button onclick="saveSettingsToStorage()">Save Settings</button>
-                <button onclick="resetSettingsToDefault()">Reset to Defaults</button>
-            </div>
-        </div>
-
-         <!-- Footer -->
-            <footer class="landing-footer">
-                <div class="footer-content">
-                    <div class="footer-section footer-brand">
-                        <h3>JsScramble</h3>
-                        <p>Professional JavaScript obfuscation and protection for developers who care about security.</p>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Quick Links</h3>
-                        <ul>
-                            <li><a onclick="switchPage('docs')">Documentation</a></li>
-                            <li><a onclick="switchPage('faq')">FAQ</a></li>
-                            <li><a onclick="switchPage('settings')">Settings</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Resources</h3>
-                        <ul>
-                            <li><a href="https://github.com" target="_blank">GitHub</a></li>
-                            <li><a href="https://github.com" target="_blank">Report Issues</a></li>
-                            <li><a onclick="switchPage('community')">Community</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="footer-bottom">
-                    <p>Created with <svg class="heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> for developers who care about code security | © 2026 JsScramble - All rights reserved</p>
-                </div>
-            </footer>
-    </div>
-
-    <!-- Documentation Page -->
-    <div id="docs" class="page">
-        <div class="intro-content">
-            <h2>Documentation</h2>
-            
-            <h3>Getting Started</h3>
-            <p>Welcome to JsScramble! Follow these steps to get started with obfuscating your JavaScript code.</p>
-            <ol>
-                <li>Navigate to the <strong>Obfuscate</strong> tab</li>
-                <li>Paste your JavaScript code in the input editor</li>
-                <li>Visit the <strong>CONFIG</strong> tab to customize settings</li>
-                <li>Click the <strong>Obfuscate Code</strong> button</li>
-                <li>Copy the protected code and use it in your project</li>
-            </ol>
-
-            <h3>Configuration Guide</h3>
-            <p>JsScramble provides extensive configuration options to customize your obfuscation:</p>
-            <ul>
-                <li><strong>Build Settings:</strong> Choose your target environment and naming style</li>
-                <li><strong>Number Encoding:</strong> Configure how numbers are encoded and cached</li>
-                <li><strong>String Encoding:</strong> Customize string protection strategies</li>
-                <li><strong>Code Protection:</strong> Add protection layers to your code structure</li>
-                <li><strong>Security & Integrity:</strong> Enable anti-debugging and integrity checks</li>
-            </ul>
-
-            <h3>Obfuscation Levels</h3>
-            <ul>
-                <li><strong>Minimal:</strong> Light obfuscation for quick protection</li>
-                <li><strong>Standard:</strong> Balanced approach maintaining readability hints</li>
-                <li><strong>Maximum:</strong> Complete code transformation with maximum protection</li>
-            </ul>
-
-            <!-- Footer -->
-            <footer class="landing-footer">
-                <div class="footer-content">
-                    <div class="footer-section footer-brand">
-                        <h3>JsScramble</h3>
-                        <p>Professional JavaScript obfuscation and protection for developers who care about security.</p>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Quick Links</h3>
-                        <ul>
-                            <li><a onclick="switchPage('docs')">Documentation</a></li>
-                            <li><a onclick="switchPage('faq')">FAQ</a></li>
-                            <li><a onclick="switchPage('settings')">Settings</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Resources</h3>
-                        <ul>
-                            <li><a href="https://github.com" target="_blank">GitHub</a></li>
-                            <li><a href="https://github.com" target="_blank">Report Issues</a></li>
-                            <li><a onclick="switchPage('community')">Community</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="footer-bottom">
-                    <p>Created with <svg class="heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> for developers who care about code security | © 2026 JsScramble - All rights reserved</p>
-                </div>
-            </footer>
-        </div>
-    </div>
-
-    <!-- FAQ Page -->
-    <div id="faq" class="page">
-        <div class="intro-content">
-            <h2>Frequently Asked Questions</h2>
-            <div class="faq-container">
-                <div class="faq-item">
-                    <button class="faq-question">What is code obfuscation?</button>
-                    <div class="faq-answer">
-                        <p>Code obfuscation is the process of making code difficult to understand while preserving functionality. JsScramble uses advanced techniques to transform your code into an unreadable format.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">Will obfuscation affect my code's performance?</button>
-                    <div class="faq-answer">
-                        <p>No, JsScramble is designed to maintain your code's original performance. The obfuscation process preserves all functionality while only making the code harder to read.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">Can I undo obfuscation?</button>
-                    <div class="faq-answer">
-                        <p>While theoretically possible with significant effort, JsScramble uses techniques that make it extremely difficult to reverse. Always keep a backup of your original source code.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">What types of JavaScript can be obfuscated?</button>
-                    <div class="faq-answer">
-                        <p>Most JavaScript code can be obfuscated, including browser-based apps, Node.js scripts, and framework components. Test your specific use case to ensure compatibility.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">How do I debug obfuscated code?</button>
-                    <div class="faq-answer">
-                        <p>Debug your code before obfuscation. Keep your original source code separate for reference during development.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">Is there a file size limit?</button>
-                    <div class="faq-answer">
-                        <p>There's no hard limit, but very large files may take longer to process. Use compression options to manage code size.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <footer class="landing-footer">
-                <div class="footer-content">
-                    <div class="footer-section footer-brand">
-                        <h3>JsScramble</h3>
-                        <p>Professional JavaScript obfuscation and protection for developers who care about security.</p>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Quick Links</h3>
-                        <ul>
-                            <li><a onclick="switchPage('docs')">Documentation</a></li>
-                            <li><a onclick="switchPage('faq')">FAQ</a></li>
-                            <li><a onclick="switchPage('settings')">Settings</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Resources</h3>
-                        <ul>
-                            <li><a href="https://github.com" target="_blank">GitHub</a></li>
-                            <li><a href="https://github.com" target="_blank">Report Issues</a></li>
-                            <li><a onclick="switchPage('community')">Community</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="footer-bottom">
-                    <p>Created with <svg class="heart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> for developers who care about code security | © 2026 JsScramble - All rights reserved</p>
-                </div>
-            </footer>
-        </div>
-    </div>
-
-    <!-- Community Page -->
-    <div id="community" class="page">
-        <div class="intro-content">
-            <h2>Community & Support</h2>
-            
-            <h3>Get Involved</h3>
-            <p>JsScramble is a community-driven project. We welcome your participation, feedback, and contributions.</p>
-
-            <h3>Ways to Contribute</h3>
-            <ul>
-                <li>Report bugs and issues</li>
-                <li>Suggest new features and improvements</li>
-                <li>Contribute code and improvements</li>
-                <li>Help improve documentation</li>
-            </ul>
-
-            <h3>Resources</h3>
-            <ul>
-                <li>GitHub Issues for bug reports</li>
-                <li>GitHub Discussions for questions</li>
-                <li>Email support for business inquiries</li>
-            </ul>
-
-            <h3>License</h3>
-            <p>JsScramble is open-source software. Check our GitHub repository for full license details.</p>
-        </div>
-    </div>
-
-    <!-- Command Prompt Modal -->
-    <div id="runModalBackdrop" class="run-modal-backdrop" onclick="closeRunModal()"></div>
-    <div id="runModal" class="run-modal">
-        <div class="run-modal-header">
-            <span>Command Prompt</span>
-            <button class="run-modal-close" onclick="closeRunModal()">×</button>
-        </div>
-        <div class="run-modal-content" id="runModalContent"></div>
-    </div>
-
-    <!-- External JavaScript -->
-    <script src="app.js"></script>
-</head>
+        document.addEventListener('DOMContentLoaded', function() {
+            initCodeAnimation();
+        });
+    </script>
+</body>
+</html>
