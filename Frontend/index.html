@@ -526,7 +526,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div class="custom-dropdown" data-select-id="target">
+                                    <div class="custom-dropdown" data-select-id="target">
                                     <div class="dropdown-trigger">
                                         <span class="dropdown-value">Browser</span>
                                         <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -553,7 +553,7 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <select id="target" style="display: none;">
+                                    <select id="target" data-config="target" style="display: none;">
                                         <option value="browser">Browser</option>
                                         <option value="node">Node.js</option>
                                         <option value="universal">Universal</option>
@@ -581,7 +581,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="stringEncoding" checked>
+                                        <input type="checkbox" id="stringEncoding" data-config="stringEncoding" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -599,7 +599,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="stringConcealment">
+                                        <input type="checkbox" id="stringConcealment" data-config="stringConcealment">
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -643,10 +643,11 @@
                                                 </svg>
                                             </div>
                                         </div>
-                                        <select id="stringMethod" style="display: none;">
-                                            <option value="array">String Array</option>
-                                            <option value="hex">Hex Encoding</option>
-                                            <option value="base64">Base64</option>
+                                        <select id="stringMethod" data-config="stringSplitting" style="display: none;">
+                                            <option value="0">No Splitting</option>
+                                            <option value="1">Light</option>
+                                            <option value="2">Medium</option>
+                                            <option value="3">Heavy</option>
                                         </select>
                                     </div>
                                 </div>
@@ -672,7 +673,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="numberEncoding" checked>
+                                        <input type="checkbox" id="numberEncoding" data-config="numberEncoding" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -690,7 +691,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="optimizedCache">
+                                        <input type="checkbox" id="optimizedCache" data-config="optimzedNumberCache">
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -734,7 +735,7 @@
                                                 </svg>
                                             </div>
                                         </div>
-                                        <select id="numberFormat" style="display: none;">
+                                        <select id="numberFormat" data-config="baseIntegersDefault" style="display: none;">
                                             <option value="decimal">Decimal</option>
                                             <option value="hex">Hexadecimal</option>
                                             <option value="octal">Octal</option>
@@ -864,7 +865,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="antiDebugger">
+                                        <input type="checkbox" id="antiDebugger" data-config="enableAntiDebugger">
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -882,7 +883,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="integrityCheck">
+                                        <input type="checkbox" id="integrityCheck" data-config="integrityChecks">
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -926,10 +927,10 @@
                                                 </svg>
                                             </div>
                                         </div>
-                                        <select id="securityLevel" style="display: none;">
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
+                                        <select id="securityLevel" data-config="encodedFunctionStrength" style="display: none;">
+                                            <option value="1">Low</option>
+                                            <option value="3">Medium</option>
+                                            <option value="5">High</option>
                                         </select>
                                     </div>
                                 </div>
@@ -955,7 +956,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="compression">
+                                        <input type="checkbox" id="compression" data-config="compression" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -973,7 +974,7 @@
                                         </div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" id="mangle" checked>
+                                        <input type="checkbox" id="mangle" data-config="breakASTs" checked>
                                         <span class="slider"></span>
                                     </label>
                                 </div>
@@ -1023,6 +1024,233 @@
                                             <option value="compact">Compact</option>
                                         </select>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header">
+                                <h4>Identifier Naming Style</h4>
+                            </div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Naming Strategy</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Naming Strategy</span>
+                                                <span class="tooltip-type">ENUM</span>
+                                                <span class="tooltip-default">DEFAULT: MINIFY</span>
+                                                <span class="tooltip-text">Minify=short names, Zalgo=unicode obfuscation, Invisible=zero-width characters</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="custom-dropdown" data-select-id="namingStyle">
+                                        <div class="dropdown-trigger">
+                                            <span class="dropdown-value">Minify</span>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="dropdown-option" data-value="minify">
+                                                <span class="option-text">Minify</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="zalgo">
+                                                <span class="option-text">Zalgo</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="invisible">
+                                                <span class="option-text">Invisible</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <select id="namingStyle" data-config="nameGenerationStyle" style="display: none;">
+                                            <option value="minify">Minify</option>
+                                            <option value="zalgo">Zalgo</option>
+                                            <option value="invisible">Invisible</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header">
+                                <h4>Advanced Protections</h4>
+                            </div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="numberCalculator" style="margin: 0;">Number Calculator</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Number Calculator</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Adds mathematical operations to decode numbers at runtime.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="numberCalculator" data-config="numberCalculator" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="globalConceal" style="margin: 0;">Conceal Global Objects</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Conceal Global Objects</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Hides references to global objects like window.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="globalConceal" data-config="concealGlobalObjects" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="concealPrim" style="margin: 0;">Conceal Primitives</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Conceal Primitives</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Obfuscates primitive values and built-in functions.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="concealPrim" data-config="concealPrimitives" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="shuffleInts" style="margin: 0;">Shuffle Base Integers</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Shuffle Base Integers</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Randomizes integer encoding order for maximum obfuscation.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="shuffleInts" data-config="shuffleBaseIntegers" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="optimStringCache" style="margin: 0;">Optimize String Cache</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Optimize String Cache</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Caches decoded strings for better performance.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="optimStringCache" data-config="optimizedStringCache" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="disableConsole" style="margin: 0;">Disable Console Output</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Disable Console Output</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Removes all console.log and debugging output.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="disableConsole" data-config="disableConsoleOutput">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-card-header">
+                                <h4>Function & String Encoding</h4>
+                            </div>
+                            <div class="setting-items">
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label for="funcStrength" style="margin: 0;">Function Encoding Strength</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Function Encoding Strength</span>
+                                                <span class="tooltip-type">NUMBER (1-5)</span>
+                                                <span class="tooltip-default">DEFAULT: 3</span>
+                                                <span class="tooltip-text">Higher values = stronger encoding but more overhead</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="funcStrength" data-config="encodedFunctionStrength" min="1" max="5" value="3" style="width: 100%;">
+                                    <span id="funcStrengthValue" style="font-size: 0.8rem; color: var(--text-secondary);">3</span>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label for="decodersCount" style="margin: 0;">String Decoders</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">String Decoders</span>
+                                                <span class="tooltip-type">NUMBER (1-3)</span>
+                                                <span class="tooltip-default">DEFAULT: 2</span>
+                                                <span class="tooltip-text">More decoders = harder to reverse engineer</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="decodersCount" data-config="stringConcealmentSettings.decodersCount" min="1" max="3" value="2" style="width: 100%;">
+                                    <span id="decodersCountValue" style="font-size: 0.8rem; color: var(--text-secondary);">2</span>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <label for="noiseCount" style="margin: 0;">Noise Blocks</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Noise Blocks</span>
+                                                <span class="tooltip-type">NUMBER (0-3)</span>
+                                                <span class="tooltip-default">DEFAULT: 1</span>
+                                                <span class="tooltip-text">Adds obfuscation noise to slow down analysis</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="noiseCount" data-config="stringConcealmentSettings.addNoiseCount" min="0" max="3" value="1" style="width: 100%;">
+                                    <span id="noiseCountValue" style="font-size: 0.8rem; color: var(--text-secondary);">1</span>
                                 </div>
                             </div>
                         </div>
@@ -1077,414 +1305,6 @@
         </div>
     </footer>
 
-    <script>
-        let inputEditor, outputEditor;
-
-        const codeLines = [
-            'POST /api/certificate/validate HTTP/1.1',
-            'Host: secure.example.com',
-            'Content-Type: application/json',
-            'Authorization: Bearer eyJ0eXAi...',
-            '',
-            '{',
-            '  "certificate": "MIIDXTCCAkWgAwIB...",',
-            '  "endpoint": "https://app.example.com",',
-            '  "timestamp": "2026-04-21T10:30:00Z"',
-            '}'
-        ];
-
-        function initCodeAnimation() {
-            const display = document.getElementById('codeDisplay');
-            if (!display) return;
-            display.innerHTML = '';
-            let lineIndex = 0;
-            let charIndex = 0;
-
-            function typeNextChar() {
-                if (lineIndex < codeLines.length) {
-                    if (charIndex === 0) {
-                        const line = document.createElement('div');
-                        line.className = 'code-line';
-                        line.id = `line-${lineIndex}`;
-                        display.appendChild(line);
-                    }
-                    const currentLine = document.getElementById(`line-${lineIndex}`);
-                    const text = codeLines[lineIndex];
-                    if (charIndex < text.length) {
-                        currentLine.textContent += text[charIndex];
-                        charIndex++;
-                        setTimeout(typeNextChar, 30);
-                    } else {
-                        lineIndex++;
-                        charIndex = 0;
-                        setTimeout(typeNextChar, 100);
-                    }
-                } else {
-                    setTimeout(initCodeAnimation, 3000);
-                }
-            }
-            typeNextChar();
-        }
-
-        function navigateTo(pageName) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageName).classList.add('active');
-            if (pageName === 'obfuscation' && !inputEditor) initializeEditors();
-            window.scrollTo(0, 0);
-        }
-
-        function initializeEditors() {
-            require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
-            require(['vs/editor/editor.main'], function() {
-                if (!inputEditor) {
-                    inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
-                        value: '// Enter your JavaScript code here',
-                        language: 'javascript',
-                        theme: 'vs-dark',
-                        automaticLayout: true,
-                        minimap: { enabled: false },
-                        fontSize: 13,
-                        fontFamily: '"JetBrains Mono", monospace',
-                        wordWrap: 'on'
-                    });
-                }
-                if (!outputEditor) {
-                    outputEditor = monaco.editor.create(document.getElementById('outputEditor'), {
-                        value: '// Obfuscated code will appear here',
-                        language: 'javascript',
-                        theme: 'vs-dark',
-                        automaticLayout: true,
-                        minimap: { enabled: false },
-                        fontSize: 13,
-                        fontFamily: '"JetBrains Mono", monospace',
-                        readOnly: true
-                    });
-                }
-            });
-        }
-
-        function obfuscateCode() {
-            const input = inputEditor?.getValue() || '';
-            if (!input.trim()) {
-                showToast('Please enter some code first', 'error');
-                return;
-            }
-            const obfuscated = simulateObfuscation(input);
-            outputEditor?.setValue(obfuscated);
-            switchTab('output');
-            showToast('✓ Code obfuscated successfully!', 'success');
-        }
-
-        function simulateObfuscation(code) {
-            const lines = code.split('\n');
-            return lines.map(line => {
-                if (line.trim().length === 0) return line;
-                return line.replace(/([a-zA-Z_$][a-zA-Z0-9_$]*)/g, match => {
-                    if (/^(function|const|let|var|if|else|for|while|return|class|new)$/.test(match)) return match;
-                    return '_0x' + Math.random().toString(16).substr(2, 6);
-                });
-            }).join('\n');
-        }
-
-        function loadExample() {
-            const code = `function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
-
-for (let i = 0; i < 10; i++) {
-  console.log('F(' + i + ') = ' + fibonacci(i));
-}`;
-            inputEditor?.setValue(code);
-            showToast('✓ Example loaded!', 'success');
-        }
-
-        function clearInput() {
-            inputEditor?.setValue('');
-        }
-
-        function copyToClipboard() {
-            const text = outputEditor?.getValue();
-            if (!text?.trim()) {
-                showToast('Nothing to copy', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('✓ Code copied to clipboard!', 'success');
-            });
-        }
-        
-        function copyAndRun() {
-            copyToClipboard();
-            runCode();
-        }
-
-        function downloadOutput() {
-            const text = outputEditor?.getValue();
-            if (!text?.trim()) {
-                showToast('No output to download', 'error');
-                return;
-            }
-            const blob = new Blob([text], { type: 'application/javascript' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'obfuscated.js';
-            a.click();
-            showToast('✓ Download started!', 'success');
-        }
-
-        function runCode() {
-            const code = outputEditor?.getValue();
-            if (!code?.trim()) {
-                showToast('No code to run', 'error');
-                return;
-            }
-            showToast('✓ Running code...', 'success');
-            const terminal = document.getElementById('terminal');
-            const terminalOutput = document.getElementById('terminalOutput');
-            terminal.classList.add('active');
-            terminalOutput.innerHTML = '<span style="color: #888;">Running code...</span>';
-            try {
-                const originalLog = console.log;
-                const originalError = console.error;
-                let output = '';
-                console.log = (...args) => {
-                    output += args.map(arg => {
-                        if (typeof arg === 'object') return JSON.stringify(arg, null, 2);
-                        return String(arg);
-                    }).join(' ') + '\n';
-                    originalLog.apply(console, args);
-                };
-                console.error = (...args) => {
-                    output += '<span style="color: #ff6b6b;">ERROR: ' + args.join(' ') + '</span>\n';
-                    originalError.apply(console, args);
-                };
-                (function() { eval(code); })();
-                console.log = originalLog;
-                console.error = originalError;
-                if (output.trim()) {
-                    terminalOutput.innerHTML = `<div style="color: #00d4ff;">$ node obfuscated.js</div><div>${output.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
-                } else {
-                    terminalOutput.innerHTML = `<div style="color: #00d4ff;">$ node obfuscated.js</div><div style="color: #888;">(no output)</div>`;
-                }
-            } catch (error) {
-                terminalOutput.innerHTML = `<div style="color: #00d4ff;">$ node obfuscated.js</div><div style="color: #ff6b6b;">ERROR: ${error.message}</div><div style="color: #ff6b6b; font-size: 0.85em; margin-top: 0.5rem;">${error.stack.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
-            }
-        }
-
-        function closeTerminal() {
-            const terminal = document.getElementById('terminal');
-            terminal.classList.remove('active');
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.querySelector('.toast-container') || createToastContainer();
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('fadeOut');
-                setTimeout(() => toast.remove(), 500);
-            }, 2000);
-        }
-
-        function createToastContainer() {
-            const container = document.createElement('div');
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-            return container;
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName + '-tab').classList.add('active');
-            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('uploadZone').classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('uploadZone').classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('uploadZone').classList.remove('drag-over');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) processFile(files[0]);
-        }
-
-        function handleFileSelect(e) {
-            const files = e.target.files;
-            if (files.length > 0) processFile(files[0]);
-        }
-
-        function processFile(file) {
-            if (!file.name.endsWith('.js') && !file.name.endsWith('.jsx')) {
-                showToast('Only .js and .jsx files are supported', 'error');
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                showToast('File size exceeds 10MB limit', 'error');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                inputEditor?.setValue(event.target.result);
-                switchTab('editor');
-                showToast('✓ File loaded successfully!', 'success');
-            };
-            reader.onerror = function() {
-                showToast('Error reading file', 'error');
-            };
-            reader.readAsText(file);
-        }
-
-        function startTestimonialScroll() {
-            const track = document.getElementById('testimonialTrack');
-            let scrollAmount = 0;
-            const scrollSpeed = 0.25; // pixels per frame
-            
-            // Get card width + gap
-            const getCardWidth = () => {
-                const card = track.querySelector('.testimonial-card');
-                if (card) {
-                    return card.offsetWidth + 32; // 32px = 2rem gap
-                }
-                return 360;
-            };
-            
-            let cardWidth = getCardWidth();
-
-            function scroll() {
-                scrollAmount += scrollSpeed;
-                track.style.transform = `translateX(-${scrollAmount}px)`;
-
-                // When one card has fully scrolled out, move it to the end
-                if (scrollAmount >= cardWidth) {
-                    // Move first card to end (like array shift + push)
-                    const firstCard = track.querySelector('.testimonial-card');
-                    track.appendChild(firstCard);
-                    
-                    // Reset scroll position seamlessly
-                    scrollAmount = 0;
-                    track.style.transform = 'translateX(0)';
-                }
-
-                requestAnimationFrame(scroll);
-            }
-
-            scroll();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            initCodeAnimation();
-            startTestimonialScroll();
-            initCustomDropdowns();
-        });
-
-        // Custom Dropdown Handler
-        function initCustomDropdowns() {
-            const dropdowns = document.querySelectorAll('.custom-dropdown');
-            
-            dropdowns.forEach(dropdown => {
-                const trigger = dropdown.querySelector('.dropdown-trigger');
-                const menu = dropdown.querySelector('.dropdown-menu');
-                const options = dropdown.querySelectorAll('.dropdown-option');
-                const hiddenSelect = dropdown.querySelector('select');
-                
-                // Initialize with selected value and mark it with checkmark
-                if (hiddenSelect) {
-                    const selectedValue = hiddenSelect.value;
-                    options.forEach(option => {
-                        if (option.getAttribute('data-value') === selectedValue) {
-                            option.classList.add('selected');
-                        } else {
-                            option.classList.remove('selected');
-                        }
-                    });
-                }
-                
-                // Toggle menu on trigger click
-                trigger.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    
-                    // Check if this menu is already open
-                    const isOpen = menu.classList.contains('active');
-                    
-                    if (isOpen) {
-                        // Close only this dropdown
-                        menu.classList.remove('active');
-                        trigger.classList.remove('active');
-                    } else {
-                        // Close all other dropdowns, then open this one
-                        closeAllDropdowns();
-                        menu.classList.add('active');
-                        trigger.classList.add('active');
-                    }
-                });
-                
-                // Handle option selection
-                options.forEach(option => {
-                    option.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        
-                        if (option.classList.contains('disabled')) return;
-                        
-                        // Update selected state
-                        options.forEach(opt => opt.classList.remove('selected'));
-                        option.classList.add('selected');
-                        
-                        // Update trigger text
-                        const value = option.getAttribute('data-value');
-                        const text = option.querySelector('.option-text').textContent;
-                        trigger.querySelector('.dropdown-value').textContent = text;
-                        
-                        // Update hidden select
-                        if (hiddenSelect) {
-                            hiddenSelect.value = value;
-                            // Trigger change event for any listeners
-                            hiddenSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                        
-                        // Close menu
-                        menu.classList.remove('active');
-                        trigger.classList.remove('active');
-                    });
-                });
-            });
-            
-            // Close all dropdowns when clicking outside
-            document.addEventListener('click', () => {
-                closeAllDropdowns();
-            });
-            
-            // Close dropdowns on escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeAllDropdowns();
-                }
-            });
-        }
-        
-        function closeAllDropdowns() {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.classList.remove('active');
-            });
-            document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
-                trigger.classList.remove('active');
-            });
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
