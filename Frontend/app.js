@@ -5,7 +5,157 @@
 
 let inputEditor, outputEditor;
 
-// Configuration state from server
+// ── Auth state ─────────────────────────────────────────────────────────────
+let currentUser = null;
+
+function getToken() { return localStorage.getItem('obfusly_token'); }
+function setToken(t) { localStorage.setItem('obfusly_token', t); }
+function clearToken() { localStorage.removeItem('obfusly_token'); }
+
+function updateNavAuth() {
+    const loginBtn    = document.getElementById('nav-login-btn');
+    const registerBtn = document.getElementById('nav-register-btn');
+    const accountBtn  = document.getElementById('nav-account-btn');
+    const logoutBtn   = document.getElementById('nav-logout-btn');
+
+    if (currentUser) {
+        loginBtn.style.display    = 'none';
+        registerBtn.style.display = 'none';
+        accountBtn.style.display  = 'inline-block';
+        logoutBtn.style.display   = 'inline-block';
+        accountBtn.textContent    = currentUser.name.split(' ')[0];
+    } else {
+        loginBtn.style.display    = 'inline-block';
+        registerBtn.style.display = 'inline-block';
+        accountBtn.style.display  = 'none';
+        logoutBtn.style.display   = 'none';
+    }
+}
+
+async function restoreSession() {
+    const token = getToken();
+    if (!token) return;
+    try {
+        const res = await fetch('/api/auth/me', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+            currentUser = await res.json();
+            updateNavAuth();
+            fillAccountPage();
+        } else {
+            clearToken();
+        }
+    } catch { /* ignore */ }
+}
+
+async function submitLogin(e) {
+    e.preventDefault();
+    const errEl  = document.getElementById('login-error');
+    const btn    = document.getElementById('login-submit-btn');
+    const email  = document.getElementById('login-email').value.trim();
+    const pass   = document.getElementById('login-password').value;
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Logging in…';
+    try {
+        const res  = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass }),
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+        setToken(data.token);
+        currentUser = data.user;
+        updateNavAuth();
+        fillAccountPage();
+        showToast('✓ Welcome back, ' + currentUser.name.split(' ')[0] + '!', 'success');
+        navigateTo('home');
+    } catch { errEl.textContent = 'Network error — please try again.'; errEl.style.display = 'block'; }
+    finally { btn.disabled = false; btn.textContent = 'Log In'; }
+}
+
+async function submitRegister(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('register-error');
+    const btn   = document.getElementById('register-submit-btn');
+    const name  = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const pass  = document.getElementById('register-password').value;
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Creating account…';
+    try {
+        const res  = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password: pass }),
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+        setToken(data.token);
+        currentUser = data.user;
+        updateNavAuth();
+        fillAccountPage();
+        showToast('✓ Account created! Welcome, ' + currentUser.name.split(' ')[0] + '!', 'success');
+        navigateTo('home');
+    } catch { errEl.textContent = 'Network error — please try again.'; errEl.style.display = 'block'; }
+    finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+}
+
+function logout() {
+    clearToken();
+    currentUser = null;
+    updateNavAuth();
+    showToast('You have been logged out.', 'info');
+    navigateTo('home');
+}
+
+function fillAccountPage() {
+    if (!currentUser) return;
+    const planLabel = { free: 'Free', starter: 'Starter ($29/mo)', professional: 'Professional ($79/mo)', enterprise: 'Enterprise' };
+    document.getElementById('acct-name').textContent  = currentUser.name;
+    document.getElementById('acct-email').textContent = currentUser.email;
+    document.getElementById('acct-plan').textContent  = planLabel[currentUser.plan] || currentUser.plan;
+    document.getElementById('acct-since').textContent = currentUser.createdAt
+        ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
+        : '—';
+}
+
+// ── Stripe checkout ────────────────────────────────────────────────────────
+async function startCheckout(plan) {
+    if (!currentUser) {
+        showToast('Please log in or create an account first.', 'error');
+        navigateTo('register');
+        return;
+    }
+    showToast('Redirecting to checkout…', 'info');
+    try {
+        const res  = await fetch('/api/payment/create-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() },
+            body: JSON.stringify({ plan }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error || 'Could not start checkout.', 'error'); return; }
+        window.location.href = data.url;
+    } catch { showToast('Network error — please try again.', 'error'); }
+}
+
+// ── FAQ accordion ──────────────────────────────────────────────────────────
+function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const arrow  = btn.querySelector('.faq-arrow');
+    const isOpen = answer.classList.contains('open');
+    document.querySelectorAll('.faq-answer.open').forEach(a => {
+        a.classList.remove('open');
+        a.previousElementSibling.querySelector('.faq-arrow').textContent = '▼';
+    });
+    if (!isOpen) { answer.classList.add('open'); arrow.textContent = '▲'; }
+}
+
+
 let obfuscationConfig = {
     nameGenerationStyle: "minify",
     numberEncoding: true,
@@ -46,59 +196,122 @@ let obfuscationConfig = {
 // CODE ANIMATION
 // ============================================================================
 
-const codeLines = [
-    'POST /api/certificate/validate HTTP/1.1',
-    'Host: secure.example.com',
-    'Content-Type: application/json',
-    'Authorization: Bearer eyJ0eXAi...',
-    '',
-    '{',
-    '  "certificate": "MIIDXTCCAkWgAwIB...",',
-    '  "endpoint": "https://app.example.com",',
-    '  "timestamp": "2026-04-21T10:30:00Z"',
-    '}'
+const codePhases = [
+    {
+        badge: 'Source Code',
+        badgeColor: '#88aaff',
+        charDelay: 26,
+        lineDelay: 80,
+        holdMs: 2600,
+        lines: [
+            { text: '// Generates a secure 256-bit key',          type: 'comment' },
+            { text: 'function generateKey(len = 32) {',           type: 'keyword' },
+            { text: '  const charset = "ABCDEFabcdef0123456789";', type: 'string' },
+            { text: '  let key = "";',                             type: '' },
+            { text: '  for (let i = 0; i < len; i++) {',          type: 'keyword' },
+            { text: '    const r = crypto.getRandomValues(',       type: '' },
+            { text: '      new Uint8Array(1))[0];',                type: '' },
+            { text: '    key += charset[r % charset.length];',     type: '' },
+            { text: '  }',                                         type: '' },
+            { text: '  return key;',                               type: '' },
+            { text: '}',                                           type: '' },
+            { text: 'generateKey();',                              type: 'keyword' },
+        ]
+    },
+    {
+        badge: 'Protected Output',
+        badgeColor: '#00d4ff',
+        charDelay: 14,
+        lineDelay: 35,
+        holdMs: 2600,
+        lines: [
+            { text: `var G=void 0;var J=['vcn9lki%(PnV4%iAK9kwKGv8JVM@evff','Kyff','4mi)cAt24%DWiAtXgPiG'];const F=(()=>{;var I='y139kt%xpnCFKJehvlQ!ciP*(4LuMg&5#7qV$TAsO0SjXW2IbdwG)8mR@rNazDEo';var b={};for(var x=0;x<I.length;x++)b[I.charAt(x)]=x;var L=new Array(3).fill(null);var z='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';var u='f';function S(n){if(L[n]!==null&&L[n]!==undefined)return L[n];var k=0&65535;if((k&3)===1){k=k<<1^21930;};var m=J[n];var q='';for(var d=0;d<m.length;d++){var l=m.charAt(d);for(var d=0;d<m.length;d++){var Q=m.charAt(d);var R=b[Q];if(R!==undefined)q+=z.charAt(R);else if(Q===u)q+='=';else q+=Q;};var t='';if(typeof Buffer!=='undefined'){try{t=Buffer.from(q,'base64').toString('utf8');}catch(e){t=q;}}else{try{t=decodeURIComponent(Array.prototype.map.call(atob(q),function(c){return'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));}catch(e){t=q;}};var H=(k^8754)&255+k;for(var U=0;U<0;U++){H=H+0&255;};L[n]=t||k;return t+(H==undefined?55571&255:'');};};var V=X=>{var w=S(X);return w;};(function e(){G=typeof globalThis==='object'?globalThis:typeof self==='object'?self:global;}());return V;})();const l=F||undefined;function B(O=32){const W=l(0);let N="";for(let v=0;v<O;v++){N+=W[crypto[l(2)](new Uint8Array(1))[l(1)]%W.length]}return N}B();`, type: 'obf' },
+        ]
+    }
 ];
 
 function initCodeAnimation() {
     const display = document.getElementById('codeDisplay');
+    const badge   = document.querySelector('.code-panel-badge');
     if (!display) return;
-    display.innerHTML = '';
-    let lineIndex = 0;
-    let charIndex = 0;
 
-    function typeNextChar() {
-        if (lineIndex < codeLines.length) {
+    let phaseIndex = 0;
+
+    function runPhase() {
+        const phase = codePhases[phaseIndex];
+        display.innerHTML = '';
+        if (badge) {
+            badge.textContent = phase.badge;
+            badge.style.color = phase.badgeColor;
+        }
+
+        let lineIndex = 0;
+        let charIndex = 0;
+
+        function typeNextChar() {
+            if (lineIndex >= phase.lines.length) {
+                // Finished typing — hold, then transition
+                if (phaseIndex === 0 && badge) {
+                    setTimeout(() => {
+                        badge.textContent = 'Obfuscating…';
+                        badge.style.color = '#ffcc44';
+                        setTimeout(() => {
+                            phaseIndex = 1;
+                            runPhase();
+                        }, 700);
+                    }, phase.holdMs);
+                } else {
+                    setTimeout(() => {
+                        phaseIndex = 0;
+                        runPhase();
+                    }, phase.holdMs);
+                }
+                return;
+            }
+
+            const { text, type } = phase.lines[lineIndex];
+
             if (charIndex === 0) {
                 const line = document.createElement('div');
-                line.className = 'code-line';
-                line.id = `line-${lineIndex}`;
+                line.className = 'code-line' + (type ? ` ${type}` : '');
+                line.id = `anim-line-${lineIndex}`;
                 display.appendChild(line);
             }
-            const currentLine = document.getElementById(`line-${lineIndex}`);
-            const text = codeLines[lineIndex];
+
+            const currentLine = document.getElementById(`anim-line-${lineIndex}`);
             if (charIndex < text.length) {
                 currentLine.textContent += text[charIndex];
                 charIndex++;
-                setTimeout(typeNextChar, 30);
+                setTimeout(typeNextChar, phase.charDelay);
             } else {
                 lineIndex++;
                 charIndex = 0;
-                setTimeout(typeNextChar, 100);
+                setTimeout(typeNextChar, phase.lineDelay);
             }
-        } else {
-            setTimeout(initCodeAnimation, 3000);
         }
+
+        typeNextChar();
     }
-    typeNextChar();
+
+    runPhase();
 }
 
 // ============================================================================
 // PAGE NAVIGATION
 // ============================================================================
 
+function updateFooterVisibility(pageName) {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    const hideFooter = pageName === 'login' || pageName === 'register';
+    footer.style.display = hideFooter ? 'none' : '';
+}
+
 function navigateTo(pageName) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById(pageName).classList.add('active');
+    updateFooterVisibility(pageName);
     if (pageName === 'obfuscation' && !inputEditor) initializeEditors();
     window.scrollTo(0, 0);
 }
@@ -565,12 +778,23 @@ function attachConfigListeners() {
 // INITIALIZATION
 // ============================================================================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initCodeAnimation();
     startTestimonialScroll();
     initCustomDropdowns();
     attachConfigListeners();
-    
-    // Initial config read from UI
     updateConfigFromUI();
+
+    await restoreSession();
+
+    // Handle post-Stripe redirect success
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success') {
+        const plan = params.get('plan') || 'your new';
+        showToast('✓ Payment successful! Your ' + plan + ' plan is now active.', 'success');
+        // Refresh user data so plan is up-to-date
+        await restoreSession();
+        history.replaceState({}, '', '/');
+        navigateTo('account');
+    }
 });

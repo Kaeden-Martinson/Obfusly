@@ -1,0 +1,10 @@
+[
+  {
+    "id": "1ed158a8-238f-4ae4-b2d9-59cf882fd653",
+    "name": "Test User",
+    "email": "test@example.com",
+    "passwordHash": "$2b$12$.0oCDFAVq5hoH5XR2IEfouNTKPtZw9lXAFpS8KZ63SJiY/MEIfyOO",
+    "plan": "free",
+    "createdAt": "2026-04-23T04:45:24.512Z"
+  }
+]

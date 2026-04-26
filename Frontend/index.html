@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obfusly - Next-Gen Code Obfuscation & Security</title>
-    <link rel="icon" type="image/png" href="obfusly-logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>obfusly - Next-Gen Code Obfuscation & Security</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="obfusly_icon.png">
+    <link rel="shortcut icon" href="obfusly_icon.png">
+    <link rel="apple-touch-icon" href="obfusly_icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,13 +15,18 @@
     <!-- HEADER -->
     <header>
         <div class="header-content">
-            <img src="name-logo.png" alt="Obfusly Logo" class="logo" onclick="navigateTo('home')" style="cursor: pointer; height: 65px; width: auto;">
+            <img src="obfusly_name.png" alt="obfusly logo" class="logo" onclick="navigateTo('home')" style="cursor: pointer; height: 65px; width: auto;">
             <nav>
                 <a onclick="navigateTo('home')">Home</a>
                 <a onclick="navigateTo('obfuscation')">Obfuscate</a>
                 <a onclick="navigateTo('pricing')">Pricing</a>
                 <a onclick="navigateTo('contact')">Contact</a>
-                <button class="cta-button" onclick="navigateTo('obfuscation')">Get Started</button>
+                <div id="nav-auth-area">
+                    <button class="cta-button" onclick="navigateTo('login')" id="nav-login-btn">Log In</button>
+                    <button class="cta-button cta-button-ghost cta-button-offset" onclick="navigateTo('register')" id="nav-register-btn">Sign Up</button>
+                    <button class="cta-button nav-hidden" id="nav-account-btn" onclick="navigateTo('account')">Account</button>
+                    <button class="cta-button cta-button-danger cta-button-offset nav-hidden" id="nav-logout-btn" onclick="logout()">Log Out</button>
+                </div>
             </nav>
         </div>
     </header>
@@ -36,8 +43,23 @@
             
             <div class="hero-content">
                 <div class="hero-text">
+                    <p class="hero-kicker">Production-grade runtime armor</p>
                     <h1>Secure Your Code with Next-Gen Obfuscation</h1>
                     <p>Protect your JavaScript from reverse engineering with industry-leading obfuscation technology. Keep your intellectual property safe while maintaining perfect performance.</p>
+                    <div class="hero-metrics">
+                        <div class="hero-metric">
+                            <strong>5-layer</strong>
+                            <span>obfuscation pipeline</span>
+                        </div>
+                        <div class="hero-metric">
+                            <strong>0-runtime</strong>
+                            <span>performance penalty</span>
+                        </div>
+                        <div class="hero-metric">
+                            <strong>Browser + Node</strong>
+                            <span>deployment targets</span>
+                        </div>
+                    </div>
                     <div class="hero-buttons">
                         <button class="btn-primary" onclick="navigateTo('obfuscation')">Start Obfuscating</button>
                         <button class="btn-secondary" onclick="document.getElementById('info-section').scrollIntoView({behavior: 'smooth'})">Learn More</button>
@@ -46,6 +68,7 @@
                 
                 <div class="hero-visual">
                     <div class="code-animation-box">
+                        <div class="code-panel-badge">Live transformation preview</div>
                         <div class="code-display" id="codeDisplay"></div>
                     </div>
                 </div>
@@ -57,32 +80,66 @@
             <div class="info-container">
                 <div class="info-grid">
                     <div class="info-visual">
-                        <svg class="info-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Shield with modern lock -->
+                        <svg class="info-svg" viewBox="0 0 280 308" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
                             <defs>
-                                <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#0066ff;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:1" />
+                                <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#0d1f42;stop-opacity:1"/>
+                                    <stop offset="100%" style="stop-color:#071526;stop-opacity:1"/>
+                                </linearGradient>
+                                <linearGradient id="outPanelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#071e2a;stop-opacity:1"/>
+                                    <stop offset="100%" style="stop-color:#041018;stop-opacity:1"/>
                                 </linearGradient>
                             </defs>
-                            <!-- Main shield -->
-                            <path class="shield-main" d="M 150 30 L 220 70 L 220 140 C 220 200 150 260 150 260 C 150 260 80 200 80 140 L 80 70 Z" fill="url(#shieldGradient)" stroke="#00d4ff" stroke-width="2"/>
-                            <!-- Lock circle background -->
-                            <circle class="lock-bg" cx="150" cy="150" r="50" fill="#0a0e27" opacity="0.8"/>
-                            <!-- Lock body -->
-                            <rect class="lock-body" x="130" y="140" width="40" height="45" rx="5" fill="none" stroke="#f0f4f8" stroke-width="2"/>
-                            <!-- Lock shackle -->
-                            <path class="lock-shackle" d="M 135 140 Q 135 115 150 115 Q 165 115 165 140" fill="none" stroke="#f0f4f8" stroke-width="2" stroke-linecap="round"/>
-                            <!-- Lock keyhole -->
-                            <circle class="lock-keyhole" cx="150" cy="155" r="3" fill="#f0f4f8"/>
-                            <!-- Animated security rings -->
-                            <circle class="ring-1" cx="150" cy="150" r="75" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0"/>
-                            <circle class="ring-2" cx="150" cy="150" r="90" fill="none" stroke="#0066ff" stroke-width="1" opacity="0"/>
+
+                            <!-- ── Input panel ── -->
+                            <rect x="14" y="8" width="252" height="72" rx="10" fill="url(#panelGrad)" stroke="rgba(46,107,255,0.5)" stroke-width="1.5"/>
+                            <!-- window dots -->
+                            <circle cx="30" cy="22" r="4" fill="#ff5f57"/>
+                            <circle cx="44" cy="22" r="4" fill="#febc2e"/>
+                            <circle cx="58" cy="22" r="4" fill="#28c840"/>
+                            <!-- source code bars -->
+                            <rect class="src-bar" x="28" y="37" width="148" height="7" rx="3" fill="#2e6bff" opacity="0.75"/>
+                            <rect class="src-bar src-bar-2" x="28" y="50" width="108" height="7" rx="3" fill="#00d4ff" opacity="0.55"/>
+                            <rect class="src-bar src-bar-3" x="28" y="63" width="172" height="7" rx="3" fill="#2e6bff" opacity="0.65"/>
+
+                            <!-- ── Connector ── -->
+                            <line x1="140" y1="82" x2="140" y2="94" stroke="#2e6bff" stroke-width="1.5" stroke-dasharray="3 3"/>
+                            <polygon points="134,93 146,93 140,102" fill="#2e6bff"/>
+
+                            <!-- ── Layer 1: Identifier Mangling ── -->
+                            <rect class="pipe-layer pipe-layer-1" x="14" y="104" width="252" height="30" rx="7" fill="rgba(46,107,255,0.08)" stroke="#2e6bff" stroke-width="1.5"/>
+                            <text x="40" y="123" font-size="10" fill="#88aaff">⬡  Identifier Mangling</text>
+
+                            <!-- ── Connector ── -->
+                            <line x1="140" y1="136" x2="140" y2="148" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="3 3"/>
+                            <polygon points="134,147 146,147 140,156" fill="#00d4ff"/>
+
+                            <!-- ── Layer 2: String Encoding ── -->
+                            <rect class="pipe-layer pipe-layer-2" x="14" y="158" width="252" height="30" rx="7" fill="rgba(0,212,255,0.06)" stroke="#00d4ff" stroke-width="1.5"/>
+                            <text x="40" y="177" font-size="10" fill="#88ddff">⬡  String Encoding</text>
+
+                            <!-- ── Connector ── -->
+                            <line x1="140" y1="190" x2="140" y2="202" stroke="#2e6bff" stroke-width="1.5" stroke-dasharray="3 3"/>
+                            <polygon points="134,201 146,201 140,210" fill="#2e6bff"/>
+
+                            <!-- ── Layer 3: Control Flow ── -->
+                            <rect class="pipe-layer pipe-layer-3" x="14" y="212" width="252" height="30" rx="7" fill="rgba(46,107,255,0.08)" stroke="#2e6bff" stroke-width="1.5"/>
+                            <text x="40" y="231" font-size="10" fill="#88aaff">⬡  Control Flow Flattening</text>
+
+                            <!-- ── Connector ── -->
+                            <line x1="140" y1="244" x2="140" y2="256" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="3 3"/>
+                            <polygon points="134,255 146,255 140,264" fill="#00d4ff"/>
+
+                            <!-- ── Output panel ── -->
+                            <rect x="14" y="266" width="252" height="36" rx="10" fill="url(#outPanelGrad)" stroke="rgba(0,212,255,0.55)" stroke-width="1.5"/>
+                            <rect class="out-bar" x="28" y="278" width="186" height="6" rx="3" fill="#00d4ff" opacity="0.6"/>
+                            <rect class="out-bar out-bar-2" x="28" y="289" width="148" height="6" rx="3" fill="#00d4ff" opacity="0.4"/>
                         </svg>
                     </div>
                     <div class="info-content">
-                        <h2>What is Obfusly?</h2>
-                        <p>Obfusly is a professional-grade JavaScript obfuscation platform designed to protect your code from reverse engineering and intellectual property theft. Using advanced obfuscation algorithms, Obfusly transforms your readable JavaScript into unreadable, functionally equivalent code while maintaining 100% performance parity.</p>
+                        <h2>What is obfusly?</h2>
+                        <p>obfusly is a professional-grade JavaScript obfuscation platform designed to protect your code from reverse engineering and intellectual property theft. Our multi-layer obfuscation pipeline — covering identifiers, strings, integers, control flow, and runtime integrity — transforms readable JavaScript into highly resistant, functionally equivalent code.</p>
                         <div class="info-benefits">
                             <div class="benefit-item">
                                 <div class="benefit-icon-svg">
@@ -184,7 +241,7 @@
             <div class="testimonials-container">
                 <div class="section-title">
                     <h2>Loved by Developers</h2>
-                    <p>See what developers say about Obfusly</p>
+                    <p>See what developers say about obfusly</p>
                 </div>
 
                 <div class="testimonial-carousel">
@@ -192,7 +249,7 @@
                         <!-- Testimonial 1 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Obfusly is a game-changer! Our API security improved dramatically after implementing it. The code is completely unreadable, yet performs exactly as before."</p>
+                            <p class="testimonial-text">"obfusly is a game-changer! Our API security improved dramatically after implementing it. The code is completely unreadable, yet performs exactly as before."</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -228,7 +285,7 @@
                         <!-- Testimonial 3 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"The level of obfuscation is incredible. We tried other tools before, but Obfusly is by far the most effective. Plus, the settings are incredibly flexible."</p>
+                            <p class="testimonial-text">"The level of obfuscation is incredible. We tried other tools before, but obfusly is by far the most effective. Plus, the settings are incredibly flexible."</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -246,7 +303,7 @@
                         <!-- Testimonial 4 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"We've been using Obfusly for 6 months now across all our projects. It's stable, reliable, and the support team is fantastic. Absolutely worth every penny."</p>
+                            <p class="testimonial-text">"We've been using obfusly for 6 months now across all our projects. It's stable, reliable, and the support team is fantastic. Absolutely worth every penny."</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -264,7 +321,7 @@
                         <!-- Testimonial 5 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"Integrating Obfusly into our CI/CD pipeline was seamless. The API is well-documented and intuitive. Our competitors can't figure out how our code works anymore!"</p>
+                            <p class="testimonial-text">"Integrating obfusly into our CI/CD pipeline was seamless. The API is well-documented and intuitive. Our competitors can't figure out how our code works anymore!"</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -289,8 +346,9 @@
         <section class="pricing">
             <div class="pricing-container">
                 <div class="section-title">
+                    <span class="section-kicker">Plans</span>
                     <h2>Simple, Transparent Pricing</h2>
-                    <p>Choose the perfect plan for your obfuscation needs. Scale as you grow.</p>
+                    <p>Choose the perfect plan for your obfuscation needs. All paid plans include a <strong>7-day money-back guarantee</strong>.</p>
                 </div>
 
                 <div class="pricing-grid">
@@ -306,7 +364,7 @@
                             <li>Community support</li>
                             <li>Monthly updates</li>
                         </ul>
-                        <button class="pricing-button">Start Free Trial</button>
+                        <button class="pricing-button" onclick="startCheckout('starter')">Get Started</button>
                     </div>
 
                     <div class="pricing-card popular">
@@ -316,13 +374,13 @@
                         <div class="pricing-period">per month</div>
                         <ul class="pricing-features">
                             <li>Unlimited projects</li>
-                            <li>All basic features</li>
+                            <li>All Starter features</li>
                             <li>Control flow flattening</li>
                             <li>Priority email support</li>
                             <li>Weekly updates</li>
                             <li>API access</li>
                         </ul>
-                        <button class="pricing-button">Get Started</button>
+                        <button class="pricing-button" onclick="startCheckout('professional')">Get Started</button>
                     </div>
 
                     <div class="pricing-card">
@@ -332,13 +390,24 @@
                         <div class="pricing-period">contact for pricing</div>
                         <ul class="pricing-features">
                             <li>Unlimited everything</li>
-                            <li>All professional features</li>
+                            <li>All Professional features</li>
                             <li>Dedicated support</li>
                             <li>Custom implementations</li>
                             <li>On-premise deployment</li>
                             <li>SLA guarantee</li>
                         </ul>
-                        <button class="pricing-button">Contact Sales</button>
+                        <button class="pricing-button" onclick="navigateTo('contact')">Contact Sales</button>
+                    </div>
+                </div>
+
+                <div class="pricing-note-row">
+                    <div class="pricing-note-card">
+                        <strong>Every paid plan includes</strong>
+                        <span>Priority build queue, hardened runtime defaults, and secure delivery workflows for Browser and Node targets.</span>
+                    </div>
+                    <div class="pricing-note-card">
+                        <strong>Need procurement support?</strong>
+                        <span>Enterprise accounts include custom invoicing, deployment review, and onboarding for internal engineering teams.</span>
                     </div>
                 </div>
             </div>
@@ -350,6 +419,7 @@
         <section class="contact">
             <div class="contact-container">
                 <div class="section-title">
+                    <span class="section-kicker">Support</span>
                     <h2>Get in Touch</h2>
                     <p>We'd love to hear from you. Reach out with any questions or inquiries.</p>
                 </div>
@@ -372,7 +442,7 @@
                             <label>Message</label>
                             <textarea placeholder="Tell us your thoughts..."></textarea>
                         </div>
-                        <button class="btn-primary" style="width: 100%;">Send Message</button>
+                        <button class="btn-primary btn-block" type="button">Send Message</button>
                     </div>
 
                     <div class="contact-info">
@@ -404,7 +474,7 @@
             <div class="obfuscation-container">
                 <div class="obf-header">
                     <h2>JavaScript Obfuscator</h2>
-                    <p>Secure your code with professional-grade obfuscation</p>
+                    <p>Transform your JavaScript into highly resistant, functionally equivalent code</p>
                 </div>
                 
                 <!-- Tabs -->
@@ -680,6 +750,43 @@
                                 </div>
                                 <div class="setting-item">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="globalBaseIntConceal" style="margin: 0;">Global Int Concealment</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Global Int Concealment</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: TRUE</span>
+                                                <span class="tooltip-text">Applies base-integer concealment globally, wrapping all numeric literals in decoding expressions across the entire output.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="globalBaseIntConceal" data-config="globalBaseIntegerConcealment" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="multiVarAssign" style="margin: 0;">Multiple Variable Assignments</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Multiple Variable Assignments</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-warning">&#x26A0; Significantly increases output size (401 vs 101 vars)</span>
+                                                <span class="tooltip-text">Generates many variable assignments for base integers. Off by default for ~75% lower startup cost.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="multiVarAssign" data-config="multipleVariableAssignments">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
                                         <label for="optimizedCache" style="margin: 0;">Optimize Cache</label>
                                         <div class="setting-info-tooltip">
                                             <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
@@ -711,35 +818,49 @@
                                     </div>
                                     <div class="custom-dropdown" data-select-id="numberFormat">
                                         <div class="dropdown-trigger">
-                                            <span class="dropdown-value">Decimal</span>
+                                            <span class="dropdown-value">JSFuck</span>
                                             <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <polyline points="6 9 12 15 18 9"></polyline>
                                             </svg>
                                         </div>
                                         <div class="dropdown-menu">
-                                            <div class="dropdown-option" data-value="decimal">
-                                                <span class="option-text">Decimal</span>
+                                            <div class="dropdown-option" data-value="JSFuck">
+                                                <span class="option-text">JSFuck</span>
                                                 <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="20 6 9 17 4 12"></polyline>
                                                 </svg>
                                             </div>
-                                            <div class="dropdown-option" data-value="hex">
+                                            <div class="dropdown-option" data-value="Hexadecimal">
                                                 <span class="option-text">Hexadecimal</span>
                                                 <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="20 6 9 17 4 12"></polyline>
                                                 </svg>
                                             </div>
-                                            <div class="dropdown-option" data-value="octal">
+                                            <div class="dropdown-option" data-value="Octal">
                                                 <span class="option-text">Octal</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="Binary">
+                                                <span class="option-text">Binary</span>
+                                                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="dropdown-option" data-value="Refractal">
+                                                <span class="option-text">Refractal</span>
                                                 <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="20 6 9 17 4 12"></polyline>
                                                 </svg>
                                             </div>
                                         </div>
                                         <select id="numberFormat" data-config="baseIntegersDefault" style="display: none;">
-                                            <option value="decimal">Decimal</option>
-                                            <option value="hex">Hexadecimal</option>
-                                            <option value="octal">Octal</option>
+                                            <option value="JSFuck">JSFuck</option>
+                                            <option value="Hexadecimal">Hexadecimal</option>
+                                            <option value="Octal">Octal</option>
+                                            <option value="Binary">Binary</option>
+                                            <option value="Refractal">Refractal</option>
                                         </select>
                                     </div>
                                 </div>
@@ -760,7 +881,7 @@
                                                 <span class="tooltip-title">Wrap in IIFE</span>
                                                 <span class="tooltip-type">BOOLEAN</span>
                                                 <span class="tooltip-default">DEFAULT: TRUE</span>
-                                                <span class="tooltip-text">Wraps your code in an Immediately Invoked Function Expression for better scope isolation and protection.</span>
+                                                <span class="tooltip-text">Wraps your code in an Immediately Invoked Function Expression (IIFE) to create an isolated scope, preventing variable leakage into the global namespace and adding an extra layer of obfuscation.</span>
                                             </span>
                                         </div>
                                     </div>
@@ -945,6 +1066,24 @@
                             <div class="setting-items">
                                 <div class="setting-item">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <label for="strictMode" style="margin: 0;">Strict Mode</label>
+                                        <div class="setting-info-tooltip">
+                                            <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
+                                            <span class="tooltip-content">
+                                                <span class="tooltip-title">Strict Mode</span>
+                                                <span class="tooltip-type">BOOLEAN</span>
+                                                <span class="tooltip-default">DEFAULT: FALSE</span>
+                                                <span class="tooltip-text">Adds "use strict" to the obfuscated output. Enable if your codebase requires strict mode semantics.</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="strictMode" data-config="strictMode">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
                                         <label for="compression" style="margin: 0;">Compress Output</label>
                                         <div class="setting-info-tooltip">
                                             <span style="font-weight: 700; font-size: 0.9rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; border-radius: 50%; color: var(--text-secondary);">i</span>
@@ -1043,7 +1182,7 @@
                                                 <span class="tooltip-title">Naming Strategy</span>
                                                 <span class="tooltip-type">ENUM</span>
                                                 <span class="tooltip-default">DEFAULT: MINIFY</span>
-                                                <span class="tooltip-text">Minify=short names, Zalgo=unicode obfuscation, Invisible=zero-width characters</span>
+                                                <span class="tooltip-text">Minify — renames identifiers to short sequences (e.g. <code>_0x1a</code>) for the smallest output. Zalgo — applies Unicode combining characters rendering variable names visually chaotic. Invisible — uses zero-width Unicode characters making names appear empty to the human eye.</span>
                                             </span>
                                         </div>
                                     </div>
@@ -1264,47 +1403,383 @@
     <!-- FOOTER -->
     <footer>
         <div class="footer-content">
+            <div class="footer-brand">
+                <img src="obfusly_name.png" alt="obfusly" class="footer-brand-mark">
+                <p>Production-grade JavaScript protection for teams shipping browser and Node runtimes at scale.</p>
+            </div>
             <div class="footer-section">
                 <h4>Product</h4>
                 <ul>
                     <li><a onclick="navigateTo('home')">Features</a></li>
                     <li><a onclick="navigateTo('pricing')">Pricing</a></li>
-                    <li><a href="#">Documentation</a></li>
-                    <li><a href="#">Changelog</a></li>
+                    <li><a onclick="navigateTo('faq')">FAQ</a></li>
+                    <li><a onclick="navigateTo('contact')">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h4>Company</h4>
+                <h4>Account</h4>
                 <ul>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
+                    <li><a onclick="navigateTo('login')">Log In</a></li>
+                    <li><a onclick="navigateTo('register')">Sign Up</a></li>
+                    <li><a onclick="navigateTo('pricing')">Upgrade Plan</a></li>
+                    <li><a onclick="navigateTo('obfuscation')">Obfuscate Now</a></li>
                 </ul>
             </div>
             <div class="footer-section">
                 <h4>Legal</h4>
                 <ul>
-                    <li><a href="#">Privacy</a></li>
-                    <li><a href="#">Terms</a></li>
-                    <li><a href="#">Security</a></li>
-                    <li><a href="#">Compliance</a></li>
+                    <li><a onclick="navigateTo('privacy')">Privacy Policy</a></li>
+                    <li><a onclick="navigateTo('tos')">Terms of Service</a></li>
+                    <li><a onclick="navigateTo('refund')">Refund Policy</a></li>
+                    <li><a onclick="navigateTo('faq')">FAQ</a></li>
                 </ul>
             </div>
             <div class="footer-section">
                 <h4>Connect</h4>
                 <ul>
-                    <li><a href="mailto:support@obfusly.dev">Email</a></li>
-                    <li><a href="#">Twitter</a></li>
-                    <li><a href="#">GitHub</a></li>
-                    <li><a href="#">Discord</a></li>
+                    <li><a href="mailto:support@obfusly.dev">Email Support</a></li>
+                    <li><a href="https://twitter.com/obfusly" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+                    <li><a href="https://github.com/obfusly" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                    <li><a href="https://discord.gg/obfusly" target="_blank" rel="noopener noreferrer">Discord</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Obfusly. All rights reserved.</p>
+            <p>&copy; 2026 obfusly. All rights reserved. &nbsp;·&nbsp;
+                <a class="footer-inline-link" onclick="navigateTo('tos')">Terms</a> &nbsp;·&nbsp;
+                <a class="footer-inline-link" onclick="navigateTo('privacy')">Privacy</a> &nbsp;·&nbsp;
+                <a class="footer-inline-link" onclick="navigateTo('refund')">Refund Policy</a>
+            </p>
         </div>
     </footer>
+
+    <!-- ── LOGIN PAGE ──────────────────────────────────────────────────────── -->
+    <div id="login" class="page">
+        <section class="auth-section">
+            <div class="auth-card">
+                <span class="section-kicker auth-kicker">Access</span>
+                <div class="auth-logo" onclick="navigateTo('home')">
+                    <img src="obfusly_name.png" alt="obfusly" class="auth-brand-image">
+                </div>
+                <h2>Welcome Back</h2>
+                <p class="auth-sub">Sign in to your obfusly account</p>
+                <div id="login-error" class="auth-error auth-error-hidden"></div>
+                <form onsubmit="submitLogin(event)">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn-primary btn-block auth-submit" id="login-submit-btn">Log In</button>
+                </form>
+                <p class="auth-switch">Don't have an account? <a class="text-link" onclick="navigateTo('register')">Sign up</a></p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── REGISTER PAGE ───────────────────────────────────────────────────── -->
+    <div id="register" class="page">
+        <section class="auth-section">
+            <div class="auth-card">
+                <span class="section-kicker auth-kicker">Create</span>
+                <div class="auth-logo" onclick="navigateTo('home')">
+                    <img src="obfusly_name.png" alt="obfusly" class="auth-brand-image">
+                </div>
+                <h2>Create Account</h2>
+                <p class="auth-sub">Start protecting your JavaScript today</p>
+                <div id="register-error" class="auth-error auth-error-hidden"></div>
+                <form onsubmit="submitRegister(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="register-name" placeholder="Jane Doe" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="register-email" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password <span class="auth-label-note">(min 8 characters)</span></label>
+                        <input type="password" id="register-password" placeholder="••••••••" required autocomplete="new-password" minlength="8">
+                    </div>
+                    <div class="form-group auth-check-row">
+                        <input type="checkbox" id="register-tos" required class="auth-check-input">
+                        <label for="register-tos" class="auth-check-label">
+                            I agree to the <a class="text-link" onclick="navigateTo('tos')">Terms of Service</a> and <a class="text-link" onclick="navigateTo('privacy')">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block auth-submit" id="register-submit-btn">Create Account</button>
+                </form>
+                <p class="auth-switch">Already have an account? <a class="text-link" onclick="navigateTo('login')">Log in</a></p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── ACCOUNT PAGE ────────────────────────────────────────────────────── -->
+    <div id="account" class="page">
+        <section class="auth-section">
+            <div class="auth-card auth-card-wide">
+                <span class="section-kicker auth-kicker">Profile</span>
+                <h2>My Account</h2>
+                <p class="auth-sub">Manage your obfusly subscription</p>
+                <div class="account-info">
+                    <div class="account-row"><span class="account-label">Name</span><span id="acct-name" class="account-value">—</span></div>
+                    <div class="account-row"><span class="account-label">Email</span><span id="acct-email" class="account-value">—</span></div>
+                    <div class="account-row"><span class="account-label">Plan</span><span id="acct-plan" class="account-value">—</span></div>
+                    <div class="account-row"><span class="account-label">Member since</span><span id="acct-since" class="account-value">—</span></div>
+                </div>
+                <div class="account-actions">
+                    <button class="btn-primary btn-block" onclick="navigateTo('pricing')">Upgrade Plan</button>
+                    <button class="btn-secondary btn-block btn-danger-outline" onclick="logout()">Log Out</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── TERMS OF SERVICE ────────────────────────────────────────────────── -->
+    <div id="tos" class="page">
+        <section class="legal-section">
+            <div class="legal-card">
+                <span class="section-kicker legal-kicker">Legal</span>
+                <h1>Terms of Service</h1>
+                <p class="legal-updated">Last updated: April 23, 2026</p>
+
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing or using obfusly ("Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
+
+                <h3>2. Description of Service</h3>
+                <p>obfusly is a JavaScript obfuscation platform that transforms source code into functionally equivalent, harder-to-reverse-engineer output. The Service is provided "as is" and we make no guarantee of specific obfuscation strength against every reverse-engineering method.</p>
+
+                <h3>3. Acceptable Use</h3>
+                <p>You agree to use obfusly only for lawful purposes. You must not:</p>
+                <ul>
+                    <li>Obfuscate malware, spyware, ransomware, or any malicious software.</li>
+                    <li>Violate any applicable laws or regulations.</li>
+                    <li>Attempt to abuse, overload, or disrupt the Service.</li>
+                    <li>Resell or redistribute the Service without written consent.</li>
+                    <li>Use the Service to infringe third-party intellectual property rights.</li>
+                </ul>
+
+                <h3>4. Accounts</h3>
+                <p>You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. Notify us immediately at <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> if you suspect unauthorized access.</p>
+
+                <h3>5. Subscriptions & Billing</h3>
+                <p>Paid plans are billed monthly or annually as selected at checkout. Subscriptions renew automatically until cancelled. Cancellations take effect at the end of the current billing period. See our <a class="text-link" onclick="navigateTo('refund')">Refund Policy</a> for refund eligibility.</p>
+
+                <h3>6. Intellectual Property</h3>
+                <p>You retain full ownership of the code you submit. We do not store your source code beyond what is necessary to process your request. obfusly's platform, branding, and algorithms are our proprietary intellectual property.</p>
+
+                <h3>7. Disclaimer of Warranties</h3>
+                <p>The Service is provided without warranties of any kind, express or implied. We do not warrant that the Service will be uninterrupted, error-free, or that obfuscated code will be immune to deobfuscation.</p>
+
+                <h3>8. Limitation of Liability</h3>
+                <p>To the maximum extent permitted by law, obfusly shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.</p>
+
+                <h3>9. Termination</h3>
+                <p>We reserve the right to suspend or terminate accounts that violate these Terms at any time without notice.</p>
+
+                <h3>10. Changes to Terms</h3>
+                <p>We may update these Terms at any time. Continued use of the Service after changes constitutes acceptance. Material changes will be communicated via email.</p>
+
+                <h3>11. Governing Law</h3>
+                <p>These Terms are governed by the laws of the State of Delaware, USA, without regard to conflict of law principles.</p>
+
+                <h3>12. Contact</h3>
+                <p>For questions about these Terms, contact us at <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── PRIVACY POLICY ──────────────────────────────────────────────────── -->
+    <div id="privacy" class="page">
+        <section class="legal-section">
+            <div class="legal-card">
+                <span class="section-kicker legal-kicker">Privacy</span>
+                <h1>Privacy Policy</h1>
+                <p class="legal-updated">Last updated: April 23, 2026</p>
+
+                <h3>1. Information We Collect</h3>
+                <p>We collect the following information when you use obfusly:</p>
+                <ul>
+                    <li><strong>Account data:</strong> Your name, email address, and hashed password when you register.</li>
+                    <li><strong>Payment data:</strong> Payment is processed by Stripe. We never store raw card details.</li>
+                    <li><strong>Usage data:</strong> Requests made to the Service (timestamps, file sizes). We do not store the content of your source code.</li>
+                    <li><strong>Log data:</strong> IP addresses and browser information for security and abuse prevention.</li>
+                </ul>
+
+                <h3>2. How We Use Your Information</h3>
+                <ul>
+                    <li>To provide and improve the Service.</li>
+                    <li>To process payments and manage subscriptions.</li>
+                    <li>To send transactional emails (account creation, subscription updates).</li>
+                    <li>To detect and prevent fraud and abuse.</li>
+                </ul>
+
+                <h3>3. Data Sharing</h3>
+                <p>We do not sell your personal data. We share data only with:</p>
+                <ul>
+                    <li><strong>Stripe</strong> — for payment processing.</li>
+                    <li>Service providers bound by confidentiality agreements who help us operate the platform.</li>
+                    <li>Law enforcement when required by law.</li>
+                </ul>
+
+                <h3>4. Data Retention</h3>
+                <p>Account data is retained for as long as your account is active. You may request deletion at any time by emailing <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+
+                <h3>5. Security</h3>
+                <p>Passwords are stored as bcrypt hashes. Data is transmitted over HTTPS. We apply industry-standard security measures, however no system is 100% secure.</p>
+
+                <h3>6. Your Rights</h3>
+                <p>Depending on your jurisdiction, you may have rights to access, correct, or delete your personal data. Contact us at <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> to exercise these rights.</p>
+
+                <h3>7. Cookies</h3>
+                <p>We use minimal cookies necessary for session management. We do not use third-party tracking or advertising cookies.</p>
+
+                <h3>8. Children's Privacy</h3>
+                <p>The Service is not directed to children under 13. We do not knowingly collect personal data from minors.</p>
+
+                <h3>9. Changes</h3>
+                <p>We may update this policy. Material changes will be communicated via email. Continued use constitutes acceptance.</p>
+
+                <h3>10. Contact</h3>
+                <p>Privacy inquiries: <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── REFUND POLICY ───────────────────────────────────────────────────── -->
+    <div id="refund" class="page">
+        <section class="legal-section">
+            <div class="legal-card">
+                <span class="section-kicker legal-kicker">Billing</span>
+                <h1>Refund Policy</h1>
+                <p class="legal-updated">Last updated: April 23, 2026</p>
+
+                <h3>1. Subscription Refunds</h3>
+                <p>If you are unsatisfied with obfusly, you may request a full refund within <strong>7 days</strong> of your initial purchase or renewal. Refund requests outside this window will be considered on a case-by-case basis.</p>
+
+                <h3>2. How to Request a Refund</h3>
+                <p>Email <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> with the subject line "Refund Request" and include:</p>
+                <ul>
+                    <li>Your account email address.</li>
+                    <li>The date of the charge.</li>
+                    <li>A brief reason for the request (optional but helpful).</li>
+                </ul>
+                <p>We aim to process all refund requests within 5 business days.</p>
+
+                <h3>3. Non-Refundable Cases</h3>
+                <p>Refunds will not be issued in the following situations:</p>
+                <ul>
+                    <li>The account has been terminated for violations of our Terms of Service.</li>
+                    <li>More than 7 days have passed since the charge (unless otherwise agreed).</li>
+                    <li>The plan has been in use for an extended period within the billing cycle.</li>
+                </ul>
+
+                <h3>4. Enterprise Plans</h3>
+                <p>Refund terms for Enterprise plans are negotiated individually at contract time.</p>
+
+                <h3>5. Cancellations</h3>
+                <p>You may cancel your subscription at any time from your account page. Your plan remains active until the end of the billing period; no partial refunds are provided for unused time unless requested within the 7-day window.</p>
+
+                <h3>6. Contact</h3>
+                <p>Questions? Email <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── FAQ ────────────────────────────────────────────────────────────────-->
+    <div id="faq" class="page">
+        <section class="legal-section">
+            <div class="legal-card faq-card">
+                <span class="section-kicker legal-kicker">Help</span>
+                <h1>Frequently Asked Questions</h1>
+                <p class="legal-updated">Everything you need to know about obfusly.</p>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What is JavaScript obfuscation? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Obfuscation is the process of transforming readable source code into a functionally identical but highly unreadable form. It makes reverse engineering, IP theft, and tampering significantly harder without impacting runtime behaviour.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Does obfuscation affect performance? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>obfusly is engineered for zero performance impact. Our obfuscation passes are benchmarked continuously to ensure the output runs at the same speed as the original. Enabling features like <em>Integrity Verification</em> or <em>Anti-Debugger</em> adds a negligible overhead only during startup.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Is my source code stored on your servers? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>No. Your source code is processed in memory and the result is returned immediately. We do not log or persistently store any code you submit. See our <a class="text-link" onclick="navigateTo('privacy')">Privacy Policy</a> for details.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Can obfuscated code be deobfuscated? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>While no obfuscation is theoretically unbreakable, obfusly employs multiple independent layers — identifier mangling, string array encoding, integer concealment, control-flow obfuscation, and integrity checks — making automated deobfuscation extremely time-consuming and expensive to reverse engineer.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What environments does obfusly support? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>obfusly can target Browser, Node.js, and Universal (both) environments. Select your target in the Obfuscation Settings panel to ensure the output is compatible with your runtime.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Do you offer a free plan? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes. Creating a free account lets you use the core obfuscation features without a subscription. Paid plans unlock advanced protections, higher rate limits, and priority support. See our <a class="text-link" onclick="navigateTo('pricing')">Pricing</a> page.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How do I cancel my subscription? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Log in to your account, go to your Account page, and click "Upgrade Plan" — you can manage or cancel your Stripe subscription from there. Alternatively, email <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> and we'll handle it for you.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What file sizes are supported? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>The maximum upload size is 10 MB per file. For very large codebases, consider splitting into modules or contacting us about an Enterprise plan with custom limits.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Is there an API? <span class="faq-arrow">▼</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes — Professional and Enterprise plan subscribers get access to the obfusly REST API, allowing you to integrate obfuscation directly into your CI/CD pipeline. Contact <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> for API documentation and keys.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
     <script src="app.js"></script>
 </body>

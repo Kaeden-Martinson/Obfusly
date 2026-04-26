@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obfusly Security Widget</title>
+    <title>obfusly Security Widget</title>
 
         <!-- Test/Playground: Embeddable Widget Script -->
         <div style="margin-top: 40px; padding: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;">
@@ -11,41 +11,32 @@
             <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Edit the script below to test the widget - it will appear in the corner of the page:</p>
             <textarea id="widgetScript" style="width: 100%; height: 400px; padding: 12px; font-family: 'Monaco', monospace; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;">
 (function() {
-    // Inject bounce animation CSS
-    var style = document.createElement('style');
-    style.innerHTML = `
-        @keyframes iconBounce {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-2px); }
-            100% { transform: translateY(0px); }
-        }
-        .icon-bouncing {
-            animation: iconBounce 1.5s ease-in-out infinite !important;
-        }
-    `;
-    document.head.appendChild(style);
-
     // Load Google Font
     var fontLink = document.createElement('link');
     fontLink.href = "https://fonts.googleapis.com/css?family=Baloo+Paaji";
     fontLink.rel = "stylesheet";
     document.head.appendChild(fontLink);
 
+    var collapsedWidth = 62;
+    var expandedWidth = 156;
+    var widgetHeight = 62;
+    var logoHeight = 58;
+    var iconSize = 25;
+
     var widgetContainer = document.createElement('div');
     widgetContainer.style.position = "fixed";
     widgetContainer.style.bottom = "20px";
     widgetContainer.style.right = "20px";
-    widgetContainer.style.width = "50px";
+    widgetContainer.style.width = collapsedWidth + "px";
     widgetContainer.style.fontFamily = "Baloo Paaji";
-    widgetContainer.style.height = "50px";
-    widgetContainer.style.borderRadius = "15px";
-    widgetContainer.style.backgroundColor = "black"
+    widgetContainer.style.height = widgetHeight + "px";
+    widgetContainer.style.borderRadius = "18px";
+    widgetContainer.style.backgroundColor = "black";
     widgetContainer.style.display = "flex";
     widgetContainer.style.alignItems = "center";
-    widgetContainer.style.justifyContent = "center";
     widgetContainer.style.cursor = "pointer";
     widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.5) 2px 2px 10px";
-    widgetContainer.style.transition = "0.5s";
+    widgetContainer.style.transition = "width 0.42s ease, box-shadow 0.22s ease";
     widgetContainer.style.overflow = "hidden";
     widgetContainer.style.zIndex = "9999";
 
@@ -55,37 +46,55 @@
     button.style.display = "flex";
     button.style.width = "100%";
     button.style.height = "100%";
+    button.style.position = "relative";
     button.style.textDecoration = "none";
     button.style.color = "#f0f4f8";
-    button.style.transition = "transform 0.5s ease";
+    button.style.overflow = "hidden";
 
-    var icon = document.createElement('img');
-    icon.style.width = "40px";
-    icon.style.height = "40px";
-    icon.style.marginTop = "5px";
-    icon.src = "obfusly-logo.png";
-    
-    button.appendChild(icon);
+    var iconMark = document.createElement('img');
+    iconMark.style.position = "absolute";
+    iconMark.style.left = "20px";
+    iconMark.style.top = "18px";
+    iconMark.style.width = iconSize + "px";
+    iconMark.style.height = iconSize + "px";
+    iconMark.style.objectFit = "contain";
+    iconMark.style.transition = "opacity 0.18s ease";
+    iconMark.style.opacity = "1";
+    iconMark.src = "obfusly_icon.png";
+
+    var logoStrip = document.createElement('img');
+    logoStrip.style.position = "absolute";
+    logoStrip.style.left = "0";
+    logoStrip.style.top = "2px";
+    logoStrip.style.height = logoHeight + "px";
+    logoStrip.style.width = "auto";
+    logoStrip.style.display = "block";
+    logoStrip.style.flexShrink = "0";
+    logoStrip.style.opacity = "0";
+    logoStrip.style.transform = "translateX(-10px)";
+    logoStrip.style.transition = "transform 0.42s ease, opacity 0.18s ease";
+    logoStrip.src = "obfusly_name.png";
+
+    button.appendChild(iconMark);
+    button.appendChild(logoStrip);
     widgetContainer.appendChild(button);
 
     document.body.appendChild(widgetContainer);
 
     widgetContainer.addEventListener("mouseover", function() {
-        widgetContainer.style.width = "200px";
-        icon.style.width = "200px";
-        icon.style.height = "75px";
-        icon.style.marginTop = "-15px";
-        icon.src = "name-logo.png";
-        // icon.classList.add('icon-bouncing');
+        widgetContainer.style.width = expandedWidth + "px";
+        widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.6) 6px 10px 24px";
+        iconMark.style.opacity = "0";
+        logoStrip.style.opacity = "1";
+        logoStrip.style.transform = "translateX(0)";
     });
 
     widgetContainer.addEventListener("mouseout", function() {
-        widgetContainer.style.width = "50px";
-        icon.style.width = "40px";
-        icon.style.height = "40px";
-        icon.style.marginTop = "5px";
-        icon.src = "obfusly-logo.png";
-        icon.classList.remove('icon-bouncing');
+        widgetContainer.style.width = collapsedWidth + "px";
+        widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.5) 2px 2px 10px";
+        iconMark.style.opacity = "1";
+        logoStrip.style.opacity = "0";
+        logoStrip.style.transform = "translateX(-10px)";
     });
 
 })();
