@@ -235,6 +235,9 @@ function initCodeAnimation() {
     const badge   = document.querySelector('.code-panel-badge');
     if (!display) return;
 
+    // Make element focusable for text selection
+    display.setAttribute('tabindex', '-1');
+
     let phaseIndex = 0;
 
     function runPhase() {
@@ -395,6 +398,40 @@ async function obfuscateCode() {
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
+
+function copyAnimationCode() {
+    const codeDisplay = document.getElementById('codeDisplay');
+    const text = codeDisplay.innerText || codeDisplay.textContent;
+    if (!text?.trim()) {
+        showToast('Nothing to copy', 'error');
+        return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('✓ Code copied to clipboard!', 'success');
+    }).catch(() => {
+        showToast('Failed to copy', 'error');
+    });
+}
+
+function toggleAnimationEdit() {
+    const codeDisplay = document.getElementById('codeDisplay');
+    const editBtn = document.getElementById('editAnimationBtn');
+    
+    if (codeDisplay.contentEditable === 'true') {
+        // Disable edit mode
+        codeDisplay.contentEditable = 'false';
+        editBtn.textContent = 'Edit';
+        editBtn.style.background = 'rgba(46, 107, 255, 0.2)';
+        showToast('✓ Edit mode disabled', 'success');
+    } else {
+        // Enable edit mode
+        codeDisplay.contentEditable = 'true';
+        editBtn.textContent = 'Done';
+        editBtn.style.background = 'rgba(46, 255, 107, 0.2)';
+        codeDisplay.focus();
+        showToast('✓ You can now edit the code', 'info');
+    }
+}
 
 function loadExample() {
     const code = `function fibonacci(n) {
@@ -598,19 +635,19 @@ function startTestimonialScroll() {
         }
         return 360;
     };
-    
-    let cardWidth = getCardWidth();
 
     function scroll() {
         scrollAmount += scrollSpeed;
         track.style.transform = `translateX(-${scrollAmount}px)`;
 
+        const cardWidth = getCardWidth();
+        
         if (scrollAmount >= cardWidth) {
             const firstCard = track.querySelector('.testimonial-card');
             track.appendChild(firstCard);
-            
-            scrollAmount = 0;
-            track.style.transform = 'translateX(0)';
+            let oldScroll = scrollAmount;
+            scrollAmount -= cardWidth;
+            track.style.transform = `translateX(-${oldScroll}px)`;
         }
 
         requestAnimationFrame(scroll);
@@ -784,6 +821,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     initCustomDropdowns();
     attachConfigListeners();
     updateConfigFromUI();
+
+    // Make code display selectable and handle Ctrl+A/Ctrl+C
+    const codeDisplay = document.getElementById('codeDisplay');
+    if (codeDisplay) {
+        codeDisplay.addEventListener('click', () => {
+            codeDisplay.focus();
+        });
+        
+        codeDisplay.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                e.preventDefault();
+                const range = document.createRange();
+                range.selectNodeContents(codeDisplay);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        });
+    }
 
     await restoreSession();
 
