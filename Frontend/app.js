@@ -625,6 +625,13 @@ function startTestimonialScroll() {
     const track = document.getElementById('testimonialTrack');
     if (!track) return;
     
+    // Preload: duplicate all cards upfront for seamless infinite scroll
+    const originalCards = Array.from(track.querySelectorAll('.testimonial-card'));
+    originalCards.forEach(card => {
+        const clone = card.cloneNode(true);
+        track.appendChild(clone);
+    });
+    
     let scrollAmount = 0;
     const scrollSpeed = 0.25;
     
@@ -641,13 +648,11 @@ function startTestimonialScroll() {
         track.style.transform = `translateX(-${scrollAmount}px)`;
 
         const cardWidth = getCardWidth();
+        const totalOriginalWidth = cardWidth * originalCards.length;
         
-        if (scrollAmount >= cardWidth) {
-            const firstCard = track.querySelector('.testimonial-card');
-            track.appendChild(firstCard);
-            let oldScroll = scrollAmount;
-            scrollAmount -= cardWidth;
-            track.style.transform = `translateX(-${oldScroll}px)`;
+        if (scrollAmount >= totalOriginalWidth) {
+            scrollAmount -= totalOriginalWidth;
+            track.style.transform = `translateX(-${scrollAmount}px)`;
         }
 
         requestAnimationFrame(scroll);

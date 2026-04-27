@@ -32,7 +32,7 @@ function obfuscateEntireSource(code) {
     
     const windowName = generateObfuscatedName();
 
-    const ast = acorn.parse(code, { ecmaVersion: 2020 });
+    const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'module' });
 
     clearDeclarationMapping(code);
     for (let name of windowVariables) setDeclarationMapping(name, (config.concealPrimitives && defaultedValues.includes(name) ? generateObfuscatedName() : name));
@@ -48,9 +48,14 @@ function obfuscateEntireSource(code) {
 
     estraverse.replace(ast, {
         enter(node) {
-            if (node.type === 'VariableDeclarator') encodeVariable(node);
+            // console.log(node)
+
+            if (node.type === "ImportDefaultSpecifier") if (node.local && node.local.type === "Identifier") setDeclarationMapping(node.local.name, node.local.name);
+            if (node.type === "ImportSpecifier") if (node.local && node.local.type === "Identifier") setDeclarationMapping(node.local.name, node.local.name);
+            if (node.type === "ExportSpecifier") if (node.local && node.local.type === "Identifier") updateNodeName(node.local);
+            if (node.type === 'VariableDeclarator') encodeVariable(node, setDeclarationMapping);
             if (node.type === 'FunctionDeclaration' || node.type === "ArrowFunctionExpression" || node.type === "FunctionExpression") encodeFunction(node);
-            if (node.type === "CallExpression" && node.callee) { updateNodeName(node.callee); for (let i = 0; i < node.arguments.length; i++) updateNodeName(node.arguments[i]); };
+            if (node.type === "CallExpression" && node.callee) {  updateNodeName(node.callee); for (let i = 0; i < node.arguments.length; i++) updateNodeName(node.arguments[i]); };
             if (node.type === "ExpressionStatement" && node.expression && node.expression.callee) updateNodeName(node.expression.callee);
             if (node.type === "ObjectExpression") objectPropertyRecursive(node);
             if (node.type === "MemberExpression" && !node.computed) { if (node.object && node.object.type === "Identifier") updateNodeName(node.object); } else if (node.type === "MemberExpression") { if (node.object && node.object.type === "Identifier") updateNodeName(node.object); if (node.property) updateNodeName(node.property); };
@@ -76,6 +81,7 @@ function obfuscateEntireSource(code) {
     const s1code = escodegen.generate(ast);
     _log(`Stage 1 complete (${(Date.now() - _t0)}ms)`);
 
+    console.log(s1code)
     return [s1code, windowName, getDeclarationMapping()];
 };
 

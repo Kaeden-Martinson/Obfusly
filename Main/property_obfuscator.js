@@ -36,7 +36,7 @@ function _stat(label, value) { console.log(`  ${label}: ${value}`); }
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
     updateSourceCode(sourceCode);
 
-    const ast = acorn.parse(sourceCode, { ecmaVersion: 2020, range: true });
+    const ast = acorn.parse(sourceCode, { ecmaVersion: 2020, range: true, sourceType: 'module' });
 
     clearDeclarationMapping(sourceCode);
     clearStringBuilder();
