@@ -1,37 +1,212 @@
 const config = {
-    nameGenerationStyle: "minify", // Options: 'zalgo', 'minify', 'invisible'
-    numberEncoding: true,
-    optimzedNumberCache: true,
-    numberCalculator: true,
-    globalBaseIntegerConcealment: true,
-    multipleVariableAssignments: false, // false = 101 vars instead of 401, 75% less startup cost
-    shuffleBaseIntegers: true,
-    baseIntegersDefault: "JSFuck",
-    integerPrecentage: {
-        Refractal: 0,    // Disabled: runtime ~'string' coercion + recursive encoding adds overhead
-        JSFuck: 0,       // Disabled: type coercion + temp string allocs per eval
-        Hexadecimal: 40, // Zero-cost: native JS literal parsed at compile time
-        Octal: 30,       // Zero-cost: native JS literal parsed at compile time
-        Binary: 30       // Zero-cost: native JS literal parsed at compile time
+    // ========== IDENTIFIERS ==========
+    identifiers: {
+        nameStyle: "minify", // Options: 'zalgo', 'minify', 'invisible'
     },
-    encodedFunctionStrength: 3, /* Reduced from 5: cuts 40% off decode chain depth while maintaining strong obfuscation */
-    concealGlobalObjects: true,
-    target: "browser",
-    stringEncoding: true,
-    stringSplitting: 0, /* 0 - disabled, n - max splits (splitting multiplies concealment decode calls) */
-    optimizedStringCache: true,
-    stringConcealment: true,
-    stringConcealmentSettings: {
-        decodersCount: 2,  // Reduced from 3: 2 decoders still makes pattern analysis hard
-        addNoiseCount: 1   // Reduced from 3: noise blocks are pure runtime overhead per decode
+
+    // ========== NUMBERS ==========
+    numbers: {
+        enabled: true,
+        
+        strategy: {
+            useCalculator: true,       // Runtime decoding with XOR/arithmetic
+            useBaseIntegers: true,     // Precomputed lookup tables
+            calculateStrength: 3,      // Decoder complexity (1-5)
+        },
+        
+        cache: {
+            enabled: true,             // Cache encoded number results
+            multipleAssignments: false,// false = 101 vars, true = 401 vars (75% less startup cost)
+        },
+        
+        baseIntegerFormat: {
+            default: "JSFuck",         // Default encoding format
+            shuffle: true,             // Randomize base integer order
+            distribution: {            // Weighted distribution of encoding types
+                Refractal: 0,    // Disabled: runtime overhead
+                JSFuck: 0,       // Disabled: type coercion overhead
+                Hexadecimal: 40, // Zero-cost: native JS literal
+                Octal: 30,       // Zero-cost: native JS literal
+                Binary: 30       // Zero-cost: native JS literal
+            }
+        }
     },
-    concealPrimitives: true,
-    compression: true,
-    strictMode: false,
-    integrityChecks: true,
-    breakASTs: true,
-    disableConsoleOutput: false,
-    enableAntiDebugger: false,
+
+    // ========== STRINGS ==========
+    strings: {
+        encoding: {
+            enabled: true,
+            cache: true,               // Cache decoded strings
+        },
+        
+        concealment: {
+            enabled: true,             // Advanced string concealment layer
+            decoderLayers: 2,          // Number of decoder functions (was decodersCount)
+            noiseFunctions: 1,         // Noise blocks added per decoder (was addNoiseCount)
+        },
+        
+        splitting: {
+            maxFragments: 0,           // Max fragments per string (0 = disabled)
+        }
+    },
+
+    // ========== GLOBALS ==========
+    globals: {
+        concealWindowObject: true,    // Obfuscate 'window' reference
+        concealPrimitives: true,      // Obfuscate undefined, null, etc
+    },
+
+    // ========== PROTECTION ==========
+    protection: {
+        integrityChecks: true,        // Detect code tampering
+        antiDebugger: false,          // Anti-debugging measures
+        disableConsole: false,        // Remove console.log calls
+        breakASTs: true,              // Use placeholders (AST optimization)
+    },
+
+    // ========== OUTPUT ==========
+    output: {
+        compression: true,            // Minify final output
+        strictMode: false,            // Wrap in Function() vs standalone
+        target: "browser",            // Target environment: "browser" or "node"
+    }
 };
+
+// ============================================================================
+// BACKWARD COMPATIBILITY LAYER
+// Maps old config paths to new structure for gradual migration
+// ============================================================================
+
+// Create proxy getters for old property names
+Object.defineProperty(config, 'nameGenerationStyle', {
+    get: () => config.identifiers.nameStyle,
+    set: (v) => { config.identifiers.nameStyle = v; }
+});
+
+Object.defineProperty(config, 'numberEncoding', {
+    get: () => config.numbers.enabled,
+    set: (v) => { config.numbers.enabled = v; }
+});
+
+Object.defineProperty(config, 'numberCalculator', {
+    get: () => config.numbers.strategy.useCalculator,
+    set: (v) => { config.numbers.strategy.useCalculator = v; }
+});
+
+Object.defineProperty(config, 'globalBaseIntegerConcealment', {
+    get: () => config.numbers.strategy.useBaseIntegers,
+    set: (v) => { config.numbers.strategy.useBaseIntegers = v; }
+});
+
+Object.defineProperty(config, 'optimzedNumberCache', {
+    get: () => config.numbers.cache.enabled,
+    set: (v) => { config.numbers.cache.enabled = v; }
+});
+
+Object.defineProperty(config, 'multipleVariableAssignments', {
+    get: () => config.numbers.cache.multipleAssignments,
+    set: (v) => { config.numbers.cache.multipleAssignments = v; }
+});
+
+Object.defineProperty(config, 'shuffleBaseIntegers', {
+    get: () => config.numbers.baseIntegerFormat.shuffle,
+    set: (v) => { config.numbers.baseIntegerFormat.shuffle = v; }
+});
+
+Object.defineProperty(config, 'baseIntegersDefault', {
+    get: () => config.numbers.baseIntegerFormat.default,
+    set: (v) => { config.numbers.baseIntegerFormat.default = v; }
+});
+
+Object.defineProperty(config, 'integerPrecentage', {
+    get: () => config.numbers.baseIntegerFormat.distribution,
+    set: (v) => { config.numbers.baseIntegerFormat.distribution = v; }
+});
+
+Object.defineProperty(config, 'encodedFunctionStrength', {
+    get: () => config.numbers.strategy.calculateStrength,
+    set: (v) => { config.numbers.strategy.calculateStrength = v; }
+});
+
+Object.defineProperty(config, 'stringEncoding', {
+    get: () => config.strings.encoding.enabled,
+    set: (v) => { config.strings.encoding.enabled = v; }
+});
+
+Object.defineProperty(config, 'optimizedStringCache', {
+    get: () => config.strings.encoding.cache,
+    set: (v) => { config.strings.encoding.cache = v; }
+});
+
+Object.defineProperty(config, 'stringConcealment', {
+    get: () => config.strings.concealment.enabled,
+    set: (v) => { config.strings.concealment.enabled = v; }
+});
+
+Object.defineProperty(config, 'stringConcealmentSettings', {
+    get: () => ({
+        decodersCount: config.strings.concealment.decoderLayers,
+        addNoiseCount: config.strings.concealment.noiseFunctions
+    }),
+    set: (v) => {
+        if (v.decodersCount !== undefined) config.strings.concealment.decoderLayers = v.decodersCount;
+        if (v.addNoiseCount !== undefined) config.strings.concealment.noiseFunctions = v.addNoiseCount;
+    }
+});
+
+Object.defineProperty(config, 'stringSplitting', {
+    get: () => config.strings.splitting.maxFragments,
+    set: (v) => { config.strings.splitting.maxFragments = v; }
+});
+
+Object.defineProperty(config, 'concealGlobalObjects', {
+    get: () => config.globals.concealWindowObject,
+    set: (v) => { config.globals.concealWindowObject = v; }
+});
+
+Object.defineProperty(config, 'concealPrimitives', {
+    get: () => config.globals.concealPrimitives,
+    set: (v) => { config.globals.concealPrimitives = v; }
+});
+
+Object.defineProperty(config, 'integrityChecks', {
+    get: () => config.protection.integrityChecks,
+    set: (v) => { config.protection.integrityChecks = v; }
+});
+
+Object.defineProperty(config, 'antiDebugger', {
+    get: () => config.protection.antiDebugger,
+    set: (v) => { config.protection.antiDebugger = v; }
+});
+
+Object.defineProperty(config, 'enableAntiDebugger', {
+    get: () => config.protection.antiDebugger,
+    set: (v) => { config.protection.antiDebugger = v; }
+});
+
+Object.defineProperty(config, 'disableConsoleOutput', {
+    get: () => config.protection.disableConsole,
+    set: (v) => { config.protection.disableConsole = v; }
+});
+
+Object.defineProperty(config, 'breakASTs', {
+    get: () => config.protection.breakASTs,
+    set: (v) => { config.protection.breakASTs = v; }
+});
+
+Object.defineProperty(config, 'compression', {
+    get: () => config.output.compression,
+    set: (v) => { config.output.compression = v; }
+});
+
+Object.defineProperty(config, 'strictMode', {
+    get: () => config.output.strictMode,
+    set: (v) => { config.output.strictMode = v; }
+});
+
+Object.defineProperty(config, 'target', {
+    get: () => config.output.target,
+    set: (v) => { config.output.target = v; }
+});
 
 module.exports = config;

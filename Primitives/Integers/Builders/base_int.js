@@ -9,12 +9,12 @@ const { toRefractal } = require('../refractal');
 let defaultedFunction;
 
 function buildBaseInt(declarationMapping) {
-    switch (config.baseIntegersDefault) {
+    switch (config.numbers.baseIntegerFormat.default) {
         default: case "JSFuck": defaultedFunction = toJSFuck; break;
         case "Hexadecimal": defaultedFunction = toHex; break;
         case "Octal": defaultedFunction = toOctal; break;
         case "Binary": defaultedFunction =  toBinary; break;
-        case "Refractal": defaultedFunction = toJSFuck; break;
+        case "Refractal": defaultedFunction = toRefractal; break;
     };
 
     const vars = [];
@@ -62,9 +62,9 @@ function buildBaseInt(declarationMapping) {
         rawValueMap.set(i, v.name);
     }
 
-    for (let i = 11; i <= (config.multipleVariableAssignments ? 400 : 100); i++) {
-        const expectedValue = (config.multipleVariableAssignments && i > 100) ? i % 100 : i;
-        const name = declarationMapping.get(`variable_numbers_${(config.multipleVariableAssignments && i > 100 ? i.toString()[0] + "_" : "")}${expectedValue}`);
+    for (let i = 11; i <= (config.numbers.cache.multipleAssignments ? 400 : 100); i++) {
+        const expectedValue = (config.numbers.cache.multipleAssignments && i > 100) ? i % 100 : i;
+        const name = declarationMapping.get(`variable_numbers_${(config.numbers.cache.multipleAssignments && i > 100 ? i.toString()[0] + "_" : "")}${expectedValue}`);
 
         const generatedValue = generateMathFromInt(expectedValue);
         const replacedValue = generatedValue.replace(/\d+/g, match => {
@@ -75,7 +75,7 @@ function buildBaseInt(declarationMapping) {
         vars.push({ name, value: replacedValue });
     };
 
-    if (config.shuffleBaseIntegers) {
+    if (config.numbers.baseIntegerFormat.shuffle) {
         for (let i = 9; i < vars.length; i++) { const j = Math.floor(Math.random() * (i + 1)); if (j <= 10) continue;[vars[i], vars[j]] = [vars[j], vars[i]]; };
         for (let i = 9; i >= 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [vars[i], vars[j]] = [vars[j], vars[i]]; };
     };

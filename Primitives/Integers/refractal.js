@@ -7,9 +7,9 @@ const { toJSFuck } = require('./jsfuck');
 const { toOctal } = require('./octal');
 
 const useConfig = function (num) {
-    let percentageBasedConfig = { ...config.integerPrecentage };
+    let percentageBasedConfig = { ...config.numbers.baseIntegerFormat.distribution };
     percentageBasedConfig.Refractal = 0;
-    if (num <= 10 && config.integerPrecentage.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
+    if (num <= 10 && config.numbers.baseIntegerFormat.distribution.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
     let choice = pickWeightedRandom(percentageBasedConfig);
 
@@ -32,7 +32,7 @@ var toRefractal = (originalNumber, declarationMapping) => {
     const BigNumber = Math.floor(Math.random() * 100);
     const LeftOver = BigNumber - 3;
 
-    if (config.globalBaseIntegerConcealment && config.multipleVariableAssignments && LeftOver !== 100 && BigNumber !== 100 && BigNumber !== 0 && LeftOver !== 0) {
+    if (config.numbers.strategy.useBaseIntegers && config.numbers.cache.multipleAssignments && LeftOver !== 100 && BigNumber !== 100 && BigNumber !== 0 && LeftOver !== 0) {
         const shuffledIndex = Math.floor(Math.random() * 4);
 
         const choices = [1, 2, 3].filter(v => v !== shuffledIndex);
@@ -41,7 +41,9 @@ var toRefractal = (originalNumber, declarationMapping) => {
         if (shuffledIndex !== 0) return `((~'${roundedSqrt - 1}')**~-(${declarationMapping.get(`variable_numbers_${shuffledIndex}_${BigNumber}`)} ${LeftOver < 0 ? "+" : "-"} ${declarationMapping.get(`variable_numbers_${secondChoice}_${Math.abs(LeftOver)}`)})+${useConfig(remainder)})`;
     };
 
-    return `((~'${roundedSqrt - 1}')**~-(${(config.globalBaseIntegerConcealment ? declarationMapping.get(`variable_numbers_${BigNumber}`) : useConfig(BigNumber))} ${LeftOver < 0 ? "+" : "-"} ${config.globalBaseIntegerConcealment ? declarationMapping.get(`variable_numbers_${Math.abs(LeftOver)}`) : useConfig(Math.abs(LeftOver))})+${(remainder < 100 && config.globalBaseIntegerConcealment ? declarationMapping.get(`variable_numbers_${remainder}`) : useConfig(remainder))})`;
+    return `((~'${roundedSqrt - 1}')**~-(${(config.numbers.strategy.useBaseIntegers ? declarationMapping.get(`variable_numbers_${BigNumber}`) : useConfig(BigNumber))} ${LeftOver < 0 ? "+" : "-"} ${config.numbers.strategy.useBaseIntegers ? declarationMapping.get(`variable_numbers_${Math.abs(LeftOver)}`) : useConfig(Math.abs(LeftOver))})+${(remainder < 100 && config.numbers.strategy.useBaseIntegers ? declarationMapping.get(`variable_numbers_${remainder}`) : useConfig(remainder))})`;
 };
+
+console.log(toRefractal(15, new Map())); // Warm up function to populate any caches
 
 module.exports = { toRefractal }; 

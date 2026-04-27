@@ -42,16 +42,16 @@ function getStringCount() { return builtStrings.length; };
 function setCommonVariables(declarationMapping_) { declarationMapping = declarationMapping_; getFnName = declarationMapping.get("stringAccessor") || getFnName; };
 
 function encodeNumber(num) {
-    if (config.globalBaseIntegerConcealment) {
+    if (config.numbers.strategy.useBaseIntegers) {
         if (num <= 100) {
-            if (config.multipleVariableAssignments && num !== 100 && num !== 0) {
+            if (config.numbers.cache.multipleAssignments && num !== 100 && num !== 0) {
                 let shuffledVariableName = Math.floor(Math.random() * 4);
                 if (shuffledVariableName !== 0) return declarationMapping.get(`variable_numbers_${shuffledVariableName}_${num}`);
             };
 
             return declarationMapping.get(`variable_numbers_${num}`);
-        } else if (config.numberEncoding) {
-            let choice = pickWeightedRandom(config.integerPrecentage);
+        } else if (config.numbers.enabled) {
+            let choice = pickWeightedRandom(config.numbers.baseIntegerFormat.distribution);
 
             let defaultedFunction;
             switch (choice) {
@@ -63,8 +63,8 @@ function encodeNumber(num) {
 
             return defaultedFunction(num, declarationMapping);
         };
-    } else if (config.numberEncoding) {
-        let percentageBasedConfig = { ...config.integerPrecentage };
+    } else if (config.numbers.enabled) {
+        let percentageBasedConfig = { ...config.numbers.baseIntegerFormat.distribution };
         if (num <= 10) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
         let choice = pickWeightedRandom(percentageBasedConfig);
@@ -253,9 +253,9 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
 
     if (decodersCount === 1) {
         // Single decoder — no need for assignment array or decoder group, call directly
-        if (config.optimizedStringCache) parts.push(`let ${cache} = [];`);
-        parts.push(`var ${iifeFnName}=(${accessorParamName})=>{`);
-        if (config.optimizedStringCache) parts.push(`if (${cache}[${accessorParamName}]) return ${cache}[${accessorParamName}];`);
+        if (config.strings.encoding.cache) parts.push(`let ${cache} = [];`);
+        parts.push(`var ${iifeFnName}=(${accessorParamName})=>{}`);
+        if (config.strings.encoding.cache) parts.push(`if (${cache}[${accessorParamName}]) return ${cache}[${accessorParamName}];`);
         parts.push(`  var ${resName} = ${decoderNames[0]}(${accessorParamName});`);
         if (config.optimizedStringCache) parts.push(`  ${cache}[${accessorParamName}] = ${resName};`);
         parts.push(`  return ${resName};`);
@@ -397,7 +397,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         code += `\nvar ${getFnName} = ${iifeFnName};`;
     }
 
-    return config.compression ? compress(code) : code;
+    return config.output.compression ? compress(code) : code;
 };
 
 function getBrokenIIFE() {

@@ -157,39 +157,63 @@ function toggleFaq(btn) {
 
 
 let obfuscationConfig = {
-    nameGenerationStyle: "minify",
-    numberEncoding: true,
-    optimzedNumberCache: true,
-    numberCalculator: true,
-    globalBaseIntegerConcealment: true,
-    multipleVariableAssignments: false,
-    shuffleBaseIntegers: true,
-    baseIntegersDefault: "JSFuck",
-    integerPrecentage: {
-        Refractal: 0,
-        JSFuck: 0,
-        Hexadecimal: 40,
-        Octal: 30,
-        Binary: 30
+    identifiers: {
+        nameStyle: "minify",
     },
-    encodedFunctionStrength: 3,
-    concealGlobalObjects: true,
-    target: "browser",
-    stringEncoding: true,
-    stringSplitting: 0,
-    optimizedStringCache: true,
-    stringConcealment: true,
-    stringConcealmentSettings: {
-        decodersCount: 2,
-        addNoiseCount: 1
+    numbers: {
+        enabled: true,
+        strategy: {
+            useCalculator: true,
+            useBaseIntegers: true,
+            calculateStrength: 3,
+        },
+        cache: {
+            enabled: true,
+            multipleAssignments: false,
+        },
+        baseIntegerFormat: {
+            default: "JSFuck",
+            shuffle: true,
+            distribution: {
+                Refractal: 0,
+                JSFuck: 0,
+                Hexadecimal: 40,
+                Octal: 30,
+                Binary: 30
+            }
+        }
     },
-    concealPrimitives: true,
-    compression: true,
-    strictMode: false,
-    integrityChecks: true,
-    breakASTs: true,
-    disableConsoleOutput: false,
-    enableAntiDebugger: false,
+    strings: {
+        enabled: true,
+        encoding: {
+            enabled: true,
+            cache: true,
+        },
+        concealment: {
+            enabled: true,
+            decoderLayers: 2,
+            noiseFunctions: 1,
+        },
+        splitting: {
+            enabled: false,
+            maxFragments: 0,
+        }
+    },
+    globals: {
+        concealWindowObject: true,
+        concealPrimitives: true,
+    },
+    protection: {
+        integrityChecks: true,
+        antiDebugger: false,
+        disableConsole: false,
+        breakASTs: true,
+    },
+    output: {
+        compression: true,
+        strictMode: false,
+        target: "browser",
+    }
 };
 
 // ============================================================================
@@ -676,9 +700,40 @@ function initCustomDropdowns() {
         
         // Initialize with selected value and mark it with checkmark
         if (hiddenSelect) {
-            const selectedValue = hiddenSelect.value;
+            let selectedValue = hiddenSelect.value;
+            
+            // Try to get the value from localStorage using the data-config path
+            const configKey = hiddenSelect.getAttribute('data-config');
+            if (configKey) {
+                try {
+                    const savedConfig = JSON.parse(localStorage.getItem('obfuslyConfig'));
+                    if (savedConfig) {
+                        // Helper to get nested property
+                        const getNestedProperty = (obj, path) => {
+                            const parts = path.split('.');
+                            let current = obj;
+                            for (const part of parts) {
+                                if (current && typeof current === 'object') {
+                                    current = current[part];
+                                } else {
+                                    return undefined;
+                                }
+                            }
+                            return current;
+                        };
+                        
+                        const storedValue = getNestedProperty(savedConfig, configKey);
+                        if (storedValue !== undefined) {
+                            selectedValue = storedValue;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to load from localStorage:', error);
+                }
+            }
+            
             options.forEach(option => {
-                if (option.getAttribute('data-value') === selectedValue) {
+                if (option.getAttribute('data-value') == selectedValue) {
                     option.classList.add('selected');
                 }
             });
@@ -751,15 +806,188 @@ function closeAllDropdowns() {
     });
 }
 
-// ============================================================================
-// CONFIGURATION MANAGEMENT
-// ============================================================================
+// Encoding priority order and distribution percentages
+let encodingPriority = ['Hexadecimal', 'Octal', 'Binary', 'JSFuck', 'Refractal'];
+const priorityPercentages = [50, 25, 15, 10, 0];
+
+const encodingDescriptions = {
+    'Hexadecimal': '0x format (Zero-cost)',
+    'Octal': '0o format (Zero-cost)',
+    'Binary': '0b format (Zero-cost)',
+    'JSFuck': 'Type coercion',
+    'Refractal': 'Complex encoding (Slight cost)'
+};
+
+function initEncodingPriority() {
+    const container = document.getElementById('encodingPriorityList');
+    if (!container) return;
+    
+    // Load priority from localStorage if available
+    const saved = localStorage.getItem('obfuslyEncodingPriority');
+    if (saved) {
+        try {
+            encodingPriority = JSON.parse(saved);
+        } catch (e) {
+            console.warn('Failed to load encoding priority:', e);
+        }
+    }
+    
+    // Render the priority list
+    renderEncodingPriority();
+}
+
+function renderEncodingPriority() {
+    const container = document.getElementById('encodingPriorityList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    encodingPriority.forEach((encoding, index) => {
+        const percentage = priorityPercentages[index];
+        const item = document.createElement('div');
+        item.className = 'encoding-priority-item';
+        item.id = `priority-item-${index}`;
+        item.style.cssText = `
+            padding: 0.75rem;
+            background-color: rgba(46, 107, 255, 0.1);
+            border: 1px solid rgba(46, 107, 255, 0.3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            cursor: grab;
+            transition: background-color 0.2s, border-color 0.2s;
+        `;
+        item.draggable = true;
+        item.dataset.index = index;
+        
+        const content = document.createElement('div');
+        content.style.cssText = 'flex: 1; display: flex; align-items: center; gap: 1rem;';
+        content.innerHTML = `
+            <div style="font-weight: 600; color: #2e6bff; min-width: 20px; text-align: center;">${index + 1}</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 500; color: var(--text-primary);">${encoding}</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">${encodingDescriptions[encoding]}</div>
+            </div>
+        `;
+        
+        const controls = document.createElement('div');
+        controls.style.cssText = 'display: flex; align-items: center;';
+        controls.innerHTML = `<div style="font-weight: 600; color: var(--text-secondary); min-width: 40px; text-align: right;">${percentage}%</div>`;
+        
+        item.appendChild(content);
+        item.appendChild(controls);
+        
+        // Drag event handlers
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', index.toString());
+            item.style.opacity = '0.5';
+            item.style.background = 'rgba(46, 107, 255, 0.2)';
+        });
+        
+        item.addEventListener('dragend', () => {
+            item.style.opacity = '1';
+            item.style.background = 'rgba(46, 107, 255, 0.1)';
+            item.style.borderTop = 'none';
+        });
+        
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            item.style.borderTop = '2px solid #2e6bff';
+        });
+        
+        item.addEventListener('dragleave', () => {
+            item.style.borderTop = 'none';
+        });
+        
+        item.addEventListener('drop', (e) => {
+            e.preventDefault();
+            item.style.borderTop = 'none';
+            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            if (fromIndex !== index) {
+                swapEncodings(fromIndex, index);
+            }
+        });
+        
+        container.appendChild(item);
+    });
+    
+    updateDistributionDisplay();
+}
+
+function moveEncodingUp(index) {
+    if (index > 0) {
+        [encodingPriority[index], encodingPriority[index - 1]] = [encodingPriority[index - 1], encodingPriority[index]];
+        saveAndUpdateEncoding();
+    }
+}
+
+function moveEncodingDown(index) {
+    if (index < encodingPriority.length - 1) {
+        [encodingPriority[index], encodingPriority[index + 1]] = [encodingPriority[index + 1], encodingPriority[index]];
+        saveAndUpdateEncoding();
+    }
+}
+
+function swapEncodings(fromIndex, toIndex) {
+    // Simple swap of two positions
+    const temp = encodingPriority[fromIndex];
+    encodingPriority[fromIndex] = encodingPriority[toIndex];
+    encodingPriority[toIndex] = temp;
+    saveAndUpdateEncoding();
+}
+
+function saveAndUpdateEncoding() {
+    localStorage.setItem('obfuslyEncodingPriority', JSON.stringify(encodingPriority));
+    updateConfigFromPriority();
+    renderEncodingPriority();
+}
+
+function updateConfigFromPriority() {
+    // Update obfuscationConfig with the new distribution based on priority
+    encodingPriority.forEach((encoding, index) => {
+        const percentage = priorityPercentages[index];
+        const configKey = `numbers.baseIntegerFormat.distribution.${encoding}`;
+        
+        // Helper to set nested property
+        const setNestedProperty = (obj, path, value) => {
+            const parts = path.split('.');
+            let current = obj;
+            for (let i = 0; i < parts.length - 1; i++) {
+                const part = parts[i];
+                if (!current[part]) current[part] = {};
+                current = current[part];
+            }
+            current[parts[parts.length - 1]] = value;
+        };
+        
+        setNestedProperty(obfuscationConfig, configKey, percentage);
+    });
+    
+    // Save to localStorage
+    saveConfigToLocalStorage();
+}
 
 function updateConfigFromUI() {
+    // Helper to set nested property
+    const setNestedProperty = (obj, path, value) => {
+        const parts = path.split('.');
+        let current = obj;
+        for (let i = 0; i < parts.length - 1; i++) {
+            const part = parts[i];
+            if (!current[part]) current[part] = {};
+            current = current[part];
+        }
+        current[parts[parts.length - 1]] = value;
+    };
+
     // Gather all checkbox values
     document.querySelectorAll('input[type="checkbox"][data-config]').forEach(checkbox => {
         const configKey = checkbox.getAttribute('data-config');
-        obfuscationConfig[configKey] = checkbox.checked;
+        setNestedProperty(obfuscationConfig, configKey, checkbox.checked);
     });
 
     // Gather all select values
@@ -767,36 +995,127 @@ function updateConfigFromUI() {
         const configKey = select.getAttribute('data-config');
         const value = select.value;
         
-        // Handle nested config for stringConcealmentSettings
-        if (configKey.includes('.')) {
-            const [parent, child] = configKey.split('.');
-            if (!obfuscationConfig[parent]) obfuscationConfig[parent] = {};
-            
-            // Try to parse as number first
-            const numValue = parseInt(value);
-            obfuscationConfig[parent][child] = isNaN(numValue) ? value : numValue;
-        } else {
-            // Try to parse as number first
-            const numValue = parseInt(value);
-            obfuscationConfig[configKey] = isNaN(numValue) ? value : numValue;
-        }
+        // Try to parse as number first
+        const numValue = parseInt(value);
+        setNestedProperty(obfuscationConfig, configKey, isNaN(numValue) ? value : numValue);
     });
 
     // Gather slider values
     document.querySelectorAll('input[type="range"][data-config]').forEach(slider => {
         const configKey = slider.getAttribute('data-config');
         const value = parseInt(slider.value);
-        
-        if (configKey.includes('.')) {
-            const [parent, child] = configKey.split('.');
-            if (!obfuscationConfig[parent]) obfuscationConfig[parent] = {};
-            obfuscationConfig[parent][child] = value;
-        } else {
-            obfuscationConfig[configKey] = value;
-        }
+        setNestedProperty(obfuscationConfig, configKey, value);
     });
 
     console.log('Updated config:', obfuscationConfig);
+    saveConfigToLocalStorage();
+}
+
+// ============================================================================
+// LOCALSTORAGE MANAGEMENT
+// ============================================================================
+
+function saveConfigToLocalStorage() {
+    try {
+        localStorage.setItem('obfuslyConfig', JSON.stringify(obfuscationConfig));
+        console.log('✓ Config saved to localStorage');
+    } catch (error) {
+        console.error('Failed to save config to localStorage:', error);
+    }
+}
+
+function loadConfigFromLocalStorage() {
+    try {
+        const saved = localStorage.getItem('obfuslyConfig');
+        if (saved) {
+            const loadedConfig = JSON.parse(saved);
+            
+            // Deep merge loaded config with defaults
+            const mergeConfigs = (target, source) => {
+                for (const key in source) {
+                    if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                        if (!target[key]) target[key] = {};
+                        mergeConfigs(target[key], source[key]);
+                    } else {
+                        target[key] = source[key];
+                    }
+                }
+            };
+            
+            mergeConfigs(obfuscationConfig, loadedConfig);
+            console.log('✓ Config loaded from localStorage');
+            
+            // Update UI to reflect loaded settings
+            updateUIFromConfig();
+            return true;
+        }
+    } catch (error) {
+        console.error('Failed to load config from localStorage:', error);
+    }
+    return false;
+}
+
+function updateUIFromConfig() {
+    // Helper to get nested property
+    const getNestedProperty = (obj, path) => {
+        const parts = path.split('.');
+        let current = obj;
+        for (const part of parts) {
+            if (current && typeof current === 'object') {
+                current = current[part];
+            } else {
+                return undefined;
+            }
+        }
+        return current;
+    };
+
+    // Update checkboxes
+    document.querySelectorAll('input[type="checkbox"][data-config]').forEach(checkbox => {
+        const configKey = checkbox.getAttribute('data-config');
+        const value = getNestedProperty(obfuscationConfig, configKey);
+        if (value !== undefined) {
+            checkbox.checked = value;
+        }
+    });
+
+    // Update selects
+    document.querySelectorAll('select[data-config]').forEach(select => {
+        const configKey = select.getAttribute('data-config');
+        const value = getNestedProperty(obfuscationConfig, configKey);
+        if (value !== undefined) {
+            select.value = value;
+            
+            // Update custom dropdown display if it exists
+            const dropdown = select.closest('.custom-dropdown');
+            if (dropdown) {
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                const selectedOption = dropdown.querySelector(`[data-value="${value}"]`);
+                if (trigger && selectedOption) {
+                    trigger.querySelector('.dropdown-value').textContent = selectedOption.querySelector('.option-text').textContent;
+                }
+            }
+        }
+    });
+
+    // Update sliders
+    document.querySelectorAll('input[type="range"][data-config]').forEach(slider => {
+        const configKey = slider.getAttribute('data-config');
+        const value = getNestedProperty(obfuscationConfig, configKey);
+        if (value !== undefined) {
+            slider.value = value;
+            const valueSpan = document.getElementById(slider.id + 'Value');
+            if (valueSpan) {
+                valueSpan.textContent = value;
+            }
+        }
+    });
+    
+    // Normalize distribution if it was loaded from localStorage
+    setTimeout(() => {
+        autoNormalizeDistribution();
+        updateDistributionDisplay();
+    }, 0);
 }
 
 function attachConfigListeners() {
@@ -816,6 +1135,23 @@ function attachConfigListeners() {
     });
 }
 
+function autoNormalizeDistribution(e) {
+    // This is now handled by the priority system - keeping for backward compatibility
+}
+
+function updateSliderMaxValues() {
+    // This is now handled by the priority system - keeping for backward compatibility
+}
+
+function updateDistributionDisplay() {
+    // Always 100% with the new priority system
+    const total = priorityPercentages.reduce((a, b) => a + b, 0);
+    const totalSpan = document.getElementById('distributionTotal');
+    if (totalSpan) {
+        totalSpan.textContent = total;
+    }
+}
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -825,7 +1161,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     startTestimonialScroll();
     initCustomDropdowns();
     attachConfigListeners();
-    updateConfigFromUI();
+    
+    // Initialize encoding priority system
+    initEncodingPriority();
+    
+    // Load saved config from localStorage, then update UI
+    loadConfigFromLocalStorage();
 
     // Make code display selectable and handle Ctrl+A/Ctrl+C
     const codeDisplay = document.getElementById('codeDisplay');

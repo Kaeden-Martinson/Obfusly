@@ -12,7 +12,7 @@ let blacklistLines = {};
 function updateNodeName(node, isBeingDefined) {
     if (!node || node.obfuscated || ignoreVariables.includes(node.name)) return;
 
-    if (config.concealGlobalObjects &&
+    if (config.globals.concealWindowObject &&
         node.type === "Identifier" &&
         windowVariables.includes(node.name) &&
         !defaultedValues.includes(node.name) &&

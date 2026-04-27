@@ -11,7 +11,7 @@ const { toRefractal } = require('../refractal');
 
 function createEncodeAndDecodingPairs(declarationMapping) {
 
-    const FUNCTIONS = config.encodedFunctionStrength;
+    const FUNCTIONS = config.numbers.strategy.calculateStrength;
     const CASES = 8;
     const OPS_MIN = 3;
     const OPS_MAX = 6;
@@ -22,13 +22,13 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
     let DEADCODE_VARIABLES = [];
 
-    let percentageBasedConfig = { ...config.integerPrecentage };
+    let percentageBasedConfig = { ...config.numbers.baseIntegerFormat.distribution };
 
     function useConfig(num) {
-        if (config.globalBaseIntegerConcealment && num <= 100) {
+        if (config.numbers.strategy.useBaseIntegers && num <= 100) {
             const BigNumber = Math.floor(Math.random() * 100);
             const LeftOver = BigNumber - num;
-            if (config.multipleVariableAssignments && num !== 100 && LeftOver !== 100 && BigNumber !== 100 && LeftOver !== 0 && BigNumber !== 0) {
+            if (config.numbers.cache.multipleAssignments && num !== 100 && LeftOver !== 100 && BigNumber !== 100 && LeftOver !== 0 && BigNumber !== 0) {
                 const shuffledIndex = Math.floor(Math.random() * 4);
                 if (shuffledIndex !== 0) {
                     const choices = [1, 2, 3].filter(v => v !== shuffledIndex);
@@ -40,8 +40,8 @@ function createEncodeAndDecodingPairs(declarationMapping) {
             };
 
             return `(${declarationMapping.get(`variable_numbers_${BigNumber}`)} ${LeftOver < 0 ? "+" : "-"} ${declarationMapping.get(`variable_numbers_${Math.abs(LeftOver)}`)})`;
-        } else if (config.numberEncoding) {
-            percentageBasedConfig = config.integerPrecentage;
+        } else if (config.numbers.enabled) {
+            percentageBasedConfig = config.numbers.baseIntegerFormat.distribution;
             if (num <= 10) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
             let choice = pickWeightedRandom(percentageBasedConfig);
@@ -182,7 +182,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
 
     for (let fi = 0; fi < FUNCTIONS; fi++) {
         const mainParam = generateObfuscatedName();
-        const volumeVariable = config.breakASTs ? "__LET_PLACEHOLDER__" : generateObfuscatedName();
+        const volumeVariable = config.protection.breakASTs ? "__LET_PLACEHOLDER__" : generateObfuscatedName();
         const valIdx = generateObfuscatedName();
         const sel = generateObfuscatedName();
         const d0 = generateObfuscatedName();
@@ -223,7 +223,7 @@ function createEncodeAndDecodingPairs(declarationMapping) {
     for (let fi = 0; fi < FUNCTIONS; fi++) encoderOut += `function chainEncode${fi}(v){v=encode${fi}(v,${generateRandomArgs()})[${valueIndexesVariable}[${(shuffledFunctionsCases[fi])}][v&${(casesSubtractOne[fi])}]];${fi + 1 < FUNCTIONS ? `return chainEncode${fi + 1}(v);` : `return v>>>${(0)};`}}\n\n`;
     for (let fi = FUNCTIONS - 1; fi >= 0; fi--) {
         const mainParam = generateObfuscatedName();
-        if (fi === FUNCTIONS - 1 && config.optimzedNumberCache) {
+        if (fi === FUNCTIONS - 1 && config.numbers.cache.enabled) {
             // Cache at outermost level using original input as key for maximum hit rate
             let cacheName = generateObfuscatedName();
             let resName = generateObfuscatedName();

@@ -288,7 +288,7 @@ function buildConsoleDisabler(config) {
 );
 `;
 
-  return config.compression ? compress(runtime) : runtime;
+  return config.output.compression ? compress(runtime) : runtime;
 };
 
 module.exports = { buildConsoleDisabler };

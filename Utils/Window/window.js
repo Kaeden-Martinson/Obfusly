@@ -26,11 +26,11 @@ function createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, en
             `__QUOTE_OPERATORS__+__QUOTE_OPERATORS__` +
             [...name].join('__QUOTE_OPERATORS__+__QUOTE_OPERATORS__') +
             `__QUOTE_OPERATORS__+__QUOTE_OPERATORS__ = ${functionName}\`void 0\` || ${declarationMapping.get("null")};`;
-    } else if (config.strictMode) {
+    } else if (config.output.strictMode) {
         functionString += `(function ${generateObfuscatedName()}() { ${name} = typeof globalThis === "object" ? globalThis : typeof self === "object" ? self : global; })();`;
     } else {
         functionString = `let ${functionName} = `;
-        if (!config.strictMode) functionString += `eval(\`(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom(`return ${globalRef}`).raw})\\\`\\\`})\`);`;
+        if (!config.output.strictMode) functionString += `eval(\`(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom(`return ${globalRef}`).raw})\\\`\\\`})\`);`
         else functionString += `(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${allowedToEncodeStrings ? encodeStringsRandom('map').raw : encodePlainString('map', encodeLocalNumber, encodingAndDecodingPairs)}][${allowedToEncodeStrings ? encodeStringsRandom('constructor').raw : encodePlainString('constructor', encodeLocalNumber, encodingAndDecodingPairs)}](${allowedToEncodeStrings ? encodeStringsRandom(`return ${globalRef}`).raw : encodePlainString(`return ${globalRef}`, encodeLocalNumber, encodingAndDecodingPairs)})\`\`});`;
         functionString += `${name} = ${functionName}\`void 0\` || ${declarationMapping.get("null")};`;
     }

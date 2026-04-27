@@ -25,8 +25,8 @@ function obfuscateEntireSource(code) {
     global.__jsscramble_step = 0;
     console.log();
     console.log('JsScramble Obfuscation');
-    _stat('Naming style', config.nameGenerationStyle);
-    _stat('Mode', config.strictMode ? 'Strict Mode' : 'Non-Strict (Function wrapper)');
+    _stat('Identifier Style', config.identifiers.nameStyle);
+    _stat('Mode', config.output.strictMode ? 'Strict Mode' : 'Non-Strict (Function wrapper)');
     _log('Renaming identifiers and variables');
     clearOldNames();
     
@@ -35,13 +35,13 @@ function obfuscateEntireSource(code) {
     const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'module' });
 
     clearDeclarationMapping(code);
-    for (let name of windowVariables) setDeclarationMapping(name, (config.concealPrimitives && defaultedValues.includes(name) ? generateObfuscatedName() : name));
-    if (config.concealGlobalObjects) setDeclarationMapping("window", windowName);
-    if (config.numberCalculator) {
+    for (let name of windowVariables) setDeclarationMapping(name, (config.globals.concealPrimitives && defaultedValues.includes(name) ? generateObfuscatedName() : name));
+    if (config.globals.concealWindowObject) setDeclarationMapping("window", windowName);
+    if (config.numbers.strategy.useCalculator) {
         const decoderName = generateObfuscatedName();
         setDeclarationMapping("decodeFunctionName", decoderName);
     };
-    if (config.stringEncoding) {
+    if (config.strings.encoding.enabled) {
         const stringAccessorName = generateObfuscatedName();
         setDeclarationMapping("stringAccessor", stringAccessorName);
     };

@@ -180,7 +180,7 @@ let __OBFUSCATED_PLACEHOLER__;
 
   newCode.code = newCode.code.replaceAll("__OBFUSCATED_PLACEHOLER__", obfuscatedName);
 
-  return [(config.compression ? compress(newCode.code) : newCode.code), obfuscatedName, PASSPHRASE];
+  return [(config.output.compression ? compress(newCode.code) : newCode.code), obfuscatedName, PASSPHRASE];
 };
 
 module.exports = { createDebuggerBundle };

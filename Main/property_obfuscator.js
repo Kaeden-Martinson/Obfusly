@@ -47,11 +47,11 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     const _t0 = Date.now();
 
     const decoderName = previousDeclarationMapping.get("decodeFunctionName") || generateObfuscatedName();
-      if (config.numberCalculator) {
+      if (config.numbers.strategy.useCalculator) {
         declarationMapping.set("decodeFunctionName", decoderName);
         setDeclarationMapping("decodeFunctionName", decoderName);
       };
-      if (config.stringEncoding) {
+      if (config.strings.encoding.enabled) {
         const stringAccessorName = previousDeclarationMapping.get("stringAccessor") || generateObfuscatedName();
         declarationMapping.set("stringAccessor", stringAccessorName);
         setDeclarationMapping("stringAccessor", stringAccessorName);
@@ -63,12 +63,12 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     let encodingAndDecodingPairs;
     let generateBaseInts;
 
-    if (config.globalBaseIntegerConcealment) {
+    if (config.numbers.strategy.useBaseIntegers) {
         buildBaseNames(declarationMapping);
         generateBaseInts = buildBaseInt(declarationMapping);
     };
 
-    if (config.numberCalculator) {
+    if (config.numbers.strategy.useCalculator) {
         encodingAndDecodingPairs = createEncodeAndDecodingPairs(declarationMapping);
 
         fs.writeFile(
@@ -87,17 +87,17 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     declarationMapping.set("Function", generateObfuscatedName());
     setDeclarationMapping("window", windowName);
 
-    if (config.stringConcealment) {
+    if (config.strings.concealment.enabled) {
         stringBuilderModule.setCommonVariables(declarationMapping);
         setStringBuilder(stringBuilderModule);
     };
 
-    if (!config.strictMode) declarationMapping.set("IIFEstringBreaker", generateObfuscatedName());
+    if (!config.output.strictMode) declarationMapping.set("IIFEstringBreaker", generateObfuscatedName());
 
-    while (!encodeModule && config.numberCalculator) await new Promise(r => setTimeout(r, 0));
+    while (!encodeModule && config.numbers.strategy.useCalculator) await new Promise(r => setTimeout(r, 0));
 
     function encodeLocalNumber(number) {
-        if (config.numberCalculator && Math.abs(number) <= 4099000000 && number > 100) {
+        if (config.numbers.strategy.useCalculator && Math.abs(number) <= 4099000000 && number > 100) {
             if (!numberCache[number]) {
                 numberCount++;
                 const isNegative = number < 0;
@@ -109,17 +109,17 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                 numberCount++;
                 return numberCache[number];
             };
-        } else if (config.globalBaseIntegerConcealment) {
+        } else if (config.numbers.strategy.useBaseIntegers) {
             if (number <= 100) {
                 numberCount++;
-                if (config.multipleVariableAssignments && number !== 100 && number !== 0) {
+                if (config.numbers.cache.multipleAssignments && number !== 100 && number !== 0) {
                     let shuffledVariableName = Math.floor(Math.random() * 4);
                     if (shuffledVariableName !== 0) return declarationMapping.get(`variable_numbers_${shuffledVariableName}_${number}`);
                 };
 
                 return declarationMapping.get(`variable_numbers_${number}`);
-            } else if (config.numberEncoding) {
-                let choice = pickWeightedRandom(config.integerPrecentage);
+            } else if (config.numbers.enabled) {
+                let choice = pickWeightedRandom(config.numbers.baseIntegerFormat.distribution);
 
                 let defaultedFunction;
                 switch (choice) {
@@ -132,9 +132,9 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                 numberCount++;
                 return defaultedFunction(number, declarationMapping);
             };
-        } else if (config.numberEncoding) {
-            let percentageBasedConfig = { ...config.integerPrecentage };
-            if (number <= 10 && config.integerPrecentage.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
+        } else if (config.numbers.enabled) {
+            let percentageBasedConfig = { ...config.numbers.baseIntegerFormat.distribution };
+            if (number <= 10 && config.numbers.baseIntegerFormat.distribution.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;
 
             let choice = pickWeightedRandom(percentageBasedConfig);
 
@@ -170,7 +170,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                 const result = encodeLocalNumber(node.value);
                 node.type = "Identifier";
                 node.name = result;
-            } else if (node.type === "Literal" && config.concealPrimitives && defaultedValues.includes(node.raw)) {
+            } else if (node.type === "Literal" && config.globals.concealPrimitives && defaultedValues.includes(node.raw)) {
                 node.type = "Identifier";
                 node.name = `${previousDeclarationMapping.get(node.raw)}`;
             };
@@ -179,41 +179,41 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     let generated = escodegen.generate(ast);
 
-    if (config.numberEncoding || config.numberCalculator || config.globalBaseIntegerConcealment) _stat('Numbers encoded', numberCount);
-    if (config.stringConcealment) _stat('Strings concealed', stringBuilderModule.getStringCount());
-    if (config.stringSplitting > 0) _stat('Split strings created', getSplitCount());
-    if (config.concealGlobalObjects) _log(`Globals concealed (window -> ${windowName})`);
-    if (config.concealPrimitives) _log(`Primitives concealed (${defaultedValues.length} values)`);
+    if (config.numbers.enabled || config.numbers.strategy.useCalculator || config.numbers.strategy.useBaseIntegers) _stat('Numbers encoded', numberCount);
+    if (config.strings.concealment.enabled) _stat('Strings concealed', stringBuilderModule.getStringCount());
+    if (config.strings.splitting.maxFragments > 0) _stat('Split strings created', getSplitCount());
+    if (config.globals.concealWindowObject) _log(`Globals concealed (window -> ${windowName})`);
+    if (config.globals.concealPrimitives) _log(`Primitives concealed (${defaultedValues.length} values)`);
 
-    if (!config.stringConcealment) generated = `${createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, encodeLocalNumber, false)}` + '\n' + generated;
+    if (!config.strings.concealment.enabled) generated = `${createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, encodeLocalNumber, false)}` + '\n' + generated;
 
-    if (config.stringConcealment) {
+    if (config.strings.concealment.enabled) {
         stringBuilderModule.setCommonVariables(declarationMapping);
         generated = "try{_ANTI_TERSER_}catch(err){};" + generated;
     };
 
     generated = `var ${declarationMapping.get("window")} = void 0;` + '\n' + generated;
 
-    if (config.numberCalculator) {
+    if (config.numbers.strategy.useCalculator) {
         generated = encodingAndDecodingPairs.decoder + '\n' + generated;
     };
 
-    if (config.globalBaseIntegerConcealment) {
+    if (config.numbers.strategy.useBaseIntegers) {
         _log('Base integers built');
         const generateBaseInts = buildBaseInt(declarationMapping);
         generated = generateBaseInts + '\n' + generated;
     };
 
-    if (!config.strictMode) {
+    if (!config.output.strictMode) {
         generated = `let ${declarationMapping.get("IIFEstringBreaker")} = ${stringBuilderModule.getBrokenIIFE()};` + '\n' + generated;
     };
 
     generated = generated.replace(/__ENCODED_STRINGS__x/g, '\\x');
     generated = generated.replace(/__ENCODED_STRINGS__u/g, '\\u');
 
-    if (config.concealPrimitives) for (let primitive of defaultedValues) generated = `const ${previousDeclarationMapping.get(primitive)} = ${primitive}\n` + generated;
+    if (config.globals.concealPrimitives) for (let primitive of defaultedValues) generated = `const ${previousDeclarationMapping.get(primitive)} = ${primitive}\n` + generated;
 
-    if (config.compression) {
+    if (config.output.compression) {
         _log('Compressing code');
         const result = await terser.minify(generated, {
             compress: { passes: 1 },
@@ -230,7 +230,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     generated = generated.replace(/__LET_PLACEHOLDER__/g, 'let');
 
-    if (config.integrityChecks && config.integrityChecks !== 'off') {
+    if (config.protection.integrityChecks && config.protection.integrityChecks !== 'off') {
         _log('Injecting integrity checks');
         generated = createIntegrity(generated, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule);
     }
@@ -239,21 +239,24 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     generated = generated.replace(/__ENCODED_STRINGS__u/g, '\\u');
 
     /** Rebuild after integrity */
-    if (config.stringConcealment) {
+    if (config.strings.concealment.enabled) {
         _log('Building string concealment layer');
-        let module = stringBuilderModule.buildStringConcealment(config.stringConcealmentSettings, encodingAndDecodingPairs, encodeModule);
+        let module = stringBuilderModule.buildStringConcealment({
+            decodersCount: config.strings.concealment.decoderLayers,
+            addNoiseCount: config.strings.concealment.noiseFunctions
+        }, encodingAndDecodingPairs, encodeModule);
         
         /** Work For Commas */
         const parts = generated.split("try{_ANTI_TERSER_}catch(err){}");
         generated = parts[0] + module + (parts[1] || '');
     };
 
-    if (config.disableConsoleOutput && !config.strictMode) {
+    if (config.protection.disableConsole && !config.output.strictMode) {
         _log('Console output disabled');
         generated = buildConsoleDisabler(config) + generated;
     };
 
-    if (config.enableAntiDebugger && !config.strictMode) {
+    if (config.protection.antiDebugger && !config.output.strictMode) {
         _log('Anti-debugger protection injected');
         const [code, obfuscatedName, PASSPHRASE] = createDebuggerBundle(config);
         let passVar = generateObfuscatedName();
@@ -261,7 +264,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generated = code + generated + generatedIIFE;
     };
 
-    if (!config.strictMode) {
+    if (!config.output.strictMode) {
         _log('Wrapped in Function constructor');
         generated = `new Function(${JSON.stringify(generated)})();`
     };

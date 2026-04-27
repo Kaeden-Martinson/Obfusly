@@ -11,10 +11,10 @@ function encodeStringsRandom(str, isIIFE) {
     let out = '';
     let fullyStringOut = false;
 
-    if (config.stringSplitting > 0) out = splitAndRebuildString(str, isIIFE, stringBuilderModule);
-    else if (config.stringConcealment && stringBuilderModule) {
+    if (config.strings.splitting.maxFragments > 0) out = splitAndRebuildString(str, isIIFE, stringBuilderModule);
+    else if (config.strings.concealment.enabled && stringBuilderModule) {
         out = stringBuilderModule.addString(str, isIIFE);
-    } else if (config.stringEncoding) {
+    } else if (config.strings.encoding.enabled) {
         fullyStringOut = true;
         out = encodeStringContents(str);
     } else {

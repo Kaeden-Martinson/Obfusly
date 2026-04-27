@@ -255,7 +255,7 @@ function createIntegrity(code, previousDeclarationMapping, declarationMapping, e
   // so the "!== hash" comparison SUCCEEDS (appears to "fail"), but we put the
   // CORRECT code in the "fail" branch. Someone removing "failed" checks kills the program.
 
-  const sep = config.compression ? "" : "\n";
+  const sep = config.output.compression ? "" : "\n";
   const routeVars = []; // { varName, correctValue } — needed for post-injection
   const snippetsAfterFn = []; // { pos, snippet }
   let _realChecks = 0, _decoyChecks = 0, _crossChecks = 0, _deferredChecks = 0;

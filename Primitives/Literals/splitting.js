@@ -6,7 +6,7 @@ let splitCount = 0;
 function splitAndRebuildString(str, isIIFE, stringBuilderModule) {
     if (!str || str.length < 2) return "('" + encodeStringContents(str) + "')";;
 
-    let splits = Math.min(config.stringSplitting, Math.max(1, Math.floor(Math.log2(str.length))));
+    let splits = Math.min(config.strings.splitting.maxFragments, Math.max(1, Math.floor(Math.log2(str.length))));
 
     splitCount++;
     let cutPoints = new Set();
@@ -19,19 +19,19 @@ function splitAndRebuildString(str, isIIFE, stringBuilderModule) {
     let result = [];
     let prev = 0;
     for (const cut of cutPoints) {
-        if (config.stringConcealment && stringBuilderModule) result.push(stringBuilderModule.addString(str.slice(prev, cut), isIIFE));
-        else if (config.stringEncoding) result.push(encodeStringContents(str.slice(prev, cut)));
+        if (config.strings.concealment.enabled && stringBuilderModule) result.push(stringBuilderModule.addString(str.slice(prev, cut), isIIFE));
+        else if (config.strings.encoding.enabled) result.push(encodeStringContents(str.slice(prev, cut)));
         else result.push(str.slice(prev, cut));
         prev = cut;
     }
 
     if (!prev) return str
 
-    if (config.stringConcealment && stringBuilderModule) { result.push(stringBuilderModule.addString(str.slice(prev), isIIFE)); }
-    else if (config.stringEncoding) result.push(encodeStringContents(str.slice(prev)));
+    if (config.strings.concealment.enabled && stringBuilderModule) { result.push(stringBuilderModule.addString(str.slice(prev), isIIFE)); }
+    else if (config.strings.encoding.enabled) result.push(encodeStringContents(str.slice(prev)));
     else result.push(str.slice(prev));
 
-    let quoteVarible = config.stringConcealment && stringBuilderModule ? "" : "'";
+    let quoteVarible = config.strings.concealment.enabled && stringBuilderModule ? "" : "'";
 
     return `(${quoteVarible}` + result.join(`${quoteVarible}+${quoteVarible}`) + `${quoteVarible})`;
 }
