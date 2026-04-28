@@ -14,10 +14,18 @@ function clearToken() { localStorage.removeItem('obfusly_token'); }
 
 // ── Rate Limiting for Obfuscations ─────────────────────────────────────────
 const OBFUSCATION_LIMITS = {
-    free: 3,
+    free: 5,
     starter: 50,
     professional: 500,
     enterprise: Infinity
+};
+
+// ── File Size Limits (in bytes) ────────────────────────────────────────────
+const FILE_SIZE_LIMITS = {
+    free: 2 * 1024 * 1024,        // 2MB
+    starter: 10 * 1024 * 1024,    // 10MB
+    professional: 10 * 1024 * 1024, // 10MB
+    enterprise: Infinity           // No limit
 };
 
 function getUserPlan() {
@@ -80,6 +88,11 @@ function updateNavAuth() {
     const registerBtn = document.getElementById('nav-register-btn');
     const accountBtn  = document.getElementById('nav-account-btn');
     const logoutBtn   = document.getElementById('nav-logout-btn');
+    
+    const mobileLoginBtn    = document.getElementById('mobile-nav-login-btn');
+    const mobileRegisterBtn = document.getElementById('mobile-nav-register-btn');
+    const mobileAccountBtn  = document.getElementById('mobile-nav-account-btn');
+    const mobileLogoutBtn   = document.getElementById('mobile-nav-logout-btn');
 
     if (currentUser) {
         loginBtn.style.display    = 'none';
@@ -87,18 +100,69 @@ function updateNavAuth() {
         accountBtn.style.display  = 'inline-block';
         logoutBtn.style.display   = 'inline-block';
         accountBtn.textContent    = currentUser.name.split(' ')[0];
+        
+        mobileLoginBtn.style.display    = 'none';
+        mobileRegisterBtn.style.display = 'none';
+        mobileAccountBtn.style.display  = 'block';
+        mobileLogoutBtn.style.display   = 'block';
+        mobileAccountBtn.textContent    = currentUser.name.split(' ')[0];
     } else {
         loginBtn.style.display    = 'inline-block';
         registerBtn.style.display = 'inline-block';
         accountBtn.style.display  = 'none';
         logoutBtn.style.display   = 'none';
+        
+        mobileLoginBtn.style.display    = 'block';
+        mobileRegisterBtn.style.display = 'block';
+        mobileAccountBtn.style.display  = 'none';
+        mobileLogoutBtn.style.display   = 'none';
     }
+}
+
+function toggleMobileMenu() {
+    const mobileNav = document.getElementById('mobile-nav-menu');
+    const toggle = document.getElementById('mobile-menu-toggle');
+    const body = document.body;
+    
+    if (mobileNav.classList.contains('active')) {
+        mobileNav.classList.remove('active');
+        toggle.classList.remove('active');
+        body.classList.remove('mobile-menu-open');
+    } else {
+        mobileNav.classList.add('active');
+        toggle.classList.add('active');
+        body.classList.add('mobile-menu-open');
+        
+        // Add backdrop click handler to close menu
+        setTimeout(() => {
+            document.addEventListener('click', closeMobileMenuOnBackdropClick, { once: true });
+        }, 100);
+    }
+}
+
+function closeMobileMenuOnBackdropClick(e) {
+    const mobileNav = document.getElementById('mobile-nav-menu');
+    const toggle = document.getElementById('mobile-menu-toggle');
+    
+    // Check if click is on backdrop (outside menu and toggle) or if menu is not active
+    if (!mobileNav.classList.contains('active')) return;
+    
+    // If clicking on menu items, nav area, or toggle button, don't close
+    if (mobileNav.contains(e.target) || toggle.contains(e.target)) {
+        // Re-add listener for next backdrop click
+        document.addEventListener('click', closeMobileMenuOnBackdropClick, { once: true });
+        return;
+    }
+    
+    // Close the menu
+    toggleMobileMenu();
 }
 
 function updateProfilePage() {
     if (!currentUser) return;
     
-    const rateCheck = checkObfuscationLimit();
+    // Use server-side usage data
+    const usage = currentUser.usage || { remaining: 0, limit: 0, used: 0, plan: 'free' };
     const resetTime = new Date();
     resetTime.setUTCHours(24, 0, 0, 0);
     const resetHour = resetTime.getUTCHours() === 0 ? 12 : (resetTime.getUTCHours() > 12 ? resetTime.getUTCHours() - 12 : resetTime.getUTCHours());
@@ -113,11 +177,11 @@ function updateProfilePage() {
     const memberDate = new Date(currentUser.createdAt || new Date());
     document.getElementById('profileMemberSince').textContent = memberDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
-    // Update obfuscation stats
-    document.getElementById('profileRemaining').textContent = rateCheck.remaining;
-    document.getElementById('profileLimit').textContent = rateCheck.limit === Infinity ? '∞' : rateCheck.limit;
+    // Update obfuscation stats (from server)
+    document.getElementById('profileRemaining').textContent = usage.remaining;
+    document.getElementById('profileLimit').textContent = usage.limit === Infinity ? '∞' : usage.limit;
     
-    const percentage = rateCheck.limit === Infinity ? 0 : (rateCheck.used / rateCheck.limit) * 100;
+    const percentage = usage.limit === Infinity ? 0 : (usage.used / usage.limit) * 100;
     document.getElementById('profileUsedPercent').textContent = Math.round(percentage) + '%';
     document.getElementById('profileProgressBar').style.width = percentage + '%';
     
@@ -348,6 +412,78 @@ function logout() {
     navigateTo('home');
 }
 
+function showAccountMenu() {
+    const accountBtn = document.getElementById('nav-account-btn');
+    if (!accountBtn) return;
+    
+    // Create menu if it doesn't exist
+    let menu = document.getElementById('accountDropdown');
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'accountDropdown';
+        menu.style.cssText = `
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 999;
+        `;
+        document.body.appendChild(menu);
+    }
+    
+    if (currentUser) {
+        const usage = currentUser.usage || { used: 0, limit: 0 };
+        menu.innerHTML = `
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                <div style="font-weight: 600; color: var(--text-primary);">${currentUser.name}</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">${currentUser.email}</div>
+                <div style="font-size: 0.85rem; color: var(--accent-primary); margin-top: 0.5rem;">
+                    Plan: ${currentUser.plan || 'Free'}
+                </div>
+            </div>
+            
+            <div style="margin: 1rem 0; font-size: 0.9rem;" data-obf-usage>
+                <div style="color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Daily Obfuscations
+                </div>
+                <div style="color: var(--text-primary); font-weight: 600;">
+                    ${usage.used} / ${usage.limit}
+                </div>
+                <div style="width: 100%; height: 6px; background: rgba(46,107,255,0.1); border-radius: 3px; margin-top: 0.5rem;">
+                    <div style="width: ${(usage.used / usage.limit) * 100}%; height: 100%; background: var(--accent-primary); border-radius: 3px;"></div>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button onclick="navigateTo('account'); closeAccountMenu()" 
+                    style="padding: 0.5rem; background: rgba(46,107,255,0.1); border: 1px solid var(--accent-primary); border-radius: 6px; color: var(--accent-primary); cursor: pointer; font-size: 0.9rem;">
+                    My Account
+                </button>
+                <button onclick="navigateTo('pricing'); closeAccountMenu()" 
+                    style="padding: 0.5rem; background: rgba(46,107,255,0.1); border: 1px solid var(--accent-primary); border-radius: 6px; color: var(--accent-primary); cursor: pointer; font-size: 0.9rem;">
+                    Upgrade Plan
+                </button>
+                <button onclick="logout()" 
+                    style="padding: 0.5rem; background: rgba(255,0,0,0.1); border: 1px solid #ff6b6b; border-radius: 6px; color: #ff6b6b; cursor: pointer; font-size: 0.9rem;">
+                    Log Out
+                </button>
+            </div>
+        `;
+    }
+    
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function closeAccountMenu() {
+    const menu = document.getElementById('accountDropdown');
+    if (menu) menu.style.display = 'none';
+}
+
 function fillAccountPage() {
     if (!currentUser) return;
     const planLabel = { free: 'Free', starter: 'Starter ($29/mo)', professional: 'Professional ($79/mo)', enterprise: 'Enterprise' };
@@ -357,6 +493,31 @@ function fillAccountPage() {
     document.getElementById('acct-since').textContent = currentUser.createdAt
         ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
         : '—';
+}
+
+function updateAccountMenuData() {
+    if (!currentUser) return;
+    
+    const menu = document.getElementById('accountDropdown');
+    if (!menu) return; // Menu doesn't exist yet, nothing to update
+    
+    const usage = currentUser.usage || { used: 0, limit: 0 };
+    
+    // Update the usage stats in the menu if it's visible
+    const usageDiv = menu.querySelector('[data-obf-usage]');
+    if (usageDiv) {
+        usageDiv.innerHTML = `
+            <div style="color: var(--text-secondary); margin-bottom: 0.5rem;">
+                Daily Obfuscations
+            </div>
+            <div style="color: var(--text-primary); font-weight: 600;">
+                ${usage.used} / ${usage.limit}
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(46,107,255,0.1); border-radius: 3px; margin-top: 0.5rem;">
+                <div style="width: ${(usage.used / usage.limit) * 100}%; height: 100%; background: var(--accent-primary); border-radius: 3px;"></div>
+            </div>
+        `;
+    }
 }
 
 // ── Stripe checkout ────────────────────────────────────────────────────────
@@ -481,8 +642,8 @@ const codePhases = [
     {
         badge: 'Protected Output',
         badgeColor: '#00d4ff',
-        charDelay: 14,
-        lineDelay: 35,
+        charDelay: 6,
+        lineDelay: 20,
         holdMs: 2600,
         lines: [
             { text: `var G=void 0;var J=['vcn9lki%(PnV4%iAK9kwKGv8JVM@evff','Kyff','4mi)cAt24%DWiAtXgPiG'];const F=(()=>{;var I='y139kt%xpnCFKJehvlQ!ciP*(4LuMg&5#7qV$TAsO0SjXW2IbdwG)8mR@rNazDEo';var b={};for(var x=0;x<I.length;x++)b[I.charAt(x)]=x;var L=new Array(3).fill(null);var z='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';var u='f';function S(n){if(L[n]!==null&&L[n]!==undefined)return L[n];var k=0&65535;if((k&3)===1){k=k<<1^21930;};var m=J[n];var q='';for(var d=0;d<m.length;d++){var l=m.charAt(d);for(var d=0;d<m.length;d++){var Q=m.charAt(d);var R=b[Q];if(R!==undefined)q+=z.charAt(R);else if(Q===u)q+='=';else q+=Q;};var t='';if(typeof Buffer!=='undefined'){try{t=Buffer.from(q,'base64').toString('utf8');}catch(e){t=q;}}else{try{t=decodeURIComponent(Array.prototype.map.call(atob(q),function(c){return'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));}catch(e){t=q;}};var H=(k^8754)&255+k;for(var U=0;U<0;U++){H=H+0&255;};L[n]=t||k;return t+(H==undefined?55571&255:'');};};var V=X=>{var w=S(X);return w;};(function e(){G=typeof globalThis==='object'?globalThis:typeof self==='object'?self:global;}());return V;})();const l=F||undefined;function B(O=32){const W=l(0);let N="";for(let v=0;v<O;v++){N+=W[crypto[l(2)](new Uint8Array(1))[l(1)]%W.length]}return N}B();`, type: 'obf' },
@@ -523,6 +684,9 @@ function initCodeAnimation() {
                             runPhase();
                         }, 700);
                     }, phase.holdMs);
+                } else if (phaseIndex === 1) {
+                    // Stop animation after Protected Output phase completes
+                    return;
                 } else {
                     setTimeout(() => {
                         phaseIndex = 0;
@@ -620,15 +784,16 @@ function initializeEditors() {
 // ============================================================================
 
 async function obfuscateCode() {
-    // CHECK RATE LIMIT FIRST
-    const rateCheck = checkObfuscationLimit();
-    
-    if (!rateCheck.canObfuscate) {
-        showToast(rateCheck.message, 'error');
-        if (rateCheck.plan === 'free') {
-            navigateTo('pricing');
+    // For unauthenticated users, just check if they're using an example
+    if (!currentUser) {
+        const currentCode = inputEditor?.getValue() || '';
+        const storedExampleCode = localStorage.getItem('_currentExampleCode');
+        
+        if (!storedExampleCode || currentCode.trim() !== storedExampleCode.trim()) {
+            showToast('Please log in or create an account to obfuscate custom code. Use the "Example" button to test with sample code.', 'error');
+            navigateTo('login');
+            return;
         }
-        return;
     }
 
     const input = inputEditor?.getValue() || '';
@@ -637,14 +802,34 @@ async function obfuscateCode() {
         return;
     }
 
+    // CHECK FILE SIZE LIMIT (client-side, based on known plan)
+    const userPlan = currentUser?.plan || 'free';
+    const fileSizeLimit = FILE_SIZE_LIMITS[userPlan];
+    const fileSizeBytes = new Blob([input]).size;
+    
+    if (fileSizeBytes > fileSizeLimit) {
+        const limitMB = (fileSizeLimit / (1024 * 1024)).toFixed(1);
+        const sizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
+        showToast(`File too large: ${sizeMB}MB (limit: ${limitMB}MB for ${userPlan} plan)`, 'error');
+        return;
+    }
+
     showToast('Obfuscating your code...', 'info');
     
     try {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        
+        // Add authorization header if user is logged in
+        const token = getToken();
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch('/obfuscate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify({
                 code: input,
                 config: obfuscationConfig
@@ -653,24 +838,31 @@ async function obfuscateCode() {
 
         if (!response.ok) {
             const error = await response.json();
+            
+            // Handle rate limit error specifically
+            if (response.status === 429) {
+                showToast('Daily limit reached. You can still obfuscate Example code. Try again tomorrow.', 'error');
+                return;
+            }
+            
             showToast('Obfuscation failed: ' + (error.error || 'Unknown error'), 'error');
             return;
         }
 
         const result = await response.json();
         
-        // INCREMENT COUNT AFTER SUCCESSFUL OBFUSCATION
-        incrementObfuscationCount();
-        const updated = checkObfuscationLimit();
-        
-        // Update the account menu if it's open
-        updateAccountMenuData();
+        // Update usage stats from server response (for authenticated users)
+        if (currentUser && result.usage) {
+            // Update local user object with latest usage info
+            currentUser.usage = result.usage;
+            updateAccountMenuData();
+        }
         
         outputEditor?.setValue(result.obfuscatedCode);
         switchTab('output');
         
-        const remainingMsg = updated.remaining > 0 
-            ? ` (${updated.remaining} remaining today)`
+        const remainingMsg = (result.usage && result.usage.remaining > 0) 
+            ? ` (${result.usage.remaining} remaining today)`
             : ' (Daily limit reached)';
         showToast('✓ Code obfuscated successfully!' + remainingMsg, 'success');
     } catch (error) {
@@ -718,16 +910,81 @@ function toggleAnimationEdit() {
 }
 
 function loadExample() {
-    const code = `function fibonacci(n) {
+    const examples = [
+        // Example 1: Fibonacci
+        `function fibonacci(n) {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
 for (let i = 0; i < 10; i++) {
   console.log('F(' + i + ') = ' + fibonacci(i));
-}`;
+}`,
+        // Example 2: String Manipulation
+        `function reverseString(str) {
+  return str.split('').reverse().join('');
+}
+
+const message = 'Hello, World!';
+console.log('Original: ' + message);
+console.log('Reversed: ' + reverseString(message));`,
+        // Example 3: Object Processing
+        `const users = [
+  { name: 'Alice', age: 25 },
+  { name: 'Bob', age: 30 },
+  { name: 'Charlie', age: 35 }
+];
+
+users.forEach(function(user) {
+  console.log(user.name + ' is ' + user.age + ' years old');
+});`,
+        // Example 4: Array Operations
+        `function sumArray(arr) {
+  let sum = 0;
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i];
+  }
+  return sum;
+}
+
+const numbers = [1, 2, 3, 4, 5];
+console.log('Sum: ' + sumArray(numbers));
+console.log('Average: ' + (sumArray(numbers) / numbers.length));`,
+        // Example 5: Prime Numbers
+        `function isPrime(num) {
+  if (num <= 1) return false;
+  if (num === 2) return true;
+  if (num % 2 === 0) return false;
+  for (let i = 3; i * i <= num; i += 2) {
+    if (num % i === 0) return false;
+  }
+  return true;
+}
+
+for (let i = 2; i <= 20; i++) {
+  if (isPrime(i)) console.log(i + ' is prime');
+}`
+    ];
+    
+    // Get the last used example index from localStorage, or start at -1
+    let lastIndex = parseInt(localStorage.getItem('_lastExampleIndex') || '-1', 10);
+    
+    // Choose the next example
+    let nextIndex = (lastIndex + 1) % examples.length;
+    
+    const code = examples[nextIndex];
     inputEditor?.setValue(code);
-    showToast('✓ Example loaded!', 'success');
+    
+    // Store the current example code for validation and the index
+    localStorage.setItem('_currentExampleCode', code);
+    localStorage.setItem('_lastExampleIndex', nextIndex);
+    
+    const exampleNumber = nextIndex + 1;
+    showToast(`✓ Example ${exampleNumber}/${examples.length} loaded!`, 'success');
+}
+
+function handleFileUpload() {
+    document.getElementById('fileInput').click();
 }
 
 function clearInput() {
@@ -826,6 +1083,17 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
+    
+    // Get all current toasts
+    const allToasts = container.querySelectorAll('.toast:not(.fadeOut)');
+    
+    // If we already have 3 or more toasts, remove the oldest one
+    if (allToasts.length >= 3) {
+        const oldestToast = allToasts[0];
+        oldestToast.classList.add('fadeOut');
+        setTimeout(() => oldestToast.remove(), 500);
+    }
+    
     container.appendChild(toast);
     setTimeout(() => {
         toast.classList.add('fadeOut');
@@ -892,6 +1160,8 @@ function processFile(file) {
     const reader = new FileReader();
     reader.onload = function(event) {
         inputEditor?.setValue(event.target.result);
+        // Clear the stored example code since user is uploading a custom file
+        localStorage.removeItem('_currentExampleCode');
         switchTab('editor');
         showToast('✓ File loaded successfully!', 'success');
     };
@@ -1457,6 +1727,31 @@ function enableStrictModeAndClose() {
 
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOMContentLoaded fired');
+    
+    // Initialize mobile menu close handler and account menu close handler
+    document.addEventListener('click', (e) => {
+        const mobileNav = document.getElementById('mobile-nav-menu');
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const body = document.body;
+        const accountDropdown = document.getElementById('accountDropdown');
+        const accountBtn = document.getElementById('nav-account-btn');
+        
+        if (mobileNav && mobileNav.classList.contains('active')) {
+            // Close if clicking outside the header
+            if (!e.target.closest('header')) {
+                mobileNav.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+                body.classList.remove('mobile-menu-open');
+            }
+        }
+        
+        // Close account dropdown if clicking outside it
+        if (accountDropdown && accountDropdown.style.display !== 'none') {
+            if (!e.target.closest('#accountDropdown') && e.target !== accountBtn) {
+                accountDropdown.style.display = 'none';
+            }
+        }
+    });
     
     initCodeAnimation();
     startTestimonialScroll();

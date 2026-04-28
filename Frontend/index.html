@@ -21,7 +21,9 @@
         <div class="header-content">
             <img src="obfusly_name.png" alt="obfusly logo" class="logo" onclick="navigateTo('home')"
                 style="cursor: pointer; height: 65px; width: auto;">
-            <nav>
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-desktop">
                 <a onclick="navigateTo('home')">Home</a>
                 <a onclick="navigateTo('obfuscation')">Obfuscate</a>
                 <a onclick="navigateTo('pricing')">Pricing</a>
@@ -31,12 +33,33 @@
                     <button class="cta-button cta-button-ghost cta-button-offset" onclick="navigateTo('register')"
                         id="nav-register-btn">Sign Up</button>
                     <button class="cta-button nav-hidden" id="nav-account-btn"
-                        onclick="navigateTo('profile')">Profile</button>
+                        onclick="showAccountMenu()">Profile</button>
                     <button class="cta-button cta-button-danger cta-button-offset nav-hidden" id="nav-logout-btn"
                         onclick="logout()">Log Out</button>
                 </div>
             </nav>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
+
+        <!-- Mobile Navigation Menu -->
+        <nav class="nav-mobile" id="mobile-nav-menu">
+            <a onclick="navigateTo('home'); toggleMobileMenu()">Home</a>
+            <a onclick="navigateTo('obfuscation'); toggleMobileMenu()">Obfuscate</a>
+            <a onclick="navigateTo('pricing'); toggleMobileMenu()">Pricing</a>
+            <a onclick="navigateTo('contact'); toggleMobileMenu()">Contact</a>
+            <div class="mobile-auth-area" id="mobile-nav-auth-area">
+                <button class="cta-button mobile-cta-button" onclick="navigateTo('login'); toggleMobileMenu()" id="mobile-nav-login-btn">Log In</button>
+                <button class="cta-button cta-button-ghost mobile-cta-button" onclick="navigateTo('register'); toggleMobileMenu()" id="mobile-nav-register-btn">Sign Up</button>
+                <button class="cta-button nav-hidden mobile-cta-button" id="mobile-nav-account-btn" onclick="navigateTo('profile'); toggleMobileMenu()">Profile</button>
+                <button class="cta-button cta-button-danger nav-hidden mobile-cta-button" id="mobile-nav-logout-btn" onclick="logout(); toggleMobileMenu()">Log Out</button>
+            </div>
+        </nav>
     </header>
 
     <!-- HOME PAGE -->
@@ -54,7 +77,7 @@
                     <p class="hero-kicker">Production-grade obfuscation</p>
                     <h1>Secure Your Code with Next-Gen Obfuscation</h1>
                     <p>Protect your JavaScript from reverse engineering with industry-leading obfuscation technology.
-                        Keep your intellectual property safe while maintaining optimized performance.</p>
+                        Keep your intellectual property safe while maintaining performance.</p>
                     <div class="hero-metrics">
                         <div class="hero-metric">
                             <strong>7-Layer</strong>
@@ -289,7 +312,7 @@
                         <!-- Testimonial 1 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"TEXT"</p>
+                            <p class="testimonial-text">"Want to support our growth? Contact us for a chance to get your review featured here!"</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -307,7 +330,7 @@
                         <!-- Testimonial 2 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"TEXT"</p>
+                            <p class="testimonial-text">"Help us grow! Share your Obfusly experience and inspire other developers."</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -345,7 +368,7 @@
                         <!-- Testimonial 4 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"TEXT"</p>
+                            <p class="testimonial-text">"Be part of our success story. Reach out to have your testimonial featured!"</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -363,7 +386,7 @@
                         <!-- Testimonial 5 -->
                         <div class="testimonial-card">
                             <div class="testimonial-stars">★★★★★</div>
-                            <p class="testimonial-text">"TEXT"</p>
+                            <p class="testimonial-text">"Your feedback matters. Contact our team to share how Obfusly has helped you!"</p>
                             <div class="testimonial-author">
                                 <div class="author-avatar">
                                     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -418,7 +441,7 @@
                         <ul class="pricing-features">
                             <li>50 obfuscations/day</li>
                             <li>All Free features</li>
-                            <li>Control flow obfuscation</li>
+                            <li>......................</li>
                             <li>Email support</li>
                             <li>Monthly updates</li>
                         </ul>
@@ -470,6 +493,12 @@
 
                 <div class="contact-grid">
                     <div class="contact-form">
+                        <div class="contact-info">
+                            <div class="info-item">
+                                <h3>Email</h3>
+                                <p>support@obfusly.com</p>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label>Full Name</label>
                             <input type="text" placeholder="John Doe">
@@ -487,25 +516,6 @@
                             <textarea placeholder="Tell us your thoughts..."></textarea>
                         </div>
                         <button class="btn-primary btn-block" type="button">Send Message</button>
-                    </div>
-
-                    <div class="contact-info">
-                        <div class="info-item">
-                            <h3>Email</h3>
-                            <p>support@obfusly.dev</p>
-                        </div>
-                        <div class="info-item">
-                            <h3>Phone</h3>
-                            <p>+1 (555) 123-4567</p>
-                        </div>
-                        <div class="info-item">
-                            <h3>Address</h3>
-                            <p>123 Tech Street, San Francisco, CA 94105</p>
-                        </div>
-                        <div class="info-item">
-                            <h3>Hours</h3>
-                            <p>Monday - Friday: 9AM - 6PM PST</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -538,23 +548,6 @@
                             </span>
                             Editor
                         </button>
-                        <button class="tab-button" onclick="switchTab('upload')">
-                            <span class="tab-icon">
-                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                    <g id="SVGRepo_iconCarrier">
-                                        <path d="M18.5 20L18.5 14M18.5 14L21 16.5M18.5 14L16 16.5" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                        <path
-                                            d="M12 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12 7H19C20.1046 7 21 7.89543 21 9V11"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round"></path>
-                                    </g>
-                                </svg>
-                            </span>
-                            Upload
-                        </button>
                         <button class="tab-button" onclick="switchTab('output')">
                             <span class="tab-icon">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -579,6 +572,8 @@
                                 <div class="editor-header">
                                     <h3>Source Code</h3>
                                     <div class="editor-actions">
+                                        <button class="btn-small" onclick="handleFileUpload()"
+                                            title="Upload file">Upload</button>
                                         <button class="btn-small" onclick="loadExample()"
                                             title="Load example code">Example</button>
                                         <button class="btn-small" onclick="clearInput()"
@@ -607,46 +602,8 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Upload Tab -->
-                    <div id="upload-tab" class="tab-content">
-                        <div class="upload-workspace">
-                            <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)"
-                                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
-                                onclick="document.getElementById('fileInput').click()">
-                                <div class="upload-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
-                                        </g>
-                                        <g id="SVGRepo_iconCarrier">
-                                            <path d="M18.5 20L18.5 14M18.5 14L21 16.5M18.5 14L16 16.5"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round"></path>
-                                            <path
-                                                d="M12 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5H9.58579C9.851 5 10.1054 5.10536 10.2929 5.29289L12 7H19C20.1046 7 21 7.89543 21 9V11"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round"></path>
-                                        </g>
-                                    </svg>
-                                </div>
-                                <h3>Drop or Click to Upload</h3>
-                                <p>Select a JavaScript file to obfuscate</p>
-                                <input type="file" id="fileInput" accept=".js,.jsx" style="display: none;"
-                                    onchange="handleFileSelect(event)">
-                                <div class="upload-info">
-                                    <h4>Supported Formats</h4>
-                                    <ul>
-                                        <li>JavaScript (.js)</li>
-                                        <li>Common JavaScript (.cjs)</li>
-                                        <li>ECMAScript Modules (.mjs)</li>
-                                    </ul>
-                                    <h4>Max File Size</h4>
-                                    <p>Up to 10MB</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <input type="file" id="fileInput" accept=".js,.jsx" style="display: none;"
+                        onchange="handleFileSelect(event)">
 
                     <!-- Output Tab -->
                     <div id="output-tab" class="tab-content">
@@ -1686,7 +1643,7 @@
                 <h3>4. Accounts</h3>
                 <p>You are responsible for maintaining the confidentiality of your account credentials and for all
                     activity under your account. Notify us immediately at <a
-                        href="mailto:support@obfusly.dev">support@obfusly.dev</a> if you suspect unauthorized access.
+                        href="mailto:support@obfusly.com">support@obfusly.com</a> if you suspect unauthorized access.
                 </p>
 
                 <h3>5. Subscriptions & Billing</h3>
@@ -1722,7 +1679,7 @@
 
                 <h3>12. Contact</h3>
                 <p>For questions about these Terms, contact us at <a
-                        href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+                        href="mailto:support@obfusly.com">support@obfusly.com</a>.</p>
             </div>
         </section>
     </div>
@@ -1766,15 +1723,15 @@
 
                 <h3>4. Data Retention</h3>
                 <p>Account data is retained for as long as your account is active. You may request deletion at any time
-                    by emailing <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+                    by emailing <a href="mailto:support@obfusly.com">support@obfusly.com</a>.</p>
 
                 <h3>5. Security</h3>
                 <p>Passwords are stored as bcrypt hashes. Data is transmitted over HTTPS. We apply industry-standard
-                    security measures, however no system is 100% secure.</p>
+                    security measures.</p>
 
                 <h3>6. Your Rights</h3>
                 <p>Depending on your jurisdiction, you may have rights to access, correct, or delete your personal data.
-                    Contact us at <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> to exercise these rights.
+                    Contact us at <a href="mailto:support@obfusly.com">support@obfusly.com</a> to exercise these rights.
                 </p>
 
                 <h3>7. Cookies</h3>
@@ -1790,7 +1747,7 @@
                     acceptance.</p>
 
                 <h3>10. Contact</h3>
-                <p>Privacy inquiries: <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+                <p>Privacy inquiries: <a href="mailto:support@obfusly.com">support@obfusly.com</a>.</p>
             </div>
         </section>
     </div>
@@ -1809,7 +1766,7 @@
                     case-by-case basis.</p>
 
                 <h3>2. How to Request a Refund</h3>
-                <p>Email <a href="mailto:support@obfusly.dev">support@obfusly.dev</a> with the subject line "Refund
+                <p>Email <a href="mailto:support@obfusly.com">support@obfusly.com</a> with the subject line "Refund
                     Request" and include:</p>
                 <ul>
                     <li>Your account email address.</li>
@@ -1835,7 +1792,7 @@
                     within the 7-day window.</p>
 
                 <h3>6. Contact</h3>
-                <p>Questions? Email <a href="mailto:support@obfusly.dev">support@obfusly.dev</a>.</p>
+                <p>Questions? Email <a href="mailto:support@obfusly.com">support@obfusly.com</a>.</p>
             </div>
         </section>
     </div>
@@ -1854,7 +1811,7 @@
                     </button>
                     <div class="faq-answer">
                         <p>Obfuscation is the process of transforming readable source code into a functionally identical
-                            but highly unreadable form. It makes reverse engineering, IP theft, and tampering
+                            but highly unreadable form. It makes reverse engineering, and tampering
                             significantly harder without impacting runtime behaviour.</p>
                     </div>
                 </div>
@@ -1877,8 +1834,7 @@
                     </button>
                     <div class="faq-answer">
                         <p>While no obfuscation is theoretically unbreakable, Obfusly employs multiple independent
-                            layers — identifier mangling, string array encoding, integer concealment, control-flow
-                            obfuscation, and integrity checks — making automated deobfuscation extremely time-consuming
+                            layers — identifier mangling, string array encoding, integer concealment, and integrity checks — making automated deobfuscation extremely time-consuming
                             and expensive to reverse engineer.</p>
                     </div>
                 </div>
@@ -1911,7 +1867,7 @@
                     <div class="faq-answer">
                         <p>Log in to your account, go to your Account page, and click "Upgrade Plan" — you can manage or
                             cancel your Stripe subscription from there. Alternatively, email <a
-                                href="mailto:support@obfusly.dev">support@obfusly.dev</a> and we'll handle it for you.
+                                href="mailto:support@obfusly.com">support@obfusly.com</a> and we'll handle it for you.
                         </p>
                     </div>
                 </div>
@@ -1933,7 +1889,7 @@
                     <div class="faq-answer">
                         <p>Yes — Professional and Enterprise plan subscribers get access to the Obfusly REST API,
                             allowing you to integrate obfuscation directly into your CI/CD pipeline. Contact <a
-                                href="mailto:support@obfusly.dev">support@obfusly.dev</a> for API documentation and
+                                href="mailto:support@obfusly.com">support@obfusly.com</a> for API documentation and
                             keys.</p>
                     </div>
                 </div>
@@ -1978,8 +1934,7 @@
             <div class="footer-section">
                 <h4>Connect</h4>
                 <ul>
-                    <li><a href="mailto:support@obfusly.dev">Email Support</a></li>
-                    <li><a href="https://twitter.com/obfusly" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+                    <li><a href="mailto:support@obfusly.com">Email Support</a></li>
                     <li><a href="https://github.com/obfusly" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                     <li><a href="https://discord.gg/obfusly" target="_blank" rel="noopener noreferrer">Discord</a></li>
                 </ul>
