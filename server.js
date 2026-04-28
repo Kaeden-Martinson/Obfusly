@@ -129,7 +129,17 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 app.get('/api/auth/me', requireAuth, (req, res) => {
     const user = db.findById(req.user.sub);
     if (!user) return res.status(404).json({ error: 'User not found.' });
-    res.json({ id: user.id, name: user.name, email: user.email, plan: user.plan, createdAt: user.createdAt });
+    res.json({ 
+        id: user.id, 
+        name: user.name, 
+        email: user.email, 
+        plan: user.plan, 
+        createdAt: user.createdAt,
+        subscriptionStatus: user.subscriptionStatus || null,
+        nextBillingDate: user.nextBillingDate || null,
+        planExpiryDate: user.planExpiryDate || null,
+        renewalAmount: user.renewalAmount || null
+    });
 });
 
 // ── Stripe payment routes ─────────────────────────────────────────────────────
@@ -183,6 +193,31 @@ app.post('/api/webhook/stripe', (req, res) => {
     res.json({ received: true });
 });
 
+// Cancel subscription endpoint
+app.post('/api/subscription/cancel', requireAuth, (req, res) => {
+    const user = db.findById(req.user.sub);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    
+    if (!user.plan || user.plan === 'free') {
+        return res.status(400).json({ error: 'User is not on a paid plan.' });
+    }
+
+    // Cancel the subscription (keep paid plan active until planExpiryDate)
+    const updated = db.cancelSubscription(req.user.sub);
+    
+    if (!updated) {
+        return res.status(500).json({ error: 'Failed to cancel subscription.' });
+    }
+    
+    console.log(`[SUBSCRIPTION] User ${req.user.sub} cancelled ${user.plan} plan. Active until ${updated.planExpiryDate}`);
+    
+    res.json({ 
+        success: true, 
+        message: 'Subscription cancelled. Your plan remains active until ' + new Date(updated.planExpiryDate).toLocaleDateString(),
+        user: updated
+    });
+});
+
 // ── Utility helpers ───────────────────────────────────────────────────────────
 function deepMerge(target, source) {
     for (const key of Object.keys(source)) {
@@ -222,6 +257,7 @@ async function handleObfuscation(req, res) {
         return;
     }
     try {
+        console.log(incomingConfig)
         if (incomingConfig && typeof incomingConfig === 'object') deepMerge(runtimeConfig, incomingConfig);
         const [obfuscatedCode, windowName, previousDeclarationMapping] = __obfuscator_1.obfuscateEntireSource(code);
         const objectObfuscatedCode = await __obfuscator_2.obfuscateProperties( obfuscatedCode, windowName, previousDeclarationMapping);

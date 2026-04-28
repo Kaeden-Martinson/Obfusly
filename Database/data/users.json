@@ -2,9 +2,13 @@
   {
     "id": "1ed158a8-238f-4ae4-b2d9-59cf882fd653",
     "name": "Test User",
-    "email": "test@example.com",
-    "passwordHash": "$2b$12$.0oCDFAVq5hoH5XR2IEfouNTKPtZw9lXAFpS8KZ63SJiY/MEIfyOO",
-    "plan": "free",
-    "createdAt": "2026-04-23T04:45:24.512Z"
+    "email": "test@test.com",
+    "passwordHash": "$2b$12$9cAieNufkh0AAw73WqxayuUJ7qS92BN6aaM4CJ9mTwA/Xmb12uo1K",
+    "plan": "starter",
+    "createdAt": "2026-04-23T04:45:24.512Z",
+    "subscriptionStatus": "active",
+    "nextBillingDate": "2026-05-27T00:00:00.000Z",
+    "planExpiryDate": "2026-05-27T00:00:00.000Z",
+    "renewalAmount": 29
   }
 ]

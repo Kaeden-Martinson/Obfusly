@@ -40,4 +40,24 @@ module.exports = {
         save(users);
         return users[idx];
     },
+    updateSubscriptionStatus(id, status) {
+        const users = load();
+        const idx = users.findIndex(u => u.id === id);
+        if (idx === -1) return null;
+        users[idx].subscriptionStatus = status;
+        save(users);
+        return users[idx];
+    },
+    cancelSubscription(id) {
+        const users = load();
+        const idx = users.findIndex(u => u.id === id);
+        if (idx === -1) return null;
+        
+        // Mark as cancelled but keep plan active until expiry
+        users[idx].subscriptionStatus = 'cancelled';
+        users[idx].cancelledAt = new Date().toISOString();
+        
+        save(users);
+        return users[idx];
+    },
 };

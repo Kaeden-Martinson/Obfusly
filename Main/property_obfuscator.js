@@ -156,6 +156,8 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
     estraverse.replace(ast, {
         enter(node) {
+            if (node.type === "ImportDeclaration") if (node.source && node.source.type === "Literal") node.source.dontObfuscate = true;
+
             if (node.type === "MemberExpression") {
                 if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, (!node.computed ? encodeStringsRandom(node.property.name).raw : node.property.type === "Identifier" && node.computed ? node.property.name : node.property.type === "Literal" ? encodeStringsRandom(node.property.value).raw : sourceCode.slice(node.property.start, node.property.end))]);
                 let properties = [...recursiveCallObject(node, [])].reverse();
@@ -163,7 +165,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
                 return createStringProperty(node, properties);
             };
 
-            if (node.type === "Literal" && typeof node.value === "string") {
+            if (node.type === "Literal" && typeof node.value === "string" && !node.dontObfuscate) {
                 node.name = encodeStringsRandom(node.value).raw;
                 node.type = "Identifier";
             } else if (node.type === "Literal" && typeof node.value === "number" && Math.floor(node.value) == node.value) {

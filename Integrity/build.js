@@ -168,7 +168,7 @@ function createIntegrity(code, previousDeclarationMapping, declarationMapping, e
   const tosCacheCode = `var ${tosCacheName}=new Map();function ${cachedTosName}(${tosCacheParam}){if(${tosCacheName}.has(${tosCacheParam}))return ${tosCacheName}.get(${tosCacheParam});var ${tosCacheResult}=${verifyCallName}(${tosCacheParam});${tosCacheName}.set(${tosCacheParam},${tosCacheResult});return ${tosCacheResult}}`;
 
   // ======================== Parse top-level functions ========================
-  const ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "script", locations: false });
+  const ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "module", locations: false });
   const surfaceFunctions = [];
 
   function digestSelfInvokers(parent) {

@@ -44,6 +44,4 @@ var toRefractal = (originalNumber, declarationMapping) => {
     return `((~'${roundedSqrt - 1}')**~-(${(config.numbers.strategy.useBaseIntegers ? declarationMapping.get(`variable_numbers_${BigNumber}`) : useConfig(BigNumber))} ${LeftOver < 0 ? "+" : "-"} ${config.numbers.strategy.useBaseIntegers ? declarationMapping.get(`variable_numbers_${Math.abs(LeftOver)}`) : useConfig(Math.abs(LeftOver))})+${(remainder < 100 && config.numbers.strategy.useBaseIntegers ? declarationMapping.get(`variable_numbers_${remainder}`) : useConfig(remainder))})`;
 };
 
-console.log(toRefractal(15, new Map())); // Warm up function to populate any caches
-
 module.exports = { toRefractal }; 

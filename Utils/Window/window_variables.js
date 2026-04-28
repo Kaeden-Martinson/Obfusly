@@ -5,7 +5,7 @@ const defaultedValues = ['false', 'true', 'undefined', 'null', 'Infinity', 'NaN'
 const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'String', 'decodeURIComponent', 'encodeURIComponent',
     'arguments', 'window', 'global', 'Function', 'eval', 'Array',
-    'document', 'Node', 'Document', 'WebSocket', 'fetch', 'Set',
+    'document', 'Node', 'Document', 'fetch', 'Set',
     'Map', 'RegExp', 'Date', 'Image', 'Promise', 'Uint16Array',
     'Uint8Array', 'location', 'Math', 'navigator',
     'console', 'Object', 'setTimeout', 'setInterval', 'clearTimeout',
@@ -18,11 +18,12 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'navigation', 'innerHeight', 'innerWidth', 'devicePixelRatio', 'caches',
     'print', 'prompt', 'origin', 'open', 'outerHeight', 'outerWidth', 'pageXOffset',
     'pageYOffset', 'performance', 'postMessage', 'screenLeft', 'screenTop', 'screenX',
-    'screenY', 'scroll', 'stop', 'top', 'BigInt', 'Proxy', 'requestAnimationFrame', 'crypto',
+    'screenY', 'scroll', 'stop', 'top', 'BigInt', 'Proxy', 'requestAnimationFrame',
     'decodeURI', 'fileUpload', 'elements', 'embed', 'defaultStatus', 'parseFloat', 'Symbol',
     'Float32Array', 'Float64Array', 'BigUint64Array', 'Uint32Array', 'BigInt64Array', '$',
     'XMLHttpRequest', 'URLSearchParams', 'WeakMap', 'WeakSet', 'URL',
-    'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver', 'Path2D', 'inner'
+    'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver', 'Path2D', 'inner',
+    'scrollX', 'scrollY', 'WebSocket', 'crypto'
 ];
 
 const ignoreVariables = ['parent', 'window', 'arguments', 'module', 'define', 'exports', 'require', 'chrome'];

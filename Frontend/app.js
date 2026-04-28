@@ -12,6 +12,69 @@ function getToken() { return localStorage.getItem('obfusly_token'); }
 function setToken(t) { localStorage.setItem('obfusly_token', t); }
 function clearToken() { localStorage.removeItem('obfusly_token'); }
 
+// ── Rate Limiting for Obfuscations ─────────────────────────────────────────
+const OBFUSCATION_LIMITS = {
+    free: 3,
+    starter: 50,
+    professional: 500,
+    enterprise: Infinity
+};
+
+function getUserPlan() {
+    return currentUser?.plan || 'free';
+}
+
+function getTodayObfuscationCount() {
+    const key = 'obfuscationStats_' + new Date().toDateString();
+    const stored = localStorage.getItem(key);
+    
+    if (!stored) {
+        return { count: 0, resetTime: getNextResetTime() };
+    }
+    
+    return JSON.parse(stored);
+}
+
+function incrementObfuscationCount() {
+    const key = 'obfuscationStats_' + new Date().toDateString();
+    const current = getTodayObfuscationCount();
+    const updated = { 
+        count: current.count + 1, 
+        resetTime: getNextResetTime() 
+    };
+    
+    localStorage.setItem(key, JSON.stringify(updated));
+    return updated;
+}
+
+function checkObfuscationLimit() {
+    const plan = getUserPlan();
+    const limit = OBFUSCATION_LIMITS[plan];
+    const current = getTodayObfuscationCount();
+    
+    const canObfuscate = current.count < limit;
+    const remaining = Math.max(0, limit - current.count);
+    
+    return {
+        canObfuscate,
+        remaining,
+        limit,
+        plan,
+        used: current.count,
+        message: canObfuscate 
+            ? `You have ${remaining} obfuscations remaining today`
+            : `Daily limit reached. ${plan === 'free' ? 'Upgrade to continue.' : 'Please try again tomorrow.'}`
+    };
+}
+
+function getNextResetTime() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return tomorrow.toISOString();
+}
+
 function updateNavAuth() {
     const loginBtn    = document.getElementById('nav-login-btn');
     const registerBtn = document.getElementById('nav-register-btn');
@@ -30,6 +93,179 @@ function updateNavAuth() {
         accountBtn.style.display  = 'none';
         logoutBtn.style.display   = 'none';
     }
+}
+
+function updateProfilePage() {
+    if (!currentUser) return;
+    
+    const rateCheck = checkObfuscationLimit();
+    const resetTime = new Date();
+    resetTime.setUTCHours(24, 0, 0, 0);
+    const resetHour = resetTime.getUTCHours() === 0 ? 12 : (resetTime.getUTCHours() > 12 ? resetTime.getUTCHours() - 12 : resetTime.getUTCHours());
+    const resetAMPM = resetTime.getUTCHours() >= 12 ? 'PM' : 'AM';
+    
+    // Update user info
+    document.getElementById('profileUserName').textContent = currentUser.name;
+    document.getElementById('profileUserEmail').textContent = currentUser.email;
+    document.getElementById('profilePlan').textContent = (currentUser.plan || 'Free').charAt(0).toUpperCase() + (currentUser.plan || 'free').slice(1);
+    
+    // Member since date
+    const memberDate = new Date(currentUser.createdAt || new Date());
+    document.getElementById('profileMemberSince').textContent = memberDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // Update obfuscation stats
+    document.getElementById('profileRemaining').textContent = rateCheck.remaining;
+    document.getElementById('profileLimit').textContent = rateCheck.limit === Infinity ? '∞' : rateCheck.limit;
+    
+    const percentage = rateCheck.limit === Infinity ? 0 : (rateCheck.used / rateCheck.limit) * 100;
+    document.getElementById('profileUsedPercent').textContent = Math.round(percentage) + '%';
+    document.getElementById('profileProgressBar').style.width = percentage + '%';
+    
+    // Reset time
+    document.getElementById('profileResetTime').textContent = resetHour + ':00 ' + resetAMPM;
+    
+    // Highlight current plan in the "Daily Limits by Plan" section
+    const userPlan = (currentUser.plan || 'free').toLowerCase();
+    const planBoxes = ['free', 'starter', 'professional'];
+    
+    planBoxes.forEach(plan => {
+        const planBox = document.getElementById('planBox-' + plan);
+        if (planBox) {
+            if (plan === userPlan) {
+                // Highlight current plan
+                planBox.style.background = 'rgba(46, 107, 255, 0.2)';
+                planBox.style.border = '2px solid var(--accent-primary)';
+                planBox.style.boxShadow = '0 0 12px rgba(46, 107, 255, 0.3)';
+            } else {
+                // Gray out other plans
+                planBox.style.background = 'rgba(100, 100, 100, 0.1)';
+                planBox.style.border = '1px solid rgba(100, 100, 100, 0.2)';
+                planBox.style.opacity = '0.6';
+            }
+        }
+    });
+    
+    // Show subscription status section only for paid plans
+    const subSection = document.getElementById('subscriptionStatusSection');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    
+    if (currentUser.plan && currentUser.plan !== 'free') {
+        // Show subscription section for paid plans
+        subSection.style.display = 'block';
+        upgradeBtn.textContent = 'Change Plan';
+        
+        // Update subscription details
+        document.getElementById('profileSubStatus').textContent = currentUser.subscriptionStatus || 'Active';
+        
+        // Format next billing date
+        if (currentUser.nextBillingDate) {
+            const billingDate = new Date(currentUser.nextBillingDate);
+            document.getElementById('profileNextBillingDate').textContent = billingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        } else {
+            document.getElementById('profileNextBillingDate').textContent = '—';
+        }
+        
+        // Format plan expiry date
+        if (currentUser.planExpiryDate) {
+            const expiryDate = new Date(currentUser.planExpiryDate);
+            document.getElementById('profilePlanExpiryDate').textContent = expiryDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        } else {
+            document.getElementById('profilePlanExpiryDate').textContent = '—';
+        }
+        
+        // Format renewal amount
+        if (currentUser.renewalAmount) {
+            document.getElementById('profileRenewalAmount').textContent = '$' + currentUser.renewalAmount.toFixed(2) + '/month';
+        } else {
+            document.getElementById('profileRenewalAmount').textContent = '—';
+        }
+    } else {
+        // Hide subscription section for free plan
+        subSection.style.display = 'none';
+        upgradeBtn.textContent = 'Upgrade Plan';
+    }
+}
+
+function showCancelSubModal() {
+    document.getElementById('cancelSubModal').style.display = 'flex';
+}
+
+function closeCancelSubModal() {
+    document.getElementById('cancelSubModal').style.display = 'none';
+}
+
+async function confirmCancelSubscription() {
+    if (!currentUser) return;
+    
+    try {
+        const response = await fetch('/api/subscription/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            showToast('Failed to cancel subscription: ' + (error.error || 'Unknown error'), 'error');
+            return;
+        }
+
+        // Refresh user data
+        await restoreSession();
+        closeCancelSubModal();
+        updateProfilePage();
+        
+        showToast('✓ Subscription cancelled. You\'ll keep your benefits until the end of your billing cycle.', 'success');
+    } catch (error) {
+        showToast('Error: ' + error.message, 'error');
+        console.error('Cancellation error:', error);
+    }
+}
+
+function handlePricingClick(plan) {
+    console.log('Pricing click:', plan);
+    
+    if (!currentUser) {
+        // Not logged in, redirect to login
+        console.log('Not logged in, redirecting to login');
+        showToast('Please log in to proceed', 'info');
+        setTimeout(() => navigateTo('login'), 500);
+        return;
+    }
+    
+    // User is logged in, check if they already have this plan
+    const userPlan = (currentUser.plan || 'free').toLowerCase();
+    console.log('User plan:', userPlan, 'Selected plan:', plan);
+    
+    if (userPlan === plan.toLowerCase()) {
+        showToast('You already have the ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan', 'info');
+        return;
+    }
+    
+    // Different plan, proceed to checkout
+    startCheckout(plan);
+}
+
+function startCheckout(plan) {
+    console.log('Starting checkout for:', plan);
+    
+    // For free plan, just show a message
+    if (plan === 'free') {
+        showToast('You\'re on the Free plan! Continue enjoying 3 obfuscations per day.', 'success');
+        return;
+    }
+    
+    // For paid plans, redirect to Stripe checkout
+    showToast('Redirecting to payment...', 'info');
+    // TODO: Uncomment when ready to integrate Stripe
+    // window.location.href = `/checkout?plan=${plan}&token=${localStorage.getItem('token')}`;
+    
+    // For now, show a message
+    setTimeout(() => {
+        showToast('Checkout for ' + plan + ' plan coming soon!', 'success');
+    }, 1000);
 }
 
 async function restoreSession() {
@@ -340,6 +576,7 @@ function navigateTo(pageName) {
     document.getElementById(pageName).classList.add('active');
     updateFooterVisibility(pageName);
     if (pageName === 'obfuscation' && !inputEditor) initializeEditors();
+    if (pageName === 'profile') updateProfilePage();
     window.scrollTo(0, 0);
 }
 
@@ -383,6 +620,17 @@ function initializeEditors() {
 // ============================================================================
 
 async function obfuscateCode() {
+    // CHECK RATE LIMIT FIRST
+    const rateCheck = checkObfuscationLimit();
+    
+    if (!rateCheck.canObfuscate) {
+        showToast(rateCheck.message, 'error');
+        if (rateCheck.plan === 'free') {
+            navigateTo('pricing');
+        }
+        return;
+    }
+
     const input = inputEditor?.getValue() || '';
     if (!input.trim()) {
         showToast('Please enter some code first', 'error');
@@ -410,9 +658,21 @@ async function obfuscateCode() {
         }
 
         const result = await response.json();
+        
+        // INCREMENT COUNT AFTER SUCCESSFUL OBFUSCATION
+        incrementObfuscationCount();
+        const updated = checkObfuscationLimit();
+        
+        // Update the account menu if it's open
+        updateAccountMenuData();
+        
         outputEditor?.setValue(result.obfuscatedCode);
         switchTab('output');
-        showToast('✓ Code obfuscated successfully!', 'success');
+        
+        const remainingMsg = updated.remaining > 0 
+            ? ` (${updated.remaining} remaining today)`
+            : ' (Daily limit reached)';
+        showToast('✓ Code obfuscated successfully!' + remainingMsg, 'success');
     } catch (error) {
         showToast('Error: ' + error.message, 'error');
         console.error('Obfuscation error:', error);
@@ -621,8 +881,8 @@ function handleFileSelect(e) {
 }
 
 function processFile(file) {
-    if (!file.name.endsWith('.js') && !file.name.endsWith('.jsx')) {
-        showToast('Only .js and .jsx files are supported', 'error');
+    if (!file.name.endsWith('.js') && !file.name.endsWith('.cjs') && !file.name.endsWith('.mjs')) {
+        showToast('Only .js, .cjs, and .mjs files are supported', 'error');
         return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -775,6 +1035,14 @@ function initCustomDropdowns() {
                 if (hiddenSelect) {
                     hiddenSelect.value = value;
                     updateConfigFromUI();
+                    
+                    // Show module recommendation modal if selecting Node.js target and Strict Mode is not already enabled
+                    if (hiddenSelect.id === 'target' && value === 'node') {
+                        const strictModeCheckbox = document.getElementById('strictMode');
+                        if (strictModeCheckbox && !strictModeCheckbox.checked) {
+                            showModuleModal();
+                        }
+                    }
                 }
                 
                 // Close menu
@@ -1153,10 +1421,43 @@ function updateDistributionDisplay() {
 }
 
 // ============================================================================
+// MODULE TARGET STRICT MODE RECOMMENDATION
+// ============================================================================
+
+function showModuleModal() {
+    const modal = document.getElementById('moduleStrictModeModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeModuleModal() {
+    const modal = document.getElementById('moduleStrictModeModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function enableStrictModeAndClose() {
+    // Enable strict mode
+    const strictModeCheckbox = document.getElementById('strictMode');
+    if (strictModeCheckbox) {
+        strictModeCheckbox.checked = true;
+        // Trigger change event to update config
+        strictModeCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    
+    // Close modal
+    closeModuleModal();
+}
+
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('DOMContentLoaded fired');
+    
     initCodeAnimation();
     startTestimonialScroll();
     initCustomDropdowns();
@@ -1184,6 +1485,43 @@ document.addEventListener('DOMContentLoaded', async function() {
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
+        });
+    }
+
+    // Attach pricing button listeners
+    console.log('Looking for pricing buttons...');
+    const freeBtn = document.getElementById('freeBtn');
+    const starterBtn = document.getElementById('starterBtn');
+    const professionalBtn = document.getElementById('professionalBtn');
+    
+    console.log('freeBtn:', freeBtn);
+    console.log('starterBtn:', starterBtn);
+    console.log('professionalBtn:', professionalBtn);
+    
+    if (freeBtn) {
+        console.log('Attaching listener to freeBtn');
+        freeBtn.addEventListener('click', function(e) {
+            console.log('FREE BUTTON CLICKED');
+            e.preventDefault();
+            handlePricingClick('free');
+        });
+    }
+    
+    if (starterBtn) {
+        console.log('Attaching listener to starterBtn');
+        starterBtn.addEventListener('click', function(e) {
+            console.log('STARTER BUTTON CLICKED');
+            e.preventDefault();
+            handlePricingClick('starter');
+        });
+    }
+    
+    if (professionalBtn) {
+        console.log('Attaching listener to professionalBtn');
+        professionalBtn.addEventListener('click', function(e) {
+            console.log('PROFESSIONAL BUTTON CLICKED');
+            e.preventDefault();
+            handlePricingClick('professional');
         });
     }
 
