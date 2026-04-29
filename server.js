@@ -533,8 +533,8 @@ async function startServer() {
             process.exit(1);
         }
 
-        // await mongoManager.initDatabase();
-        // console.log('✓ MongoDB connected successfully');
+        await mongoManager.initDatabase();
+        console.log('✓ MongoDB connected successfully');
 
         app.listen(PORT, () => {
             console.log(`🚀 Server running at http://localhost:${PORT}`);
