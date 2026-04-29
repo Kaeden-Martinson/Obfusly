@@ -6,10 +6,10 @@ const config = {
 
     // ========== NUMBERS ==========
     numbers: {
-        enabled: true,
+        enabled: false,
         
         strategy: {
-            useCalculator: true,       // Runtime decoding with XOR/arithmetic
+            useCalculator: false,       // Runtime decoding with XOR/arithmetic
             useBaseIntegers: false,     // Precomputed lookup tables
             calculateStrength: 3,      // Decoder complexity (1-5)
         },
@@ -58,10 +58,10 @@ const config = {
 
     // ========== PROTECTION ==========
     protection: {
-        integrityChecks: true,        // Detect code tampering
+        integrityChecks: false,        // Detect code tampering
         antiDebugger: false,          // Anti-debugging measures
         disableConsole: false,        // Remove console.log calls
-        breakASTs: true,              // Use placeholders (AST optimization)
+        breakASTs: false,              // Use placeholders (AST optimization)
     },
 
     // ========== OUTPUT ==========
@@ -209,4 +209,64 @@ Object.defineProperty(config, 'target', {
     set: (v) => { config.output.target = v; }
 });
 
+// ============================================================================
+// DYNAMIC CONFIG MERGING
+// Allows runtime config updates without refactoring all function signatures
+// ============================================================================
+
+// Store original defaults for resetting per-request
+const DEFAULTS = JSON.parse(JSON.stringify({
+    identifiers: config.identifiers,
+    numbers: config.numbers,
+    strings: config.strings,
+    globals: config.globals,
+    protection: config.protection,
+    output: config.output
+}));
+
+function mergeConfig(incomingConfig) {
+    if (!incomingConfig || typeof incomingConfig !== 'object') {
+        return;
+    }
+    
+    const deepMerge = (target, source) => {
+        for (const key in source) {
+            if (source.hasOwnProperty(key)) {
+                if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                    if (!target[key] || typeof target[key] !== 'object') {
+                        target[key] = {};
+                    }
+                    deepMerge(target[key], source[key]);
+                } else {
+                    target[key] = source[key];
+                }
+            }
+        }
+    };
+    
+    deepMerge(config, incomingConfig);
+}
+
+function resetToDefaults() {
+    const deepCopy = (obj) => {
+        if (obj === null || typeof obj !== 'object') return obj;
+        const copy = Array.isArray(obj) ? [] : {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                copy[key] = deepCopy(obj[key]);
+            }
+        }
+        return copy;
+    };
+    
+    config.identifiers = deepCopy(DEFAULTS.identifiers);
+    config.numbers = deepCopy(DEFAULTS.numbers);
+    config.strings = deepCopy(DEFAULTS.strings);
+    config.globals = deepCopy(DEFAULTS.globals);
+    config.protection = deepCopy(DEFAULTS.protection);
+    config.output = deepCopy(DEFAULTS.output);
+}
+
 module.exports = config;
+module.exports.mergeConfig = mergeConfig;
+module.exports.resetToDefaults = resetToDefaults;

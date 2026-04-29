@@ -5,21 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Obfusly — Next-Gen Code Obfuscation & Security</title>
-    <link rel="icon" type="image/png" sizes="512x512" href="obfusly_icon.png">
-    <link rel="shortcut icon" href="obfusly_icon.png">
-    <link rel="apple-touch-icon" href="obfusly_icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="Images/obfusly_icon.png">
+    <link rel="shortcut icon" href="Images/obfusly_icon.png">
+    <link rel="apple-touch-icon" href="Images/obfusly_icon.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="CSS/style.css">
 </head>
 
 <body>
     <!-- HEADER -->
     <header>
         <div class="header-content">
-            <img src="obfusly_name.png" alt="obfusly logo" class="logo" onclick="navigateTo('home')"
+            <img src="Images/obfusly_name_light.png" alt="obfusly logo" class="logo" onclick="navigateTo('home')"
                 style="cursor: pointer; height: 65px; width: auto;">
             
             <!-- Desktop Navigation -->
@@ -1386,7 +1386,7 @@
             <div class="auth-card">
                 <span class="section-kicker auth-kicker">Login</span>
                 <div class="auth-logo" onclick="navigateTo('home')">
-                    <img src="obfusly_name.png" alt="obfusly" class="auth-brand-image">
+                    <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
                 </div>
                 <h2>Welcome Back</h2>
                 <p class="auth-sub">Sign in to your Obfusly account</p>
@@ -1417,7 +1417,7 @@
             <div class="auth-card">
                 <span class="section-kicker auth-kicker">Create</span>
                 <div class="auth-logo" onclick="navigateTo('home')">
-                    <img src="obfusly_name.png" alt="obfusly" class="auth-brand-image">
+                    <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
                 </div>
                 <h2>Create Account</h2>
                 <p class="auth-sub">Start protecting your JavaScript today</p>
@@ -1900,11 +1900,89 @@
         </section>
     </div>
 
+    <!-- ── PARTNERS PROGRAM ────────────────────────────────────────────────── -->
+    <div id="partners" class="page">
+        <section class="partners">
+            <div class="partners-container">
+                <!-- HEADER -->
+                <div class="section-title">
+                    <span class="section-kicker">Partners</span>
+                    <h2>Sponsorship Widget Program</h2>
+                    <p>Earn recognition and support Obfusly by adding our customizable widget to your website.</p>
+                </div>
+
+                <!-- MAIN LAYOUT -->
+                <div class="partners-grid">
+                    <!-- LEFT COLUMN: CUSTOMIZER WITH PREVIEW -->
+                    <div class="customizer-panel">
+                        <h3>Customize Your Widget</h3>
+                        
+                        <!-- THEME SELECTOR -->
+                        <div class="customize-section">
+                            <label>Theme</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="theme" value="light" checked onchange="updateWidget()">
+                                    <span>Light</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="theme" value="dark" onchange="updateWidget()">
+                                    <span>Dark</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- POSITION SELECTOR -->
+                        <div class="customize-section">
+                            <label>Position</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="position" value="bottom-left" checked onchange="updateWidget()">
+                                    <span>Bottom Left</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="position" value="bottom-right" onchange="updateWidget()">
+                                    <span>Bottom Right</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- LIVE PREVIEW -->
+                        <div class="preview-title">Live Preview</div>
+                        <div class="preview-frame" id="previewFrame">
+                            <!-- Widget preview rendered here via JS -->
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: CODE OUTPUT -->
+                    <div class="code-output-section">
+                        <div class="code-section-header">
+                            <h3>Your Widget Code</h3>
+                        </div>
+                        <div class="code-tabs">
+                            <button class="code-tab-btn active" onclick="switchCodeTab('js')">JavaScript</button>
+                            <button class="code-tab-btn" onclick="switchCodeTab('html')">HTML Snippet</button>
+                        </div>
+                        <div class="code-display">
+                            <button class="copy-btn-icon" onclick="copyCode()" title="Copy code to clipboard">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </button>
+                            <pre id="codeOutput"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <!-- FOOTER -->
     <footer>
         <div class="footer-content">
             <div class="footer-brand">
-                <img src="obfusly_name.png" alt="obfusly" class="footer-brand-mark">
+                <img src="Images/obfusly_name_light.png" alt="obfusly" class="footer-brand-mark">
                 <p>Production-grade JavaScript protection for teams shipping browser and Node runtimes at scale.</p>
             </div>
             <div class="footer-section">
@@ -1912,6 +1990,7 @@
                 <ul>
                     <li><a onclick="navigateTo('home'); window.scrollTo(0, 1750);">Features</a></li>
                     <li><a onclick="navigateTo('pricing')">Pricing</a></li>
+                    <li><a onclick="navigateTo('partners')">Partners</a></li>
                     <li><a onclick="navigateTo('faq')">FAQ</a></li>
                     <li><a onclick="navigateTo('contact')">Contact</a></li>
                 </ul>
@@ -1972,7 +2051,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="Javascript/app.js"></script>
 </body>
 
 </html>

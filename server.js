@@ -341,7 +341,7 @@ for (let i = 2; i <= 20; i++) {
 }`
 ];
 
-const DEFAULT_CONFIG = globalThis.structuredClone ? structuredClone(runtimeConfig) : JSON.parse(JSON.stringify(runtimeConfig));
+const DEFAULT_CONFIG = JSON.parse(JSON.stringify(runtimeConfig));
 
 const WorkerPool = require('./Workers/worker');
 
@@ -353,6 +353,9 @@ async function obfuscateWithWorker(code, config) {
 }
 
 async function handleObfuscation(req, res) {
+    // Reset config to defaults for each request to avoid accumulation across requests
+    restoreDefaults();
+    
     const { code, config: incomingConfig } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
     
@@ -418,7 +421,7 @@ async function handleObfuscation(req, res) {
         console.log(runtimeConfig)
 
         // Use worker for both obfuscation steps
-        const workerResult = await obfuscateWithWorker(code, incomingConfig);
+        const workerResult = await obfuscateWithWorker(code, runtimeConfig);
         const objectObfuscatedCode = workerResult.objectObfuscatedCode;
         
         // Log obfuscation and increment counter for authenticated users
@@ -530,8 +533,8 @@ async function startServer() {
             process.exit(1);
         }
 
-        await mongoManager.initDatabase();
-        console.log('✓ MongoDB connected successfully');
+        // await mongoManager.initDatabase();
+        // console.log('✓ MongoDB connected successfully');
 
         app.listen(PORT, () => {
             console.log(`🚀 Server running at http://localhost:${PORT}`);

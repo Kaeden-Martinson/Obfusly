@@ -53,27 +53,27 @@
 
     var iconMark = document.createElement('img');
     iconMark.style.position = "absolute";
-    iconMark.style.left = "20px";
+    iconMark.style.left = "16px";
     iconMark.style.top = "18px";
     iconMark.style.width = iconSize + "px";
     iconMark.style.height = iconSize + "px";
     iconMark.style.objectFit = "contain";
     iconMark.style.transition = "opacity 0.18s ease";
     iconMark.style.opacity = "1";
-    iconMark.src = "obfusly_icon.png";
+    iconMark.src = "../Images/obfusly_icon.png";
 
     var logoStrip = document.createElement('img');
     logoStrip.style.position = "absolute";
     logoStrip.style.left = "0";
     logoStrip.style.top = "2px";
     logoStrip.style.height = logoHeight + "px";
-    logoStrip.style.width = "auto";
+    logoStrip.style.width = "155px";
     logoStrip.style.display = "block";
     logoStrip.style.flexShrink = "0";
     logoStrip.style.opacity = "0";
     logoStrip.style.transform = "translateX(-10px)";
     logoStrip.style.transition = "transform 0.42s ease, opacity 0.18s ease";
-    logoStrip.src = "obfusly_name.png";
+    logoStrip.src = "../Images/obfusly_name.png";
 
     button.appendChild(iconMark);
     button.appendChild(logoStrip);

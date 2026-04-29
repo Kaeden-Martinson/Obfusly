@@ -1707,6 +1707,250 @@ function closeModuleModal() {
 }
 
 function enableStrictModeAndClose() {
+    document.querySelector('input[name="strictMode"]').checked = true;
+    updateConfig();
+    closeModuleModal();
+}
+
+// ============================================================================
+// PARTNERS PROGRAM - WIDGET CUSTOMIZER
+// ============================================================================
+
+// Core widget code from Frontend/Widget/widget.html
+const WIDGET_SCRIPT = `(function() {
+    // Load Google Font
+    var fontLink = document.createElement('link');
+    fontLink.href = "https://fonts.googleapis.com/css?family=Baloo+Paaji";
+    fontLink.rel = "stylesheet";
+    document.head.appendChild(fontLink);
+
+    var collapsedWidth = 62;
+    var expandedWidth = 156;
+    var widgetHeight = 62;
+    var logoHeight = 58;
+    var iconSize = 25;
+
+    var widgetContainer = document.createElement('div');
+    widgetContainer.style.position = "fixed";
+    widgetContainer.style.bottom = "20px";
+    widgetContainer.style.{{POSITION}};
+    widgetContainer.style.width = collapsedWidth + "px";
+    widgetContainer.style.fontFamily = "Baloo Paaji";
+    widgetContainer.style.height = widgetHeight + "px";
+    widgetContainer.style.borderRadius = "18px";
+    widgetContainer.style.backgroundColor = "{{BG_COLOR}}";
+    widgetContainer.style.display = "flex";
+    widgetContainer.style.alignItems = "center";
+    widgetContainer.style.cursor = "pointer";
+    widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.5) 2px 2px 10px";
+    widgetContainer.style.transition = "width 0.42s ease, box-shadow 0.22s ease";
+    widgetContainer.style.overflow = "hidden";
+    widgetContainer.style.zIndex = "9999";
+
+    var button = document.createElement('a');
+    button.href = "https://obfusly.com";
+    button.target = "_blank";
+    button.style.display = "flex";
+    button.style.width = "100%";
+    button.style.height = "100%";
+    button.style.position = "relative";
+    button.style.textDecoration = "none";
+    button.style.color = "#f0f4f8";
+    button.style.overflow = "hidden";
+
+    var iconMark = document.createElement('img');
+    iconMark.style.position = "absolute";
+    iconMark.style.left = "16px";
+    iconMark.style.top = "18px";
+    iconMark.style.width = iconSize + "px";
+    iconMark.style.height = iconSize + "px";
+    iconMark.style.objectFit = "contain";
+    iconMark.style.transition = "opacity 0.18s ease";
+    iconMark.style.opacity = "1";
+    iconMark.src = "https://obfusly.com/Images/obfusly_icon.png";
+
+    var logoStrip = document.createElement('img');
+    logoStrip.style.position = "absolute";
+    logoStrip.style.left = "0";
+    logoStrip.style.top = "2px";
+    logoStrip.style.height = logoHeight + "px";
+    logoStrip.style.width = "155px";
+    logoStrip.style.display = "block";
+    logoStrip.style.flexShrink = "0";
+    logoStrip.style.opacity = "0";
+    logoStrip.style.transform = "translateX(-10px)";
+    logoStrip.style.transition = "transform 0.42s ease, opacity 0.18s ease";
+    logoStrip.src = "{{LOGO}}";
+
+    button.appendChild(iconMark);
+    button.appendChild(logoStrip);
+    widgetContainer.appendChild(button);
+
+    document.body.appendChild(widgetContainer);
+
+    widgetContainer.addEventListener("mouseover", function() {
+        widgetContainer.style.width = expandedWidth + "px";
+        widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.6) 6px 10px 24px";
+        iconMark.style.opacity = "0";
+        logoStrip.style.opacity = "1";
+        logoStrip.style.transform = "translateX(0)";
+    });
+
+    widgetContainer.addEventListener("mouseout", function() {
+        widgetContainer.style.width = collapsedWidth + "px";
+        widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.5) 2px 2px 10px";
+        iconMark.style.opacity = "1";
+        logoStrip.style.opacity = "0";
+        logoStrip.style.transform = "translateX(-10px)";
+    });
+})();`;
+
+function updateWidget() {
+    const theme = document.querySelector('input[name="theme"]:checked')?.value || 'light';
+    const position = document.querySelector('input[name="position"]:checked')?.value || 'bottom-left';
+
+    // Update preview frame theme
+    const previewFrame = document.getElementById('previewFrame');
+    if (previewFrame) {
+        previewFrame.classList.toggle('dark-theme', theme === 'dark');
+        previewFrame.innerHTML = ''; // Clear previous widget
+        
+        // Render an interactive widget preview with hover effects
+        const bgColor = theme === 'dark' ? 'black' : '#f0f4f8';
+        const nameLogo = theme === 'dark' ? 'http://localhost:3000/Images/obfusly_name_light.png' : 'http://localhost:3000/Images/obfusly_name_dark.png';
+        const positionStyle = position === 'bottom-left' ? 'left: 20px;' : 'right: 20px;';
+        
+        const widgetHTML = `
+            <div id="previewWidget" style="position: absolute; bottom: 20px; ${positionStyle} width: 62px; height: 62px; border-radius: 18px; background: ${bgColor}; display: flex; align-items: center; justify-content: center; box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 10px; cursor: pointer; z-index: 10; transition: width 0.42s ease, box-shadow 0.22s ease; overflow: hidden;">
+                <img id="previewIcon" src="Images/obfusly_icon.png" alt="Obfusly" style="position: absolute; left: 16px; width: 25px; height: 25px; object-fit: contain; opacity: 1; transition: opacity 0.18s ease;">
+                <img id="previewLogo" src="${nameLogo}" alt="Obfusly" style="position: absolute; left: 0; width: 155px; height: 58px; object-fit: contain; opacity: 0; transform: translateX(-10px); transition: transform 0.42s ease, opacity 0.18s ease;">
+            </div>
+        `;
+        
+        previewFrame.innerHTML = widgetHTML;
+        
+        // Add hover event listeners to the preview widget
+        const previewWidget = previewFrame.querySelector('#previewWidget');
+        const previewIcon = previewFrame.querySelector('#previewIcon');
+        const previewLogo = previewFrame.querySelector('#previewLogo');
+        
+        if (previewWidget && previewIcon && previewLogo) {
+            previewWidget.addEventListener('mouseover', function() {
+                previewWidget.style.width = '156px';
+                previewWidget.style.boxShadow = 'rgba(0, 0, 0, 0.6) 6px 10px 24px';
+                previewIcon.style.opacity = '0';
+                previewLogo.style.opacity = '1';
+                previewLogo.style.transform = 'translateX(0)';
+            });
+            
+            previewWidget.addEventListener('mouseout', function() {
+                previewWidget.style.width = '62px';
+                previewWidget.style.boxShadow = 'rgba(0, 0, 0, 0.5) 2px 2px 10px';
+                previewIcon.style.opacity = '1';
+                previewLogo.style.opacity = '0';
+                previewLogo.style.transform = 'translateX(-10px)';
+            });
+        }
+    }
+
+    // Update code output
+    updateCodeOutput(theme, position);
+}
+
+function updateCodeOutput(theme, position) {
+    const bgColor = theme === 'dark' ? '"black"' : '"#f0f4f8"';
+    const posStyle = position === 'bottom-left' ? 'left = "20px"' : 'right = "20px"';
+    const nameLogo = theme === 'dark' ? 'http://localhost:3000/Images/obfusly_name_light.png' : 'http://localhost:3000/Images/obfusly_name_dark.png';
+    
+    const scriptCode = WIDGET_SCRIPT
+        .replace('{{POSITION}}', posStyle)
+        .replace('{{BG_COLOR}}', bgColor)
+        .replace('{{LOGO}}', nameLogo);
+
+    // Store codes for copying
+    window.widgetCodes = {
+        js: scriptCode,
+        html: generateHTMLCode(scriptCode)
+    };
+
+    // Display current tab
+    const activeTab = document.querySelector('.code-tab-btn.active')?.getAttribute('onclick') || 'switchCodeTab(\'js\')';
+    const match = activeTab.match(/'([^']+)'/);
+    const currentTab = match ? match[1] : 'js';
+
+    const codeOutput = document.getElementById('codeOutput');
+    if (codeOutput) {
+        codeOutput.textContent = window.widgetCodes[currentTab] || scriptCode;
+    }
+}
+
+function generateHTMLCode(scriptCode) {
+    return `<!-- Obfusly Sponsorship Widget -->
+<script>
+${scriptCode}
+</script>`;
+}
+
+function switchCodeTab(tabName) {
+    // Update button states
+    document.querySelectorAll('.code-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // Update code display
+    const codeOutput = document.getElementById('codeOutput');
+    if (codeOutput && window.widgetCodes) {
+        codeOutput.textContent = window.widgetCodes[tabName] || '';
+    }
+}
+
+function copyCode() {
+    const codeOutput = document.getElementById('codeOutput');
+    const copyBtn = document.querySelector('.copy-btn-icon');
+    
+    if (codeOutput && codeOutput.textContent && copyBtn) {
+        const code = codeOutput.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            // Store original SVG
+            const originalSVG = copyBtn.innerHTML;
+            
+            // Change icon to checkmark
+            copyBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>';
+            copyBtn.classList.add('copied');
+            
+            // Show toast notification
+            showToast('Copied to clipboard', 'success');
+            
+            // Revert after 2 seconds
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.innerHTML = originalSVG;
+            }, 2000);
+        }).catch((err) => {
+            console.error('Copy error:', err);
+            alert('Failed to copy code. Please try again.');
+        });
+    } else {
+        alert('No code to copy. Please refresh the page.');
+    }
+}
+
+// Initialize widget on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const previewFrame = document.getElementById('previewFrame');
+    if (previewFrame) {
+        updateWidget();
+    }
+
+
+    const modal = document.getElementById('moduleStrictModeModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+});
+
+function enableStrictModeAndClose() {
     // Enable strict mode
     const strictModeCheckbox = document.getElementById('strictMode');
     if (strictModeCheckbox) {
