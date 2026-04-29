@@ -1,5 +1,5 @@
 const acorn = require("acorn");
-const escodegen = require("escodegen");
+const astring = require("astring");
 
 function compress(code) {
   const ast = acorn.parse(code, {
@@ -7,13 +7,7 @@ function compress(code) {
     sourceType: "module"
   });
 
-  return escodegen.generate(ast, {
-    format: {
-      compact: true, 
-      semicolons: true,
-      quotes: "auto"
-    }
-  });
+  return astring.generate(ast);
 }
 
 module.exports = { compress };

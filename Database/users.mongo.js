@@ -657,14 +657,13 @@ module.exports = {
         
         // Get plan limits
         const LIMITS = {
-            free: 5,
-            starter: 50,
-            professional: 500,
-            enterprise: Infinity,
+            free: 3,
+            professional: 50,
+            enterprise: 500,
         };
         
         const plan = user.plan || 'free';
-        const limit = LIMITS[plan] || 5;
+        const limit = LIMITS[plan] || 3;
         const used = (user.obfuscationCount || 0);
         const remaining = Math.max(0, limit - used);
         
@@ -693,14 +692,13 @@ module.exports = {
         
         // Get plan limits
         const LIMITS = {
-            free: 5,
-            starter: 50,
-            professional: 500,
-            enterprise: Infinity,
+            free: 3,
+            professional: 50,
+            enterprise: 500,
         };
         
         const plan = user.plan || 'free';
-        const limit = LIMITS[plan] || 5;
+        const limit = LIMITS[plan] || 3;
         
         // Check if count needs reset
         const lastCountDate = user.obfuscationCountDate ? new Date(user.obfuscationCountDate) : null;

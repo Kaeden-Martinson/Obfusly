@@ -10,18 +10,18 @@ const config = {
         
         strategy: {
             useCalculator: true,       // Runtime decoding with XOR/arithmetic
-            useBaseIntegers: true,     // Precomputed lookup tables
+            useBaseIntegers: false,     // Precomputed lookup tables
             calculateStrength: 3,      // Decoder complexity (1-5)
         },
         
         cache: {
-            enabled: true,             // Cache encoded number results
-            multipleAssignments: false,// false = 101 vars, true = 401 vars (75% less startup cost)
+            enabled: false,             // Cache encoded number results
+            multipleAssignments: false,// false = 101 vars, false = 401 vars (75% less startup cost)
         },
         
         baseIntegerFormat: {
             default: "JSFuck",         // Default encoding format
-            shuffle: true,             // Randomize base integer order
+            shuffle: false,             // Randomize base integer order
             distribution: {            // Weighted distribution of encoding types
                 Refractal: 0,    // Disabled: runtime overhead
                 JSFuck: 0,       // Disabled: type coercion overhead
@@ -35,12 +35,12 @@ const config = {
     // ========== STRINGS ==========
     strings: {
         encoding: {
-            enabled: true,
-            cache: true,               // Cache decoded strings
+            enabled: false,
+            cache: false,               // Cache decoded strings
         },
         
         concealment: {
-            enabled: true,             // Advanced string concealment layer
+            enabled: false,             // Advanced string concealment layer
             decoderLayers: 2,          // Number of decoder functions (was decodersCount)
             noiseFunctions: 1,         // Noise blocks added per decoder (was addNoiseCount)
         },
@@ -52,8 +52,8 @@ const config = {
 
     // ========== GLOBALS ==========
     globals: {
-        concealWindowObject: true,    // Obfuscate 'window' reference
-        concealPrimitives: true,      // Obfuscate undefined, null, etc
+        concealWindowObject: false,    // Obfuscate 'window' reference
+        concealPrimitives: false,      // Obfuscate undefined, null, etc
     },
 
     // ========== PROTECTION ==========
@@ -66,7 +66,7 @@ const config = {
 
     // ========== OUTPUT ==========
     output: {
-        compression: true,            // Minify final output
+        compression: false,            // Minify final output
         strictMode: false,            // Wrap in Function() vs standalone
         target: "browser",            // Target environment: "browser" or "node"
     }

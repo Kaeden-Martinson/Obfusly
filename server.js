@@ -9,8 +9,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const Stripe = require('stripe');
-const __obfuscator_1 = require('./Main/first_obfuscator');
-const __obfuscator_2 = require('./Main/property_obfuscator');
 const mongoManager = require('./Database/mongodb');
 const db = require('./Database/users.mongo');
 
@@ -25,8 +23,8 @@ const stripe = STRIPE_SECRET ? Stripe(STRIPE_SECRET) : null;
 
 // Plan → Stripe Price ID mapping.  Fill in your own Price IDs from the Stripe Dashboard.
 const STRIPE_PRICES = {
-    starter:      process.env.STRIPE_PRICE_STARTER      || 'price_starter_placeholder',
     professional: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_professional_placeholder',
+    enterprise:   process.env.STRIPE_PRICE_ENTERPRISE   || 'price_enterprise_placeholder',
 };
 
 // ── Express setup ─────────────────────────────────────────────────────────────
@@ -276,9 +274,8 @@ function restoreDefaults() {
     deepMerge(runtimeConfig, DEFAULT_CONFIG);
 };
 
-let queue = Promise.resolve();
 app.post('/obfuscate', obfuscateLimiter, (req, res) => {
-    queue = queue.then(() => handleObfuscation(req, res))
+    handleObfuscation(req, res)
         .catch(err => {
             console.error(err);
             if (!res.headersSent) {
@@ -346,6 +343,15 @@ for (let i = 2; i <= 20; i++) {
 
 const DEFAULT_CONFIG = globalThis.structuredClone ? structuredClone(runtimeConfig) : JSON.parse(JSON.stringify(runtimeConfig));
 
+const WorkerPool = require('./Workers/worker');
+
+// Initialize worker pool
+const workerPool = new WorkerPool(10);
+
+async function obfuscateWithWorker(code, config) {
+    return workerPool.execute(code, config);
+}
+
 async function handleObfuscation(req, res) {
     const { code, config: incomingConfig } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
@@ -386,15 +392,15 @@ async function handleObfuscation(req, res) {
         const limitCheck = await db.checkObfuscationLimit(userId);
         
         // If at limit and trying to obfuscate custom code, deny
-        if (!limitCheck.canObfuscate && !isApprovedExample) {
-            res.status(429).json({ 
-                error: 'Daily limit reached. You can still obfuscate Example code.',
-                remaining: limitCheck.remaining,
-                limit: limitCheck.limit,
-                plan: limitCheck.plan
-            });
-            return;
-        }
+        // if (!limitCheck.canObfuscate && !isApprovedExample) {
+        //     res.status(429).json({ 
+        //         error: 'Daily limit reached. You can still obfuscate Example code.',
+        //         remaining: limitCheck.remaining,
+        //         limit: limitCheck.limit,
+        //         plan: limitCheck.plan
+        //     });
+        //     return;
+        // }
     } else if (!isAuthenticated) {
         // Unauthenticated users can ONLY use approved examples
         if (!isApprovedExample) {
@@ -406,11 +412,14 @@ async function handleObfuscation(req, res) {
     }
     
     try {
-        console.log(incomingConfig);
+        console.log("New Req");
         if (incomingConfig && typeof incomingConfig === 'object') deepMerge(runtimeConfig, incomingConfig);
         
-        const [obfuscatedCode, windowName, previousDeclarationMapping] = __obfuscator_1.obfuscateEntireSource(code);
-        const objectObfuscatedCode = await __obfuscator_2.obfuscateProperties(obfuscatedCode, windowName, previousDeclarationMapping);
+        console.log(runtimeConfig)
+
+        // Use worker for both obfuscation steps
+        const workerResult = await obfuscateWithWorker(code, incomingConfig);
+        const objectObfuscatedCode = workerResult.objectObfuscatedCode;
         
         // Log obfuscation and increment counter for authenticated users
         if (isAuthenticated && userId) {
@@ -538,6 +547,7 @@ startServer();
 // Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down...');
+    workerPool.terminate();
     await mongoManager.disconnect();
     process.exit(0);
 });

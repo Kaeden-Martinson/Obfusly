@@ -4,7 +4,7 @@ const terser = require('terser');
 
 const acorn = require('acorn');
 const estraverse = require('estraverse');
-const escodegen = require('escodegen');
+const astring = require('astring');
 
 /** Obfuscation Imports */
 let { declarationMapping, clearDeclarationMapping, setDeclarationMapping } = require('../Utils/naming');
@@ -36,7 +36,7 @@ function _stat(label, value) { console.log(`  ${label}: ${value}`); }
 async function obfuscateProperties(sourceCode, windowName, previousDeclarationMapping) {
     updateSourceCode(sourceCode);
 
-    const ast = acorn.parse(sourceCode, { ecmaVersion: 2020, range: true, sourceType: 'module' });
+    const ast = acorn.parse(sourceCode, { ecmaVersion: 2022, range: true, sourceType: 'module' });
 
     clearDeclarationMapping(sourceCode);
     clearStringBuilder();
@@ -68,16 +68,17 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         generateBaseInts = buildBaseInt(declarationMapping);
     };
 
+    const sessionToken = Date.now();
+
     if (config.numbers.strategy.useCalculator) {
         encodingAndDecodingPairs = createEncodeAndDecodingPairs(declarationMapping);
 
         fs.writeFile(
-            "Encoders/encoder.js",
+            `Encoders/encoder_${sessionToken}.js`,
             (generateBaseInts + "\n" + encodingAndDecodingPairs.encoder),
             "utf-8"
         ).then(async () => {
-            delete require.cache[require.resolve('../Encoders/encoder')];
-            encodeModule = require('../Encoders/encoder');
+            encodeModule = require(`../Encoders/encoder_${sessionToken}.js`);
         }).catch(err => {
             console.error("Error writing file:", err);
         })
@@ -179,7 +180,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         }
     });
 
-    let generated = escodegen.generate(ast);
+    let generated = astring.generate(ast);
 
     if (config.numbers.enabled || config.numbers.strategy.useCalculator || config.numbers.strategy.useBaseIntegers) _stat('Numbers encoded', numberCount);
     if (config.strings.concealment.enabled) _stat('Strings concealed', stringBuilderModule.getStringCount());
@@ -230,13 +231,12 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
         _log('Compressed');
     };
 
-    generated = generated.replace(/__LET_PLACEHOLDER__/g, 'let');
-
     if (config.protection.integrityChecks && config.protection.integrityChecks !== 'off') {
         _log('Injecting integrity checks');
         generated = createIntegrity(generated, previousDeclarationMapping, declarationMapping, encodingAndDecodingPairs, encodeModule);
     }
 
+    generated = generated.replace(/__LET_PLACEHOLDER__/g, 'let');
     generated = generated.replace(/__ENCODED_STRINGS__x/g, '\\x');
     generated = generated.replace(/__ENCODED_STRINGS__u/g, '\\u');
 
@@ -274,9 +274,11 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
     const elapsed = Date.now() - (global.__jsscramble_start || _t0);
     console.log();
     _stat('Output size', `${(generated.length / 1024).toFixed(1)} KB`);
-    _stat('Time taken', `${elapsed}ms`);
+    console.log('Time taken', `${elapsed}ms`);
     console.log('Obfuscation complete');
     console.log();
+
+    fs.unlink(`Encoders/encoder_${sessionToken}.js`).catch(() => {});
 
     return generated;
 }

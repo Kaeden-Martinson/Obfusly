@@ -14,18 +14,16 @@ function clearToken() { localStorage.removeItem('obfusly_token'); }
 
 // ── Rate Limiting for Obfuscations ─────────────────────────────────────────
 const OBFUSCATION_LIMITS = {
-    free: 5,
-    starter: 50,
-    professional: 500,
-    enterprise: Infinity
+    free: 3,
+    professional: 50,
+    enterprise: 500
 };
 
 // ── File Size Limits (in bytes) ────────────────────────────────────────────
 const FILE_SIZE_LIMITS = {
-    free: 2 * 1024 * 1024,        // 2MB
-    starter: 10 * 1024 * 1024,    // 10MB
-    professional: 10 * 1024 * 1024, // 10MB
-    enterprise: Infinity           // No limit
+    free: 500 * 1024,        // 50KB
+    professional: 5 * 1024 * 1024, // 5MB
+    enterprise: 10 * 1024 * 1024           // 10MB
 };
 
 function getUserPlan() {
@@ -190,7 +188,7 @@ function updateProfilePage() {
     
     // Highlight current plan in the "Daily Limits by Plan" section
     const userPlan = (currentUser.plan || 'free').toLowerCase();
-    const planBoxes = ['free', 'starter', 'professional'];
+    const planBoxes = ['free', 'professional', 'enterprise'];
     
     planBoxes.forEach(plan => {
         const planBox = document.getElementById('planBox-' + plan);
@@ -312,25 +310,25 @@ function handlePricingClick(plan) {
     startCheckout(plan);
 }
 
-function startCheckout(plan) {
-    console.log('Starting checkout for:', plan);
+// function startCheckout(plan) {
+//     console.log('Starting checkout for:', plan);
     
-    // For free plan, just show a message
-    if (plan === 'free') {
-        showToast('You\'re on the Free plan! Continue enjoying 3 obfuscations per day.', 'success');
-        return;
-    }
+//     // For free plan, just show a message
+//     if (plan === 'free') {
+//         showToast('You\'re on the Free plan! Continue enjoying 3 obfuscations per day.', 'success');
+//         return;
+//     }
     
-    // For paid plans, redirect to Stripe checkout
-    showToast('Redirecting to payment...', 'info');
-    // TODO: Uncomment when ready to integrate Stripe
-    // window.location.href = `/checkout?plan=${plan}&token=${localStorage.getItem('token')}`;
+//     // For paid plans, redirect to Stripe checkout
+//     showToast('Redirecting to payment...', 'info');
+//     // TODO: Uncomment when ready to integrate Stripe
+//     // window.location.href = `/checkout?plan=${plan}&token=${localStorage.getItem('token')}`;
     
-    // For now, show a message
-    setTimeout(() => {
-        showToast('Checkout for ' + plan + ' plan coming soon!', 'success');
-    }, 1000);
-}
+//     // For now, show a message
+//     setTimeout(() => {
+//         showToast('Checkout for ' + plan + ' plan coming soon!', 'success');
+//     }, 1000);
+// }
 
 async function restoreSession() {
     const token = getToken();
@@ -486,7 +484,7 @@ function closeAccountMenu() {
 
 function fillAccountPage() {
     if (!currentUser) return;
-    const planLabel = { free: 'Free', starter: 'Starter ($29/mo)', professional: 'Professional ($79/mo)', enterprise: 'Enterprise' };
+    const planLabel = { free: 'Free', professional: 'Professional ($79/mo)', enterprise: 'Enterprise ($199/mo)' };
     document.getElementById('acct-name').textContent  = currentUser.name;
     document.getElementById('acct-email').textContent = currentUser.email;
     document.getElementById('acct-plan').textContent  = planLabel[currentUser.plan] || currentUser.plan;
@@ -810,8 +808,8 @@ async function obfuscateCode() {
     if (fileSizeBytes > fileSizeLimit) {
         const limitMB = (fileSizeLimit / (1024 * 1024)).toFixed(1);
         const sizeMB = (fileSizeBytes / (1024 * 1024)).toFixed(2);
-        showToast(`File too large: ${sizeMB}MB (limit: ${limitMB}MB for ${userPlan} plan)`, 'error');
-        return;
+        // showToast(`File too large: ${sizeMB}MB (limit: ${limitMB}MB for ${userPlan} plan)`, 'error');
+        // return;
     }
 
     showToast('Obfuscating your code...', 'info');
@@ -1786,12 +1784,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Attach pricing button listeners
     console.log('Looking for pricing buttons...');
     const freeBtn = document.getElementById('freeBtn');
-    const starterBtn = document.getElementById('starterBtn');
     const professionalBtn = document.getElementById('professionalBtn');
+    const enterpriseBtn = document.getElementById('enterpriseBtn');
     
     console.log('freeBtn:', freeBtn);
-    console.log('starterBtn:', starterBtn);
     console.log('professionalBtn:', professionalBtn);
+    console.log('enterpriseBtn:', enterpriseBtn);
     
     if (freeBtn) {
         console.log('Attaching listener to freeBtn');
@@ -1802,21 +1800,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    if (starterBtn) {
-        console.log('Attaching listener to starterBtn');
-        starterBtn.addEventListener('click', function(e) {
-            console.log('STARTER BUTTON CLICKED');
-            e.preventDefault();
-            handlePricingClick('starter');
-        });
-    }
-    
     if (professionalBtn) {
         console.log('Attaching listener to professionalBtn');
         professionalBtn.addEventListener('click', function(e) {
             console.log('PROFESSIONAL BUTTON CLICKED');
             e.preventDefault();
             handlePricingClick('professional');
+        });
+    }
+
+    if (enterpriseBtn) {
+        console.log('Attaching listener to enterpriseBtn');
+        enterpriseBtn.addEventListener('click', function(e) {
+            console.log('ENTERPRISE BUTTON CLICKED');
+            e.preventDefault();
+            handlePricingClick('enterprise');
         });
     }
 

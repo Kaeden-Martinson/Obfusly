@@ -2,7 +2,7 @@ const config = require('../Settings/config');
 
 const acorn = require('acorn');
 const estraverse = require('estraverse');
-const escodegen = require('escodegen');
+const astring = require('astring');
 
 /** Import Utils */
 const { windowVariables, defaultedValues } = require('../Utils/Window/window_variables');
@@ -32,7 +32,7 @@ function obfuscateEntireSource(code) {
     
     const windowName = generateObfuscatedName();
 
-    const ast = acorn.parse(code, { ecmaVersion: 2020, sourceType: 'module' });
+    const ast = acorn.parse(code, { ecmaVersion: 2022, sourceType: 'module' });
 
     clearDeclarationMapping(code);
     for (let name of windowVariables) setDeclarationMapping(name, (config.globals.concealPrimitives && defaultedValues.includes(name) ? generateObfuscatedName() : name));
@@ -48,8 +48,6 @@ function obfuscateEntireSource(code) {
 
     estraverse.replace(ast, {
         enter(node) {
-            // console.log(node)
-
             if (node.type === "ImportDefaultSpecifier") if (node.local && node.local.type === "Identifier") setDeclarationMapping(node.local.name, node.local.name);
             if (node.type === "ImportSpecifier") if (node.local && node.local.type === "Identifier") setDeclarationMapping(node.local.name, node.local.name);
             if (node.type === "ExportSpecifier") if (node.local && node.local.type === "Identifier") updateNodeName(node.local);
@@ -78,10 +76,9 @@ function obfuscateEntireSource(code) {
         }
     });
 
-    const s1code = escodegen.generate(ast);
+    const s1code = astring.generate(ast);
     _log(`Stage 1 complete (${(Date.now() - _t0)}ms)`);
 
-    console.log(s1code)
     return [s1code, windowName, getDeclarationMapping()];
 };
 

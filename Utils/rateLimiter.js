@@ -5,7 +5,7 @@
 
 const OBFUSCATION_LIMIT = {
     free: 3,
-    starter: 50,
+    professional: 500,
     professional: 500,
     enterprise: Infinity
 };
