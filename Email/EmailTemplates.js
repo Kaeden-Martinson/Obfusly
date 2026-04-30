@@ -10,11 +10,14 @@ class EmailTemplates {
   static getVerificationEmail(code, userName = 'User') {
     return {
       subject: 'Verify Your Email - Obfusly',
-      text: `Your verification code is: ${code}\n\nThis code expires in 60 seconds.\n\nIf you didn't sign up, please ignore this email.`,
+      text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.\n\nIf you didn't sign up, please ignore this email.`,
       html: `
         <html>
           <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <img src="https://obfusly.com/obfusly_name.png" alt="Obfusly" style="max-width: 200px; height: auto;">
+              </div>
               <h2 style="color: #333; margin-top: 0;">Welcome to Obfusly, ${this.escapeHtml(userName)}!</h2>
               
               <p style="color: #666; font-size: 16px;">Thank you for signing up. To complete your registration, please verify your email address using the code below:</p>
@@ -24,7 +27,7 @@ class EmailTemplates {
                 <p style="font-size: 36px; font-weight: bold; color: #007bff; letter-spacing: 5px; margin: 0;">${code}</p>
               </div>
               
-              <p style="color: #666; font-size: 14px;">This code will expire in <strong>60 seconds</strong>.</p>
+              <p style="color: #666; font-size: 14px;">This code will expire in <strong>10 minutes</strong>.</p>
               
               <p style="color: #666; font-size: 14px; margin-top: 30px;">If you didn't create this account, please disregard this email.</p>
               
@@ -44,11 +47,14 @@ class EmailTemplates {
   static getPasswordResetEmail(code, userName = 'User') {
     return {
       subject: 'Reset Your Password - Obfusly',
-      text: `Your password reset code is: ${code}\n\nThis code expires in 60 seconds.\n\nIf you didn't request this, please ignore this email.`,
+      text: `Your password reset code is: ${code}\n\nThis code expires in 10 minutes.\n\nIf you didn't request this, please ignore this email.`,
       html: `
         <html>
           <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <img src="https://obfusly.com/obfusly_name.png" alt="Obfusly" style="max-width: 200px; height: auto;">
+              </div>
               <h2 style="color: #333; margin-top: 0;">Password Reset Request</h2>
               
               <p style="color: #666; font-size: 16px;">Hi ${this.escapeHtml(userName)},</p>
@@ -63,7 +69,7 @@ class EmailTemplates {
               </div>
               
               <p style="color: #666; font-size: 14px; background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 4px;">
-                <strong>⏰ This code expires in 60 seconds</strong>. Enter it in the password reset form in your browser.
+                <strong>⏰ This code expires in 10 minutes</strong>. Enter it in the password reset form in your browser.
               </p>
               
               <p style="color: #999; font-size: 14px; margin-top: 30px;">If you didn't request a password reset, you can safely ignore this email. Your password has not been changed.</p>
@@ -89,6 +95,9 @@ class EmailTemplates {
         <html>
           <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <img src="https://obfusly.com/obfusly_name.png" alt="Obfusly" style="max-width: 200px; height: auto;">
+              </div>
               <h2 style="color: #333; margin-top: 0;">Welcome to Obfusly, ${this.escapeHtml(userName)}!</h2>
               
               <p style="color: #666; font-size: 16px;">Your email has been verified and your account is now active. You can start using all features of Obfusly.</p>

@@ -8,7 +8,7 @@ let inputEditor, outputEditor;
 // ── Auth state ─────────────────────────────────────────────────────────────
 let currentUser = null;
 let verificationEmail = null;
-let verificationCodeExpiry = 1; // minutes (60 seconds)
+let verificationCodeExpiry = 5; // minutes (300 seconds)
 
 function getToken() { return localStorage.getItem('obfusly_token'); }
 function setToken(t) { localStorage.setItem('obfusly_token', t); }
@@ -218,8 +218,10 @@ function updateProfilePage() {
         subSection.style.display = 'block';
         upgradeBtn.textContent = 'Change Plan';
         
-        // Update subscription details
-        document.getElementById('profileSubStatus').textContent = currentUser.subscriptionStatus || 'Active';
+        // Update subscription details with proper capitalization
+        const subStatus = (currentUser.subscriptionStatus || 'active').toLowerCase();
+        const capitalizedStatus = subStatus.charAt(0).toUpperCase() + subStatus.slice(1);
+        document.getElementById('profileSubStatus').textContent = capitalizedStatus;
         
         // Format next billing date
         if (currentUser.nextBillingDate) {
@@ -365,6 +367,28 @@ async function submitLogin(e) {
             body: JSON.stringify({ email, password: pass }),
         });
         const data = await res.json();
+        
+        // Check if account requires verification (pending signup with correct password)
+        if (res.status === 202 && data.requiresVerification) {
+            verificationEmail = email;
+            verificationCodeExpiry = Math.ceil(data.expiresIn / 60); // Convert seconds to minutes
+            localStorage.setItem('verificationEmail', email);
+            
+            // Navigate to register page first
+            navigateTo('register');
+            
+            // Show the verification step inside register page
+            document.getElementById('register-form-step').style.display = 'none';
+            document.getElementById('register-verification-step').style.display = 'block';
+            document.getElementById('verification-email-display').textContent = 'Check your email for a 6-digit code';
+            document.getElementById('verification-email-value').textContent = email;
+            document.getElementById('verification-code').focus();
+            
+            showToast('✓ Verification code sent to your email', 'success');
+            startCodeExpiryCountdown();
+            return;
+        }
+        
         if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
         setToken(data.token);
         currentUser = data.user;
@@ -412,32 +436,40 @@ async function submitRegister(e) {
         const data = await response.json();
         
         if (!response.ok) {
-            showError(errorDiv, data.error || 'Registration failed');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Create Account';
-            return;
+            // Check if it's a pending signup error (email pending verification)
+            if (data.hasPendingSignup && data.canCancel) {
+                showError(errorDiv, data.error || 'This email already exists. Please login to proceed.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+                return;
+            } else {
+                showError(errorDiv, data.error || 'Registration failed');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+                return;
+            }
+        } else {
+            // Success - show verification step
+            verificationEmail = email;
+            verificationCodeExpiry = data.expiresIn ? Math.ceil(data.expiresIn / 60) : 1;
+            
+            // Hide signup form, show verification form
+            document.getElementById('register-form-step').style.display = 'none';
+            document.getElementById('register-verification-step').style.display = 'block';
+            
+            // Update verification display
+            document.getElementById('verification-email-display').textContent = `Check your email for a 6-digit verification code`;
+            document.getElementById('verification-email-value').textContent = email;
+            document.getElementById('verification-code').focus();
+            
+            // Start countdown timer
+            startCodeExpiryCountdown();
+            
+            // Show confirmation toast
+            showToast('Verification email sent! Check your inbox.', 'success');
         }
         
-        // Success - show verification step
-        verificationEmail = email;
-        verificationCodeExpiry = data.expiresIn ? Math.ceil(data.expiresIn / 60) : 1;
-        
-        // Hide signup form, show verification form
-        document.getElementById('register-form-step').style.display = 'none';
-        document.getElementById('register-verification-step').style.display = 'block';
-        
-        // Update verification display
-        document.getElementById('verification-email-display').textContent = `Check your email for a 6-digit verification code`;
-        document.getElementById('verification-email-value').textContent = email;
-        document.getElementById('verification-code').focus();
-        
-        // Start countdown timer
-        startCodeExpiryCountdown();
-        
-        // Show confirmation toast
-        showToast('Verification email sent! Check your inbox.', 'success');
-        
-        // Clear form
+        // Clear form (always on success path from here)
         document.getElementById('register-name').value = '';
         document.getElementById('register-email').value = '';
         document.getElementById('register-password').value = '';
@@ -523,6 +555,71 @@ async function submitVerifyEmail(event) {
 }
 
 /**
+ * Cancel pending signup - delete stuck verification and allow re-signup
+ */
+async function submitCancelPendingSignup(event) {
+    if (event) event.preventDefault();
+    
+    if (!confirm('This will delete your pending signup and allow you to register again with the same email. Continue?')) {
+        return;
+    }
+    
+    const errorDiv = document.getElementById('verification-error');
+    const button = document.getElementById('cancel-signup-btn');
+    
+    button.disabled = true;
+    button.textContent = 'Cancelling...';
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/cancel-pending-signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: verificationEmail })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            const errorMsg = data.error || 'Failed to cancel signup';
+            showError(errorDiv, errorMsg);
+            showToast('✗ ' + errorMsg, 'error');
+            button.disabled = false;
+            button.textContent = 'Cancel & Try Again';
+            return;
+        }
+        
+        showToast('✓ Signup cancelled. You can now register with a new password or try again.', 'success');
+        
+        // Reset forms and go back to signup
+        setTimeout(() => {
+            // Reset verification form
+            document.getElementById('register-form-step').style.display = 'block';
+            document.getElementById('register-verification-step').style.display = 'none';
+            document.getElementById('verification-code').value = '';
+            
+            // Clear input fields
+            document.getElementById('register-name').value = '';
+            document.getElementById('register-email').value = '';
+            document.getElementById('register-password').value = '';
+            document.getElementById('register-confirm-password').value = '';
+            
+            verificationEmail = null;
+            button.disabled = false;
+            button.textContent = 'Cancel & Try Again';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Cancel signup error:', error);
+        const errorMsg = 'An error occurred. Please try again.';
+        showError(errorDiv, errorMsg);
+        showToast('✗ ' + errorMsg, 'error');
+        button.disabled = false;
+        button.textContent = 'Cancel & Try Again';
+    }
+}
+
+/**
  * Resend verification code
  */
 async function submitResendVerification(event) {
@@ -558,7 +655,7 @@ async function submitResendVerification(event) {
         document.getElementById('verification-code').focus();
         startCodeExpiryCountdown();
         
-        showToast('✓ Verification code sent! Timer reset to 60 seconds.', 'success');
+        showToast('✓ Verification code ready! Timer reset to 10 minutes.', 'success');
         button.disabled = false;
         button.textContent = 'Resend Code';
         
@@ -584,13 +681,24 @@ function startCodeExpiryCountdown() {
         clearInterval(window.codeExpiryInterval);
     }
     
+    const updateDisplay = () => {
+        if (remainingSeconds > 60) {
+            const minutes = Math.ceil(remainingSeconds / 60);
+            expiryDisplay.textContent = `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        } else {
+            expiryDisplay.textContent = `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
+        }
+    };
+    
+    updateDisplay();
+    
     const interval = setInterval(() => {
         remainingSeconds--;
-        expiryDisplay.textContent = remainingSeconds.toString();
+        updateDisplay();
         
         if (remainingSeconds <= 0) {
             clearInterval(interval);
-            expiryDisplay.textContent = '0';
+            expiryDisplay.textContent = 'Expired';
         }
     }, 1000);
     
@@ -773,7 +881,7 @@ async function submitResendResetCode(event) {
         clearInterval(resetCodeTimer);
         startResetCodeExpiryCountdown();
         
-        showToast('✓ New code sent! Timer reset to 60 seconds.', 'success');
+        showToast('✓ New code ready! Timer reset to 10 minutes.', 'success');
         
     } catch (error) {
         console.error('Resend reset code error:', error);
@@ -793,7 +901,12 @@ function startResetCodeExpiryCountdown() {
     const updateTimer = () => {
         remainingSeconds--;
         if (remainingSeconds > 0) {
-            expiryElement.textContent = `Code expires in ${remainingSeconds} seconds`;
+            if (remainingSeconds > 60) {
+                const minutes = Math.ceil(remainingSeconds / 60);
+                expiryElement.textContent = `Code expires in ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+            } else {
+                expiryElement.textContent = `Code expires in ${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
+            }
         } else {
             expiryElement.textContent = 'Code expired. Please request a new one.';
             clearInterval(resetCodeTimer);
@@ -873,14 +986,19 @@ async function submitResetPassword(event) {
         
         // Success
         resetEmail = null;
-        showToast('✓ Password reset successfully! Please log in.', 'success');
         
-        setTimeout(() => {
-            navigateTo('login');
-        }, 2000);
-        
+        if (data.isPendingSignup) {
+            showToast('✓ Password updated! Check your email for the verification code to complete signup.', 'success');
+            setTimeout(() => {
+                navigateTo('register');
+            }, 2000);
+        } else {
+            showToast('✓ Password reset successfully! Please log in.', 'success');
+            setTimeout(() => {
+                navigateTo('login');
+            }, 2000);
+        }
     } catch (error) {
-        console.error('Reset password error:', error);
         showError(errorDiv, 'An error occurred. Please try again.');
         submitBtn.disabled = false;
         submitBtn.textContent = 'Reset Password';
@@ -961,7 +1079,7 @@ function closeAccountMenu() {
 
 function fillAccountPage() {
     if (!currentUser) return;
-    const planLabel = { free: 'Free', professional: 'Professional ($79/mo)', enterprise: 'Enterprise ($199/mo)' };
+    const planLabel = { free: 'Free', professional: 'Professional ($19.99/mo)', enterprise: 'Enterprise ($49.99/mo)' };
     document.getElementById('acct-name').textContent  = currentUser.name;
     document.getElementById('acct-email').textContent = currentUser.email;
     document.getElementById('acct-plan').textContent  = planLabel[currentUser.plan] || currentUser.plan;
@@ -2549,6 +2667,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         showToast('✓ Payment successful! Your ' + plan + ' plan is now active.', 'success');
         // Refresh user data so plan is up-to-date
         await restoreSession();
+        updateAccountMenuData();
         history.replaceState({}, '', '/');
         navigateTo('account');
     }

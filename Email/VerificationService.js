@@ -24,7 +24,7 @@ class VerificationService {
    */
   static async sendVerificationEmail(email, userName = 'User') {
     const code = this.generateCode();
-    const expiresIn = 60 * 1000; // 60 seconds
+    const expiresIn = 10 * 60 * 1000; // 10 minutes
     const expiresAt = Date.now() + expiresIn;
 
     // Store verification code in database

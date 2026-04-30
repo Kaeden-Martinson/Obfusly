@@ -36,7 +36,7 @@ class PasswordResetService {
    */
   static async sendPasswordResetEmail(email, userName = 'User', resetUrl) {
     const token = this.generateToken();
-    const expiresIn = 60 * 60 * 1000; // 1 hour
+    const expiresIn = 10 * 60 * 1000; // 10 minutes
     const expiresAt = Date.now() + expiresIn;
 
     // Store reset token

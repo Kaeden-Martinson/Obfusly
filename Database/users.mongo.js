@@ -100,6 +100,33 @@ module.exports = {
         return await users.findOne({ stripeCustId: stripeCustomerId, del: { $ne: true } });
     },
 
+    /**
+     * Find user by Stripe subscription ID
+     */
+    async findByStripeSubscriptionId(stripeSubscriptionId) {
+        const users = await getUsersCollection();
+        return await users.findOne({ stripeSubId: stripeSubscriptionId, del: { $ne: true } });
+    },
+
+    /**
+     * Universal account lookup by ID, email, subscription ID, or customer ID
+     */
+    async findByIdentifier(identifier) {
+        if (!identifier) return null;
+        const users = await getUsersCollection();
+        
+        // Try to match by different fields
+        return await users.findOne({
+            $or: [
+                { id: identifier },
+                { email: { $regex: `^${identifier.toLowerCase()}$`, $options: 'i' } },
+                { stripeCustId: identifier },
+                { stripeSubId: identifier },
+            ],
+            del: { $ne: true },
+        });
+    },
+
     // ═══════════════════════════════════════════════════════════════════
     // USER CREATION & DELETION
     // ═══════════════════════════════════════════════════════════════════

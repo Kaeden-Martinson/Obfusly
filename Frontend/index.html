@@ -33,7 +33,7 @@
                     <button class="cta-button cta-button-ghost cta-button-offset" onclick="navigateTo('register')"
                         id="nav-register-btn">Sign Up</button>
                     <button class="cta-button nav-hidden" id="nav-account-btn"
-                        onclick="showAccountMenu()">Profile</button>
+                        onclick="navigateTo('account')">My Account</button>
                     <button class="cta-button cta-button-danger cta-button-offset nav-hidden" id="nav-logout-btn"
                         onclick="logout()">Log Out</button>
                 </div>
@@ -56,7 +56,7 @@
             <div class="mobile-auth-area" id="mobile-nav-auth-area">
                 <button class="cta-button mobile-cta-button" onclick="navigateTo('login'); toggleMobileMenu()" id="mobile-nav-login-btn">Log In</button>
                 <button class="cta-button cta-button-ghost mobile-cta-button" onclick="navigateTo('register'); toggleMobileMenu()" id="mobile-nav-register-btn">Sign Up</button>
-                <button class="cta-button nav-hidden mobile-cta-button" id="mobile-nav-account-btn" onclick="navigateTo('profile'); toggleMobileMenu()">Profile</button>
+                <button class="cta-button nav-hidden mobile-cta-button" id="mobile-nav-account-btn" onclick="navigateTo('account'); toggleMobileMenu()">My Account</button>
                 <button class="cta-button cta-button-danger nav-hidden mobile-cta-button" id="mobile-nav-logout-btn" onclick="logout(); toggleMobileMenu()">Log Out</button>
             </div>
         </nav>
@@ -1474,7 +1474,7 @@
                             <input type="text" id="verification-code" placeholder="123456" maxlength="6" 
                                 pattern="[0-9]{6}" required autocomplete="off" inputmode="numeric">
                             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
-                                Enter the 6-digit code (expires in <span id="code-expiry">60</span> seconds)
+                                Enter the 6-digit code (expires in <span id="code-expiry">10 minutes</span>)
                             </p>
                         </div>
                         <button type="submit" class="btn-primary btn-block auth-submit" id="verify-submit-btn">Verify Email</button>
@@ -1483,6 +1483,11 @@
                         <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Didn't receive the code?</p>
                         <button type="button" id="resend-code-btn" class="text-link" style="background: none; border: none; cursor: pointer; padding: 0;" 
                             onclick="submitResendVerification()">Resend Code</button>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0.5rem;">
+                            Stuck? Can't verify this email?
+                        </p>
+                        <button type="button" id="cancel-signup-btn" class="text-link" style="background: none; border: none; cursor: pointer; padding: 0; color: var(--danger-color, #ff6b6b);" 
+                            onclick="submitCancelPendingSignup()">Cancel & Try Again</button>
                     </div>
                 </div>
             </div>
