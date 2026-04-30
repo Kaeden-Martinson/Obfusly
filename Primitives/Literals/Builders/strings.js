@@ -10,7 +10,7 @@ const { createObfuscatedWindow } = require('../../../Utils/Window/window');
 const { breakShuffleAndBuild } = require('./iife');
 const { encodeParts, buildDecoderSnippet } = require('./encoder');
 const { generateObfuscatedName } = require('../../../Utils/nameGenerator');
-const { compress } = require('../../../Utils/compressor');
+const { compress, removeSpacesAndNewlines } = require('../../../Utils/compressor');
 
 let builtStrings = [];
 let builtStringsMap = new Map(); // O(1) lookup replacing O(n) includes/indexOf
@@ -363,7 +363,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         ${initEncArrName};
 
         const ${randName} = ${!config.strictMode?"eval":""}(${!config.strictMode ? JSON.stringify("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`) : ("(() => {" + code.split(initEncArrName)[1] + `${builtWindowObject} return ${iifeFnName} })()`)});
-        const ${getFnName} = (${randName} || ${declarationMapping.get("null")})`;
+        const ${getFnName} = (${randName} || ${declarationMapping.get("null")});`;
 
         code = code.replaceAll("__QUOTE_OPERATORS__", '"');
 
@@ -386,7 +386,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
             let output = rebuiltCode.replace(/\[(\d+)\]/g, (_, num) => {
                 return `[${config.numberCalculator ? `${encodingAndDecodingPairs.decodeName}(${encodeModule.encode(Number(num))})` : encodeNumber(Number(num))}]`;
             });
-
+            
             code = code.replace(originalIIFECode, output);
             code = `${decoderSnippet}` + code;
         };
@@ -394,10 +394,10 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
 
     // Safety net: if IIFE wrapping didn't create the link, add a direct alias
     if (getFnName !== iifeFnName && !code.includes(`const ${getFnName}`) && !code.includes(`var ${getFnName}`)) {
-        code += `\nvar ${getFnName} = ${iifeFnName};`;
+        code += `\nvar ${getFnName}=${iifeFnName};`;
     }
 
-    return config.output.compression ? compress(code) : code;
+    return config.output.compression ? removeSpacesAndNewlines(code) : code;
 };
 
 function getBrokenIIFE() {

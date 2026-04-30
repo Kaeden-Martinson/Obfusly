@@ -132,7 +132,7 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
 
                 numberCount++;
                 return defaultedFunction(number, declarationMapping);
-            };
+            } else return number;
         } else if (config.numbers.enabled) {
             let percentageBasedConfig = { ...config.numbers.baseIntegerFormat.distribution };
             if (number <= 10 && config.numbers.baseIntegerFormat.distribution.JSFuck > 0) percentageBasedConfig.JSFuck = 35; else percentageBasedConfig.JSFuck = 0;

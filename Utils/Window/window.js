@@ -2,6 +2,7 @@ const config = require("../../Settings/config");
 
 const { encodeStringsRandom } = require("../../Primitives/Literals/strings");
 const { generateObfuscatedName } = require("../nameGenerator");
+const { compress, removeSpacesAndNewlines } = require("../compressor");
 
 function encodePlainString(str, encodeLocalNumber, encodingAndDecodingPairs) {
     return [...str].map(v => `String.fromCharCode(${encodingAndDecodingPairs?.decodeName ?? ""}(${encodeLocalNumber(v.charCodeAt())}))`).join("+");
@@ -30,8 +31,12 @@ function createObfuscatedWindow(declarationMapping, encodingAndDecodingPairs, en
         functionString += `(function ${generateObfuscatedName()}() { ${name} = typeof globalThis === "object" ? globalThis : typeof self === "object" ? self : global; })();`;
     } else {
         functionString = `let ${functionName} = `;
-        if (!config.output.strictMode) functionString += `eval(\`(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom(`return ${globalRef}`).raw})\\\`\\\`})\`);`
-        else functionString += `(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${allowedToEncodeStrings ? encodeStringsRandom('map').raw : encodePlainString('map', encodeLocalNumber, encodingAndDecodingPairs)}][${allowedToEncodeStrings ? encodeStringsRandom('constructor').raw : encodePlainString('constructor', encodeLocalNumber, encodingAndDecodingPairs)}](${allowedToEncodeStrings ? encodeStringsRandom(`return ${globalRef}`).raw : encodePlainString(`return ${globalRef}`, encodeLocalNumber, encodingAndDecodingPairs)})\`\`});`;
+        if (!config.output.strictMode) {
+            let innerString = `(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${encodeStringsRandom('map').raw}][${encodeStringsRandom('constructor').raw}](${encodeStringsRandom(`return ${globalRef}`).raw})\`\`});`;
+            if (config.output.compression) innerString = removeSpacesAndNewlines(innerString);
+            innerString = innerString.replace(/`/g, '\\`');
+            functionString += `eval(\`${(innerString)}\`);`;
+        } else functionString += `(() => { return [${isNegative ? "-" : ""}${encodingAndDecodingPairs?.decodeName ?? ""}(${encodedValue})][${allowedToEncodeStrings ? encodeStringsRandom('map').raw : encodePlainString('map', encodeLocalNumber, encodingAndDecodingPairs)}][${allowedToEncodeStrings ? encodeStringsRandom('constructor').raw : encodePlainString('constructor', encodeLocalNumber, encodingAndDecodingPairs)}](${allowedToEncodeStrings ? encodeStringsRandom(`return ${globalRef}`).raw : encodePlainString(`return ${globalRef}`, encodeLocalNumber, encodingAndDecodingPairs)})\`\`});`;
         functionString += `${name} = ${functionName}\`void 0\` || ${declarationMapping.get("null")};`;
     }
 
