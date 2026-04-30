@@ -11,20 +11,21 @@ const rateLimit = require('express-rate-limit');
 const Stripe = require('stripe');
 const mongoManager = require('./Database/mongodb');
 const db = require('./Database/users.mongo');
+const { VerificationService, PasswordResetService, EmailTemplates } = require('./Email');
 
 // ── Configuration ────────────────────────────────────────────────────────────
 // Set these via environment variables in production.
-const JWT_SECRET    = process.env.JWT_SECRET    || 'change-me-in-production-' + crypto.randomBytes(16).toString('hex');
+const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production-' + crypto.randomBytes(16).toString('hex');
 const STRIPE_SECRET = process.env.STRIPE_SECRET || '';          // sk_live_... or sk_test_...
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || ''; // whsec_...
-const DOMAIN        = process.env.DOMAIN        || 'http://localhost:3000';
+const DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
 
 const stripe = STRIPE_SECRET ? Stripe(STRIPE_SECRET) : null;
 
 // Plan → Stripe Price ID mapping.  Fill in your own Price IDs from the Stripe Dashboard.
 const STRIPE_PRICES = {
     professional: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_professional_placeholder',
-    enterprise:   process.env.STRIPE_PRICE_ENTERPRISE   || 'price_enterprise_placeholder',
+    enterprise: process.env.STRIPE_PRICE_ENTERPRISE || 'price_enterprise_placeholder',
 };
 
 // ── Express setup ─────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ function signToken(userId) {
 
 function requireAuth(req, res, next) {
     const header = req.headers.authorization || '';
-    const token  = header.startsWith('Bearer ') ? header.slice(7) : null;
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
     if (!token) return res.status(401).json({ error: 'Authentication required.' });
     try {
         req.user = jwt.verify(token, JWT_SECRET);
@@ -100,24 +101,37 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
         if (existingUser)
             return res.status(409).json({ error: 'An account with that email already exists.' });
 
-        const hash = await bcrypt.hash(password, 12);
-        const user = await db.create({
-            id: crypto.randomUUID(),
-            name: name.trim().slice(0, 80),
-            email: email.toLowerCase().trim(),
-            passwordHash: hash,
-            plan: 'free',
-            createdAt: new Date(),
-        });
+        const existingPending = await db.getPendingSignup(email);
+        if (existingPending)
+            return res.status(409).json({ error: 'An account with that email is already pending verification.' });
 
-        const token = signToken(user.id);
-        res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, plan: user.plan } });
+        // Hash password
+        const hash = await bcrypt.hash(password, 12);
+
+        // Store pending signup (NOT creating user yet)
+        await db.createPendingSignup(email, hash, name);
+
+        // Send verification email
+        const emailResult = await VerificationService.sendVerificationEmail(email, name);
+
+        if (!emailResult.success) {
+            // Email failed but signup stored - user can resend
+            console.error('Failed to send verification email:', emailResult.error);
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Account created. Check your email for verification code.',
+            email: email,
+            expiresIn: emailResult.expiresIn
+        });
     } catch (error) {
         console.error('Registration error:', error);
         res.status(500).json({ error: 'Registration failed' });
     }
 });
 
+// Login to your account
 app.post('/api/auth/login', authLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -128,7 +142,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
         if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
 
         const ok = await bcrypt.compare(password, user.passHash);
-        if (!ok)  return res.status(401).json({ error: 'Invalid email or password.' });
+        if (!ok) return res.status(401).json({ error: 'Invalid email or password.' });
 
         const token = signToken(user.id);
         res.json({ token, user: { id: user.id, name: user.name, email: user.email, plan: user.plan } });
@@ -138,19 +152,261 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     }
 });
 
+// Verify email with code
+app.post('/api/auth/verify-email', authLimiter, async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({ error: 'Email and verification code are required.' });
+        }
+
+        // Verify the code (now async with database storage)
+        const result = await VerificationService.verifyCode(email, code);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        // Get pending signup
+        const pendingSignup = await db.getPendingSignup(email);
+        if (!pendingSignup) {
+            return res.status(404).json({ error: 'Signup not found. Please sign up again.' });
+        }
+
+        // Create actual user from pending signup
+        const userId = crypto.randomUUID();
+        const user = await db.confirmPendingSignup(email, userId);
+
+        // Send welcome email
+        const welcomeTemplate = EmailTemplates.getWelcomeEmail(user.name);
+        const emailService = require('./Email').EmailService;
+        emailService.send({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: welcomeTemplate.subject,
+            text: welcomeTemplate.text,
+            html: welcomeTemplate.html
+        }).catch(err => console.error('Welcome email failed:', err));
+
+        // Return token so user can log in    
+        const token = signToken(user.id);
+        res.json({
+            success: true,
+            message: 'Email verified! You can now use your account.',
+            token,
+            user: { id: user.id, name: user.name, email: user.email, plan: user.plan }
+        });
+    } catch (error) {
+        console.error('Email verification error:', error);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// Resend verification code
+app.post('/api/auth/resend-verification', authLimiter, async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required.' });
+        }
+
+        // Check if email is pending verification
+        const pendingSignup = await db.getPendingSignup(email);
+        if (!pendingSignup) {
+            return res.status(404).json({ error: 'No pending signup found for this email.' });
+        }
+
+        // Send new verification email
+        const result = await VerificationService.resendVerificationCode(email, pendingSignup.name);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                message: 'New verification code sent',
+                expiresIn: result.expiresIn,
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: result.error,
+            });
+        }
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({ error: 'Failed to resend verification code' });
+    }
+});
+
+// Forgot password - send 6-digit code
+app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required.' });
+        }
+
+        // Check if user exists
+        const user = await db.findByEmail(email);
+        if (!user) {
+            // Don't reveal if email exists - security best practice
+            return res.status(200).json({
+                success: true,
+                message: 'If an account exists, a reset code has been sent.',
+            });
+        }
+
+        // Generate 6-digit reset code
+        const resetCode = VerificationService.generateCode();
+        const expiresAt = Date.now() + 60 * 1000; // 60 seconds
+
+        // Store reset code in database
+        await db.storeResetCode(email, resetCode, expiresAt);
+
+        // Send reset code email
+        const template = EmailTemplates.getPasswordResetEmail(resetCode, user.name);
+        const emailService = require('./Email').EmailService;
+        await emailService.send({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: template.subject,
+            text: template.text,
+            html: template.html
+        }).catch(err => console.error('Failed to send reset email:', err));
+
+        res.status(200).json({
+            success: true,
+            message: 'Reset code sent to email',
+            expiresIn: 60 * 1000 // 60 seconds
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ error: 'An error occurred. Please try again.' });
+    }
+});
+
+// Verify reset code
+app.post('/api/auth/verify-reset-code', authLimiter, async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({ error: 'Email and code are required.' });
+        }
+
+        // Verify the reset code
+        const result = await db.verifyResetCode(email, code);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.json({
+            success: true,
+            message: 'Code verified. You can now reset your password.',
+        });
+    } catch (error) {
+        console.error('Verify reset code error:', error);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// Resend reset code
+app.post('/api/auth/resend-reset-code', authLimiter, async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required.' });
+        }
+
+        // Check if user exists
+        const user = await db.findByEmail(email);
+        if (!user) {
+            // Don't reveal if email exists
+            return res.status(200).json({
+                success: true,
+                message: 'If an account exists, a reset code has been sent.',
+            });
+        }
+
+        // Generate new reset code
+        const resetCode = VerificationService.generateCode();
+        const expiresAt = Date.now() + 60 * 1000; // 60 seconds
+
+        // Store new code
+        await db.storeResetCode(email, resetCode, expiresAt);
+
+        // Send reset code email
+        const template = EmailTemplates.getPasswordResetEmail(resetCode, user.name);
+        const emailService = require('./Email').EmailService;
+        await emailService.send({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: template.subject,
+            text: template.text,
+            html: template.html
+        }).catch(err => console.error('Failed to send reset email:', err));
+
+        res.json({
+            success: true,
+            message: 'New code sent',
+            expiresIn: 60 * 1000 // 60 seconds
+        });
+    } catch (error) {
+        console.error('Resend reset code error:', error);
+        res.status(500).json({ error: 'Failed to resend code' });
+    }
+});
+
+// Reset password - update after code verification
+app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+        }
+
+        // Get user
+        const user = await db.findByEmail(email);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        // Hash new password
+        const newPasswordHash = await bcrypt.hash(password, 12);
+
+        // Update user password
+        await db.updatePassword(user.id, newPasswordHash);
+
+        res.status(200).json({
+            success: true,
+            message: 'Password reset successfully. Please log in with your new password.',
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ error: 'An error occurred. Please try again.' });
+    }
+});
+
 app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
         const user = await db.findById(req.user.sub);
         if (!user) return res.status(404).json({ error: 'User not found.' });
-        
         // Get daily obfuscation usage
         const usage = await db.checkObfuscationLimit(req.user.sub);
-        
-        res.json({ 
-            id: user.id, 
-            name: user.name, 
-            email: user.email, 
-            plan: user.plan, 
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            plan: user.plan,
             createdAt: user.cAt,
             subscriptionStatus: user.subStatus || null,
             nextBillingDate: user.nextBillDt || null,
@@ -161,6 +417,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
                 limit: usage.limit,
                 remaining: usage.remaining,
                 plan: usage.plan,
+
             }
         });
     } catch (error) {
@@ -176,7 +433,7 @@ app.post('/api/payment/create-session', requireAuth, async (req, res) => {
             return res.status(503).json({ error: 'Payment system is not configured yet.' });
 
         const { plan } = req.body;
-        const priceId  = STRIPE_PRICES[plan];
+        const priceId = STRIPE_PRICES[plan];
         if (!priceId || priceId.includes('placeholder'))
             return res.status(400).json({ error: 'Unknown plan or Stripe prices not configured.' });
 
@@ -190,7 +447,7 @@ app.post('/api/payment/create-session', requireAuth, async (req, res) => {
             customer_email: user.email,
             metadata: { userId: user.id, plan },
             success_url: `${DOMAIN}/?checkout=success&plan=${plan}`,
-            cancel_url:  `${DOMAIN}/pricing`,
+            cancel_url: `${DOMAIN}/pricing`,
         });
         res.json({ url: session.url });
     } catch (error) {
@@ -230,22 +487,22 @@ app.post('/api/subscription/cancel', requireAuth, async (req, res) => {
     try {
         const user = await db.findById(req.user.sub);
         if (!user) return res.status(404).json({ error: 'User not found.' });
-        
+
         if (!user.plan || user.plan === 'free') {
             return res.status(400).json({ error: 'User is not on a paid plan.' });
         }
 
         // Cancel the subscription (keep paid plan active until planExpiryDate)
         const updated = await db.cancelSubscription(req.user.sub);
-        
+
         if (!updated) {
             return res.status(500).json({ error: 'Failed to cancel subscription.' });
         }
-    
+
         console.log(`[SUBSCRIPTION] User ${req.user.sub} cancelled ${user.plan} plan. Active until ${updated.planExpDt}`);
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: 'Subscription cancelled. Your plan remains active until ' + new Date(updated.planExpDt).toLocaleDateString(),
             user: updated
         });
@@ -338,7 +595,15 @@ console.log('Average: ' + (sumArray(numbers) / numbers.length));`,
 
 for (let i = 2; i <= 20; i++) {
   if (isPrime(i)) console.log(i + ' is prime');
-}`
+}`,
+    // Base One
+    `// Enter your JavaScript code here
+
+function hello(name) {
+  console.log("Hello, " + name);
+}
+
+hello("World");`
 ];
 
 const DEFAULT_CONFIG = JSON.parse(JSON.stringify(runtimeConfig));
@@ -355,26 +620,26 @@ async function obfuscateWithWorker(code, config) {
 async function handleObfuscation(req, res) {
     // Reset config to defaults for each request to avoid accumulation across requests
     restoreDefaults();
-    
+
     const { code, config: incomingConfig } = req.body;
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if (!code) {
         res.status(400).json({ error: 'No code provided' });
         return;
     }
-    
+
     // Verify token and extract user ID
     let userId = null;
     let isAuthenticated = false;
     let userPlan = 'free';
-    
+
     if (token) {
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
             userId = decoded.sub;
             isAuthenticated = true;
-            
+
             // Get user plan for response
             const user = await db.findById(userId);
             if (user) {
@@ -384,16 +649,16 @@ async function handleObfuscation(req, res) {
             isAuthenticated = false;
         }
     }
-    
+
     // Check if code is from approved examples
-    const isApprovedExample = APPROVED_EXAMPLES.some(example => 
+    const isApprovedExample = APPROVED_EXAMPLES.some(example =>
         example.trim() === code.trim()
     );
-    
+
     // For authenticated users, check server-side limits
     if (isAuthenticated && userId) {
         const limitCheck = await db.checkObfuscationLimit(userId);
-        
+
         // If at limit and trying to obfuscate custom code, deny
         // if (!limitCheck.canObfuscate && !isApprovedExample) {
         //     res.status(429).json({ 
@@ -407,28 +672,28 @@ async function handleObfuscation(req, res) {
     } else if (!isAuthenticated) {
         // Unauthenticated users can ONLY use approved examples
         if (!isApprovedExample) {
-            res.status(403).json({ 
-                error: 'Authentication required to obfuscate custom code. Please sign up or log in.' 
+            res.status(403).json({
+                error: 'Authentication required to obfuscate custom code. Please sign up or log in.'
             });
             return;
         }
     }
-    
+
     try {
         console.log("New Req");
         if (incomingConfig && typeof incomingConfig === 'object') deepMerge(runtimeConfig, incomingConfig);
-        
+
         console.log(runtimeConfig)
 
         // Use worker for both obfuscation steps
         const workerResult = await obfuscateWithWorker(code, runtimeConfig);
         const objectObfuscatedCode = workerResult.objectObfuscatedCode;
-        
+
         // Log obfuscation and increment counter for authenticated users
         if (isAuthenticated && userId) {
             const inputSize = Buffer.byteLength(code, 'utf8');
             const outputSize = Buffer.byteLength(objectObfuscatedCode, 'utf8');
-            
+
             // Log to history
             await db.logObfuscation(userId, {
                 inputSize,
@@ -437,12 +702,12 @@ async function handleObfuscation(req, res) {
                 duration: 0,
                 success: true,
             });
-            
+
             // Increment daily counter
             const updated = await db.incrementObfuscationCount(userId);
-            
+
             // Include usage info in response
-            res.json({ 
+            res.json({
                 obfuscatedCode: objectObfuscatedCode,
                 usage: updated ? {
                     used: updated.used,
@@ -469,26 +734,26 @@ app.post('/execute', (req, res) => {
 
     const output = [];
     const errors = [];
-    
+
     // Capture console output
     const originalLog = console.log;
     const originalError = console.error;
     const originalWarn = console.warn;
 
     console.log = (...args) => {
-        output.push(args.map(arg => 
+        output.push(args.map(arg =>
             typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
         ).join(' '));
     };
 
     console.error = (...args) => {
-        errors.push(args.map(arg => 
+        errors.push(args.map(arg =>
             typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
         ).join(' '));
     };
 
     console.warn = (...args) => {
-        output.push('[WARNING] ' + args.map(arg => 
+        output.push('[WARNING] ' + args.map(arg =>
             typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
         ).join(' '));
     };
@@ -496,7 +761,7 @@ app.post('/execute', (req, res) => {
     try {
         // Execute code in a controlled environment
         const result = (new Function(code))();
-        
+
         // If function returns something, log it
         if (result !== undefined) {
             output.push('Return value: ' + (typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)));

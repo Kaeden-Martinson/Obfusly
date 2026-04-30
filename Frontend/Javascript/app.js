@@ -7,6 +7,8 @@ let inputEditor, outputEditor;
 
 // ── Auth state ─────────────────────────────────────────────────────────────
 let currentUser = null;
+let verificationEmail = null;
+let verificationCodeExpiry = 1; // minutes (60 seconds)
 
 function getToken() { return localStorage.getItem('obfusly_token'); }
 function setToken(t) { localStorage.setItem('obfusly_token', t); }
@@ -376,30 +378,243 @@ async function submitLogin(e) {
 
 async function submitRegister(e) {
     e.preventDefault();
-    const errEl = document.getElementById('register-error');
-    const btn   = document.getElementById('register-submit-btn');
-    const name  = document.getElementById('register-name').value.trim();
+    
+    const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
-    const pass  = document.getElementById('register-password').value;
-    errEl.style.display = 'none';
-    btn.disabled = true;
-    btn.textContent = 'Creating account…';
+    const password = document.getElementById('register-password').value;
+    const tosCheckbox = document.getElementById('register-tos');
+    const errorDiv = document.getElementById('register-error');
+    const submitBtn = document.getElementById('register-submit-btn');
+    
+    // Validation
+    if (!name || !email || !password) {
+        showError(errorDiv, 'Please fill in all fields.');
+        return;
+    }
+    
+    if (!tosCheckbox.checked) {
+        showError(errorDiv, 'You must agree to the Terms of Service and Privacy Policy.');
+        return;
+    }
+    
+    // Disable button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating Account...';
+    hideError(errorDiv);
+    
     try {
-        const res  = await fetch('/api/auth/register', {
+        const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password: pass }),
+            body: JSON.stringify({ name, email, password })
         });
-        const data = await res.json();
-        if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
-        setToken(data.token);
-        currentUser = data.user;
-        updateNavAuth();
-        fillAccountPage();
-        showToast('✓ Account created! Welcome, ' + currentUser.name.split(' ')[0] + '!', 'success');
-        navigateTo('home');
-    } catch { errEl.textContent = 'Network error — please try again.'; errEl.style.display = 'block'; }
-    finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(errorDiv, data.error || 'Registration failed');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+            return;
+        }
+        
+        // Success - show verification step
+        verificationEmail = email;
+        verificationCodeExpiry = data.expiresIn ? Math.ceil(data.expiresIn / 60) : 1;
+        
+        // Hide signup form, show verification form
+        document.getElementById('register-form-step').style.display = 'none';
+        document.getElementById('register-verification-step').style.display = 'block';
+        
+        // Update verification display
+        document.getElementById('verification-email-display').textContent = `Check your email for a 6-digit verification code`;
+        document.getElementById('verification-email-value').textContent = email;
+        document.getElementById('verification-code').focus();
+        
+        // Start countdown timer
+        startCodeExpiryCountdown();
+        
+        // Show confirmation toast
+        showToast('Verification email sent! Check your inbox.', 'success');
+        
+        // Clear form
+        document.getElementById('register-name').value = '';
+        document.getElementById('register-email').value = '';
+        document.getElementById('register-password').value = '';
+        document.getElementById('register-tos').checked = false;
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        showError(errorDiv, 'An error occurred. Please try again.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+    }
+}
+
+/**
+ * Submit verification code after email verification
+ */
+async function submitVerifyEmail(event) {
+    event.preventDefault();
+    
+    const code = document.getElementById('verification-code').value.trim();
+    const errorDiv = document.getElementById('verification-error');
+    const submitBtn = document.getElementById('verify-submit-btn');
+    
+    if (!code || code.length !== 6) {
+        showError(errorDiv, 'Please enter a valid 6-digit code.');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Verifying...';
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/verify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email: verificationEmail, 
+                code 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(errorDiv, data.error || 'Verification failed');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Verify Email';
+            // Clear code field for retry
+            document.getElementById('verification-code').value = '';
+            document.getElementById('verification-code').focus();
+            return;
+        }
+        
+        // Success - auto-login with response from server
+        if (data.token && data.user) {
+            setToken(data.token);
+            currentUser = data.user;
+            updateNavAuth();
+            fillAccountPage();
+        }
+        
+        showToast('✓ Email verified! Welcome to Obfusly.', 'success');
+        
+        // Reset form and redirect after brief delay
+        setTimeout(() => {
+            // Reset verification form
+            document.getElementById('register-form-step').style.display = 'block';
+            document.getElementById('register-verification-step').style.display = 'none';
+            document.getElementById('verification-code').value = '';
+            
+            // Redirect to obfuscation page
+            navigateTo('obfuscation');
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Verification error:', error);
+        showError(errorDiv, 'An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Verify Email';
+    }
+}
+
+/**
+ * Resend verification code
+ */
+async function submitResendVerification(event) {
+    if (event) event.preventDefault();
+    const errorDiv = document.getElementById('verification-error');
+    const button = event ? event.target : document.getElementById('resend-code-btn');
+    
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/resend-verification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: verificationEmail })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            const errorMsg = data.error || 'Failed to resend code';
+            showError(errorDiv, errorMsg);
+            showToast('✗ ' + errorMsg, 'error');
+            button.disabled = false;
+            button.textContent = 'Resend Code';
+            return;
+        }
+        
+        // Reset timer and code
+        verificationCodeExpiry = data.expiresIn ? Math.ceil(data.expiresIn / 60) : 1;
+        document.getElementById('verification-code').value = '';
+        document.getElementById('verification-code').focus();
+        startCodeExpiryCountdown();
+        
+        showToast('✓ Verification code sent! Timer reset to 60 seconds.', 'success');
+        button.disabled = false;
+        button.textContent = 'Resend Code';
+        
+    } catch (error) {
+        console.error('Resend error:', error);
+        const errorMsg = 'An error occurred. Please try again.';
+        showError(errorDiv, errorMsg);
+        showToast('✗ ' + errorMsg, 'error');
+        button.disabled = false;
+        button.textContent = 'Resend Code';
+    }
+}
+
+/**
+ * Start countdown timer for code expiry
+ */
+function startCodeExpiryCountdown() {
+    const expiryDisplay = document.getElementById('code-expiry');
+    let remainingSeconds = verificationCodeExpiry * 60;
+    
+    // Clear any existing interval
+    if (window.codeExpiryInterval) {
+        clearInterval(window.codeExpiryInterval);
+    }
+    
+    const interval = setInterval(() => {
+        remainingSeconds--;
+        expiryDisplay.textContent = remainingSeconds.toString();
+        
+        if (remainingSeconds <= 0) {
+            clearInterval(interval);
+            expiryDisplay.textContent = '0';
+        }
+    }, 1000);
+    
+    window.codeExpiryInterval = interval;
+}
+
+/**
+ * Helper: Show error message
+ */
+function showError(element, message) {
+    if (element) {
+        element.textContent = message;
+        element.classList.remove('auth-error-hidden');
+    }
+}
+
+/**
+ * Helper: Hide error message
+ */
+function hideError(element) {
+    if (element) {
+        element.textContent = '';
+        element.classList.add('auth-error-hidden');
+    }
 }
 
 function logout() {
@@ -408,6 +623,268 @@ function logout() {
     updateNavAuth();
     showToast('You have been logged out.', 'info');
     navigateTo('home');
+}
+
+let resetEmail = null;
+let resetCodeExpiry = null;
+let resetCodeTimer = null;
+
+/**
+ * Submit forgot password form - send 6-digit code
+ */
+async function submitForgotPassword(event) {
+    event.preventDefault();
+    const errorDiv = document.getElementById('forgot-password-error');
+    const submitBtn = document.getElementById('forgot-password-submit-btn');
+    const email = document.getElementById('forgot-password-email').value.trim();
+    
+    if (!email) {
+        showError(errorDiv, 'Please enter your email address.');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(errorDiv, data.error || 'Failed to send code');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Code';
+            return;
+        }
+        
+        // Success - show code verification step
+        resetEmail = email;
+        resetCodeExpiry = data.expiresIn ? Math.ceil(data.expiresIn / 60) : 1;
+        
+        // Hide email form, show code form
+        document.getElementById('forgot-password-form-step').style.display = 'none';
+        document.getElementById('forgot-password-code-step').style.display = 'block';
+        document.getElementById('forgot-password-code').focus();
+        
+        // Start countdown
+        startResetCodeExpiryCountdown();
+        
+        showToast('✓ Verification code sent! Check your email.', 'success');
+        
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        showError(errorDiv, 'An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Code';
+    }
+}
+
+/**
+ * Verify reset code
+ */
+async function submitVerifyResetCode(event) {
+    event.preventDefault();
+    const errorDiv = document.getElementById('forgot-password-code-error');
+    const submitBtn = document.getElementById('forgot-password-code-submit-btn');
+    const code = document.getElementById('forgot-password-code').value.trim();
+    
+    if (!code || code.length !== 6) {
+        showError(errorDiv, 'Please enter a valid 6-digit code.');
+        return;
+    }
+    
+    if (!resetEmail) {
+        showError(errorDiv, 'Session error. Please start over.');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Verifying...';
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/verify-reset-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: resetEmail, code })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(errorDiv, data.error || 'Invalid code');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Verify Code';
+            return;
+        }
+        
+        // Code verified - go to password reset page
+        clearInterval(resetCodeTimer);
+        showToast('✓ Code verified! Set your new password.', 'success');
+        navigateTo('reset-password');
+        
+    } catch (error) {
+        console.error('Verify reset code error:', error);
+        showError(errorDiv, 'An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Verify Code';
+    }
+}
+
+/**
+ * Resend reset code
+ */
+async function submitResendResetCode(event) {
+    event.preventDefault();
+    const errorDiv = document.getElementById('forgot-password-code-error');
+    const submitBtn = event.target.closest('.text-link') || document.getElementById('forgot-password-code-submit-btn');
+    
+    if (!resetEmail) {
+        showError(errorDiv, 'Session error. Please start over.');
+        return;
+    }
+    
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/resend-reset-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: resetEmail })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(errorDiv, data.error || 'Failed to resend code');
+            return;
+        }
+        
+        // Reset code sent
+        resetCodeExpiry = data.expiresIn ? Math.ceil(data.expiresIn / 60) : 1;
+        document.getElementById('forgot-password-code').value = '';
+        
+        clearInterval(resetCodeTimer);
+        startResetCodeExpiryCountdown();
+        
+        showToast('✓ New code sent! Timer reset to 60 seconds.', 'success');
+        
+    } catch (error) {
+        console.error('Resend reset code error:', error);
+        showError(errorDiv, 'An error occurred. Please try again.');
+    }
+}
+
+/**
+ * Start countdown timer for reset code expiry
+ */
+function startResetCodeExpiryCountdown() {
+    if (resetCodeTimer) clearInterval(resetCodeTimer);
+    
+    const expiryElement = document.getElementById('reset-code-expiry');
+    let remainingSeconds = resetCodeExpiry * 60;
+    
+    const updateTimer = () => {
+        remainingSeconds--;
+        if (remainingSeconds > 0) {
+            expiryElement.textContent = `Code expires in ${remainingSeconds} seconds`;
+        } else {
+            expiryElement.textContent = 'Code expired. Please request a new one.';
+            clearInterval(resetCodeTimer);
+        }
+    };
+    
+    updateTimer();
+    resetCodeTimer = setInterval(updateTimer, 1000);
+}
+
+/**
+ * Reset forgot password to email step
+ */
+function resetForgotPasswordStep() {
+    clearInterval(resetCodeTimer);
+    resetEmail = null;
+    resetCodeExpiry = null;
+    
+    document.getElementById('forgot-password-form-step').style.display = 'block';
+    document.getElementById('forgot-password-code-step').style.display = 'none';
+    document.getElementById('forgot-password-email').value = '';
+    document.getElementById('forgot-password-code').value = '';
+    
+    hideError(document.getElementById('forgot-password-error'));
+    hideError(document.getElementById('forgot-password-code-error'));
+}
+
+/**
+ * Submit reset password form
+ */
+async function submitResetPassword(event) {
+    event.preventDefault();
+    const errorDiv = document.getElementById('reset-password-error');
+    const submitBtn = document.getElementById('reset-password-submit-btn');
+    const newPassword = document.getElementById('reset-password-new').value;
+    const confirmPassword = document.getElementById('reset-password-confirm').value;
+    
+    if (!newPassword || !confirmPassword) {
+        showError(errorDiv, 'Please fill in all fields.');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        showError(errorDiv, 'Password must be at least 8 characters.');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showError(errorDiv, 'Passwords do not match.');
+        return;
+    }
+    
+    if (!resetEmail) {
+        showError(errorDiv, 'Session expired. Please start over.');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Resetting...';
+    hideError(errorDiv);
+    
+    try {
+        const response = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: resetEmail, password: newPassword })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(errorDiv, data.error || 'Failed to reset password');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Reset Password';
+            return;
+        }
+        
+        // Success
+        resetEmail = null;
+        showToast('✓ Password reset successfully! Please log in.', 'success');
+        
+        setTimeout(() => {
+            navigateTo('login');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Reset password error:', error);
+        showError(errorDiv, 'An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Reset Password';
+    }
 }
 
 function showAccountMenu() {
@@ -854,6 +1331,7 @@ async function obfuscateCode() {
             // Update local user object with latest usage info
             currentUser.usage = result.usage;
             updateAccountMenuData();
+            updateProfilePage();
         }
         
         outputEditor?.setValue(result.obfuscatedCode);

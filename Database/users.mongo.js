@@ -747,4 +747,344 @@ module.exports = {
         tomorrow.setUTCHours(0, 0, 0, 0);
         return tomorrow.toISOString();
     },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PENDING SIGNUPS (Email Verification)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Get pending signups collection
+     */
+    async getPendingSignupsCollection() {
+        const db = await mongoManager.getDB();
+        return db.collection('pending_signups');
+    },
+
+    /**
+     * Store a pending signup (not yet verified)
+     * @param {string} email - User email
+     * @param {string} passwordHash - Hashed password
+     * @param {string} name - User name
+     * @returns {object} Pending signup record
+     */
+    async createPendingSignup(email, passwordHash, name) {
+        const pendingSignups = await this.getPendingSignupsCollection();
+        
+        // Delete any existing pending signup for this email
+        await pendingSignups.deleteOne({ email: email.toLowerCase() });
+        
+        const pendingUser = {
+            email: email.toLowerCase(),
+            passHash: passwordHash,
+            name: name || '',
+            plan: 'free',
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Expires in 24 hours
+        };
+        
+        await pendingSignups.insertOne(pendingUser);
+        return pendingUser;
+    },
+
+    /**
+     * Get pending signup by email
+     */
+    async getPendingSignup(email) {
+        const pendingSignups = await this.getPendingSignupsCollection();
+        return await pendingSignups.findOne({ email: email.toLowerCase() });
+    },
+
+    /**
+     * Convert pending signup to actual user (after email verification)
+     */
+    async confirmPendingSignup(email, userId) {
+        const pendingSignups = await this.getPendingSignupsCollection();
+        const pendingUser = await pendingSignups.findOne({ email: email.toLowerCase() });
+        
+        if (!pendingUser) {
+            throw new Error('Pending signup not found');
+        }
+        
+        // Create actual user
+        const createdUser = await this.create({
+            id: userId,
+            name: pendingUser.name,
+            email: pendingUser.email,
+            passwordHash: pendingUser.passHash,
+            plan: pendingUser.plan || 'free',
+            verified: true,
+            createdAt: new Date(),
+        });
+        
+        // Delete pending signup
+        await pendingSignups.deleteOne({ email: email.toLowerCase() });
+        
+        return createdUser;
+    },
+
+    /**
+     * Delete pending signup (user gave up on verification)
+     */
+    async deletePendingSignup(email) {
+        const pendingSignups = await this.getPendingSignupsCollection();
+        await pendingSignups.deleteOne({ email: email.toLowerCase() });
+    },
+
+    /**
+     * Clean up expired pending signups (older than 24 hours)
+     */
+    async cleanupExpiredPendingSignups() {
+        const pendingSignups = await this.getPendingSignupsCollection();
+        const result = await pendingSignups.deleteMany({
+            expiresAt: { $lt: new Date() },
+        });
+        return result.deletedCount;
+    },
+
+    /**
+     * Update user verified status
+     */
+    async updateVerified(userId, isVerified) {
+        const users = await getUsersCollection();
+        const result = await users.findOneAndUpdate(
+            { id: userId },
+            {
+                $set: {
+                    verified: isVerified,
+                    uAt: new Date(),
+                },
+            },
+            { returnDocument: 'after' }
+        );
+        return result.value;
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // VERIFICATION CODES (Email Verification)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Get verification codes collection
+     */
+    async getVerificationCodesCollection() {
+        const db = await mongoManager.getDB();
+        const collection = db.collection('verification_codes');
+        
+        // Set up TTL index to auto-delete expired codes
+        // TTL index will delete documents 60 seconds after the expiresAt field
+        await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+        
+        return collection;
+    },
+
+    /**
+     * Store a verification code in the database
+     */
+    async storeVerificationCode(email, code, expiresAt) {
+        const verificationCodes = await this.getVerificationCodesCollection();
+        
+        // Delete any existing code for this email
+        await verificationCodes.deleteOne({ email: email.toLowerCase() });
+        
+        // Store new code
+        await verificationCodes.insertOne({
+            email: email.toLowerCase(),
+            code,
+            expiresAt: new Date(expiresAt),
+            attempts: 0,
+        });
+    },
+
+    /**
+     * Get a verification code by email
+     */
+    async getVerificationCode(email) {
+        const verificationCodes = await this.getVerificationCodesCollection();
+        const record = await verificationCodes.findOne({ email: email.toLowerCase() });
+        
+        if (!record) {
+            return null;
+        }
+        
+        // Check if expired
+        if (new Date() > record.expiresAt) {
+            // Delete expired code
+            await verificationCodes.deleteOne({ email: email.toLowerCase() });
+            return null;
+        }
+        
+        return record;
+    },
+
+    /**
+     * Verify a code and update attempts
+     */
+    async verifyCode(email, code) {
+        const verificationCodes = await this.getVerificationCodesCollection();
+        const record = await verificationCodes.findOne({ email: email.toLowerCase() });
+        
+        if (!record) {
+            return { success: false, error: 'No verification code found' };
+        }
+        
+        // Check if expired
+        if (new Date() > record.expiresAt) {
+            await verificationCodes.deleteOne({ email: email.toLowerCase() });
+            return { success: false, error: 'Verification code has expired' };
+        }
+        
+        // Check attempts
+        if (record.attempts >= 5) {
+            await verificationCodes.deleteOne({ email: email.toLowerCase() });
+            return { success: false, error: 'Too many failed attempts' };
+        }
+        
+        // Check code
+        if (record.code !== code) {
+            // Increment attempts
+            await verificationCodes.updateOne(
+                { email: email.toLowerCase() },
+                { $inc: { attempts: 1 } }
+            );
+            const remaining = 5 - (record.attempts + 1);
+            return { success: false, error: `Invalid code. ${remaining} attempts remaining.` };
+        }
+        
+        // Success - delete code
+        await verificationCodes.deleteOne({ email: email.toLowerCase() });
+        return { success: true };
+    },
+
+    /**
+     * Delete a verification code
+     */
+    async deleteVerificationCode(email) {
+        const verificationCodes = await this.getVerificationCodesCollection();
+        await verificationCodes.deleteOne({ email: email.toLowerCase() });
+    },
+
+    /**
+     * Clean up all expired verification codes
+     */
+    async cleanupExpiredVerificationCodes() {
+        const verificationCodes = await this.getVerificationCodesCollection();
+        const result = await verificationCodes.deleteMany({
+            expiresAt: { $lt: new Date() },
+        });
+        return result.deletedCount;
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PASSWORD RESET CODE OPERATIONS
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Get password reset codes collection with TTL index
+     */
+    async getResetCodesCollection() {
+        const db = await mongoManager.getDB();
+        const collection = db.collection('password_reset_codes');
+        
+        // Set up TTL index to auto-delete expired codes (60 seconds)
+        await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+        
+        return collection;
+    },
+
+    /**
+     * Store a password reset code in the database
+     */
+    async storeResetCode(email, code, expiresAt) {
+        const resetCodes = await this.getResetCodesCollection();
+        
+        // Delete any existing code for this email
+        await resetCodes.deleteOne({ email: email.toLowerCase() });
+        
+        // Store new code
+        await resetCodes.insertOne({
+            email: email.toLowerCase(),
+            code,
+            expiresAt: new Date(expiresAt),
+            attempts: 0,
+        });
+    },
+
+    /**
+     * Get a password reset code by email
+     */
+    async getResetCode(email) {
+        const resetCodes = await this.getResetCodesCollection();
+        const record = await resetCodes.findOne({ email: email.toLowerCase() });
+        
+        if (!record) {
+            return null;
+        }
+        
+        // Check if expired
+        if (new Date() > record.expiresAt) {
+            // Delete expired code
+            await resetCodes.deleteOne({ email: email.toLowerCase() });
+            return null;
+        }
+        
+        return record;
+    },
+
+    /**
+     * Verify a password reset code
+     */
+    async verifyResetCode(email, code) {
+        const resetCodes = await this.getResetCodesCollection();
+        const record = await resetCodes.findOne({ email: email.toLowerCase() });
+        
+        if (!record) {
+            return { success: false, error: 'No reset code found' };
+        }
+        
+        // Check if expired
+        if (new Date() > record.expiresAt) {
+            await resetCodes.deleteOne({ email: email.toLowerCase() });
+            return { success: false, error: 'Reset code has expired' };
+        }
+        
+        // Check attempts
+        if (record.attempts >= 5) {
+            await resetCodes.deleteOne({ email: email.toLowerCase() });
+            return { success: false, error: 'Too many failed attempts' };
+        }
+        
+        // Check code
+        if (record.code !== code) {
+            // Increment attempts
+            await resetCodes.updateOne(
+                { email: email.toLowerCase() },
+                { $inc: { attempts: 1 } }
+            );
+            const remaining = 5 - (record.attempts + 1);
+            return { success: false, error: `Invalid code. ${remaining} attempts remaining.` };
+        }
+        
+        // Success - delete code
+        await resetCodes.deleteOne({ email: email.toLowerCase() });
+        return { success: true };
+    },
+
+    /**
+     * Delete a password reset code
+     */
+    async deleteResetCode(email) {
+        const resetCodes = await this.getResetCodesCollection();
+        await resetCodes.deleteOne({ email: email.toLowerCase() });
+    },
+
+    /**
+     * Clean up all expired password reset codes
+     */
+    async cleanupExpiredResetCodes() {
+        const resetCodes = await this.getResetCodesCollection();
+        const result = await resetCodes.deleteMany({
+            expiresAt: { $lt: new Date() },
+        });
+        return result.deletedCount;
+    },
 };

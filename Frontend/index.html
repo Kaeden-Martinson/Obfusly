@@ -1407,6 +1407,7 @@
                 </form>
                 <p class="auth-switch">Don't have an account? <a class="text-link" onclick="navigateTo('register')">Sign
                         up</a></p>
+                <p class="auth-switch" style="margin-top: 0.5rem;"><a class="text-link" onclick="navigateTo('forgot-password')">Forgot password?</a></p>
             </div>
         </section>
     </div>
@@ -1415,40 +1416,148 @@
     <div id="register" class="page">
         <section class="auth-section">
             <div class="auth-card">
-                <span class="section-kicker auth-kicker">Create</span>
+                <!-- SIGNUP FORM STEP 1 -->
+                <div id="register-form-step">
+                    <span class="section-kicker auth-kicker">Create</span>
+                    <div class="auth-logo" onclick="navigateTo('home')">
+                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                    </div>
+                    <h2>Create Account</h2>
+                    <p class="auth-sub">Start protecting your JavaScript today</p>
+                    <div id="register-error" class="auth-error auth-error-hidden"></div>
+                    <form onsubmit="submitRegister(event)">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="register-name" placeholder="Jane Doe" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="register-email" placeholder="you@example.com" required
+                                autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label>Password <span class="auth-label-note">(min 8 characters)</span></label>
+                            <input type="password" id="register-password" placeholder="••••••••" required
+                                autocomplete="new-password" minlength="8">
+                        </div>
+                        <div class="form-group auth-check-row">
+                            <input type="checkbox" id="register-tos" required class="auth-check-input">
+                            <label for="register-tos" class="auth-check-label">
+                                I agree to the <a class="text-link" onclick="navigateTo('tos')">Terms of Service</a> and <a
+                                    class="text-link" onclick="navigateTo('privacy')">Privacy Policy</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block auth-submit" id="register-submit-btn">Create
+                            Account</button>
+                    </form>
+                    <p class="auth-switch">Already have an account? <a class="text-link" onclick="navigateTo('login')">Log
+                            in</a></p>
+                </div>
+
+                <!-- EMAIL VERIFICATION STEP 2 -->
+                <div id="register-verification-step" style="display: none;">
+                    <span class="section-kicker auth-kicker">Verify</span>
+                    <div class="auth-logo" onclick="navigateTo('home')">
+                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                    </div>
+                    <h2>Verify Your Email</h2>
+                    <p class="auth-sub" id="verification-email-display">Check your email for a 6-digit code</p>
+                    <div id="verification-error" class="auth-error auth-error-hidden"></div>
+                    <div style="background-color: rgba(46, 107, 255, 0.1); border: 1px solid rgba(46, 107, 255, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+                            A verification code has been sent to <strong id="verification-email-value">your email</strong>
+                        </p>
+                    </div>
+                    <form onsubmit="submitVerifyEmail(event)">
+                        <div class="form-group">
+                            <label>Verification Code</label>
+                            <input type="text" id="verification-code" placeholder="123456" maxlength="6" 
+                                pattern="[0-9]{6}" required autocomplete="off" inputmode="numeric">
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                                Enter the 6-digit code (expires in <span id="code-expiry">60</span> seconds)
+                            </p>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block auth-submit" id="verify-submit-btn">Verify Email</button>
+                    </form>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center;">
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Didn't receive the code?</p>
+                        <button type="button" id="resend-code-btn" class="text-link" style="background: none; border: none; cursor: pointer; padding: 0;" 
+                            onclick="submitResendVerification()">Resend Code</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── FORGOT PASSWORD PAGE ──────────────────────────────────────────────── -->
+    <div id="forgot-password" class="page">
+        <section class="auth-section">
+            <div class="auth-card">
+                <!-- Step 1: Email Input -->
+                <div id="forgot-password-form-step">
+                    <span class="section-kicker auth-kicker">Reset</span>
+                    <div class="auth-logo" onclick="navigateTo('home')">
+                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                    </div>
+                    <h2>Reset Your Password</h2>
+                    <p class="auth-sub">Enter your email and we'll send you a verification code</p>
+                    <div id="forgot-password-error" class="auth-error auth-error-hidden"></div>
+                    <form onsubmit="submitForgotPassword(event)">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="forgot-password-email" placeholder="you@example.com" required>
+                        </div>
+                        <button type="submit" class="btn-primary btn-block auth-submit" id="forgot-password-submit-btn">Send Code</button>
+                    </form>
+                    <p class="auth-switch">Remember your password? <a class="text-link" onclick="navigateTo('login')">Log in</a></p>
+                </div>
+
+                <!-- Step 2: Code Verification -->
+                <div id="forgot-password-code-step" style="display: none;">
+                    <span class="section-kicker auth-kicker">Verify</span>
+                    <div class="auth-logo" onclick="navigateTo('home')">
+                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                    </div>
+                    <h2>Enter Code</h2>
+                    <p class="auth-sub" id="forgot-password-code-display">Check your email for a 6-digit code</p>
+                    <div id="forgot-password-code-error" class="auth-error auth-error-hidden"></div>
+                    <form onsubmit="submitVerifyResetCode(event)">
+                        <div class="form-group">
+                            <label>Verification Code</label>
+                            <input type="text" id="forgot-password-code" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required autofocus>
+                        </div>
+                        <div class="auth-timer" id="reset-code-expiry" style="margin: 1rem 0; text-align: center; color: #999; font-size: 0.9rem;"></div>
+                        <button type="submit" class="btn-primary btn-block auth-submit" id="forgot-password-code-submit-btn">Verify Code</button>
+                    </form>
+                    <p class="auth-switch"><a class="text-link" onclick="resetForgotPasswordStep()">Use a different email</a> | <a class="text-link" onclick="submitResendResetCode(event)">Resend Code</a></p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ── RESET PASSWORD PAGE ────────────────────────────────────────────────── -->
+    <div id="reset-password" class="page">
+        <section class="auth-section">
+            <div class="auth-card">
+                <span class="section-kicker auth-kicker">Reset</span>
                 <div class="auth-logo" onclick="navigateTo('home')">
                     <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
                 </div>
-                <h2>Create Account</h2>
-                <p class="auth-sub">Start protecting your JavaScript today</p>
-                <div id="register-error" class="auth-error auth-error-hidden"></div>
-                <form onsubmit="submitRegister(event)">
+                <h2>Create New Password</h2>
+                <p class="auth-sub">Enter your new password</p>
+                <div id="reset-password-error" class="auth-error auth-error-hidden"></div>
+                <form onsubmit="submitResetPassword(event)">
                     <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="register-name" placeholder="Jane Doe" required autocomplete="name">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="register-email" placeholder="you@example.com" required
-                            autocomplete="email">
+                        <label>New Password</label>
+                        <input type="password" id="reset-password-new" placeholder="••••••••" required minlength="8">
                     </div>
                     <div class="form-group">
-                        <label>Password <span class="auth-label-note">(min 8 characters)</span></label>
-                        <input type="password" id="register-password" placeholder="••••••••" required
-                            autocomplete="new-password" minlength="8">
+                        <label>Confirm Password</label>
+                        <input type="password" id="reset-password-confirm" placeholder="••••••••" required minlength="8">
                     </div>
-                    <div class="form-group auth-check-row">
-                        <input type="checkbox" id="register-tos" required class="auth-check-input">
-                        <label for="register-tos" class="auth-check-label">
-                            I agree to the <a class="text-link" onclick="navigateTo('tos')">Terms of Service</a> and <a
-                                class="text-link" onclick="navigateTo('privacy')">Privacy Policy</a>
-                        </label>
-                    </div>
-                    <button type="submit" class="btn-primary btn-block auth-submit" id="register-submit-btn">Create
-                        Account</button>
+                    <button type="submit" class="btn-primary btn-block auth-submit" id="reset-password-submit-btn">Reset Password</button>
                 </form>
-                <p class="auth-switch">Already have an account? <a class="text-link" onclick="navigateTo('login')">Log
-                        in</a></p>
+                <p class="auth-switch">Back to <a class="text-link" onclick="navigateTo('login')">login</a></p>
             </div>
         </section>
     </div>
