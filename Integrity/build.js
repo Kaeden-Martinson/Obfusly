@@ -1,6 +1,6 @@
 const acorn = require("acorn");
 const { generateObfuscatedName } = require("../Utils/nameGenerator");
-const { compress } = require("../Utils/compressor");
+const { remov, removeSpacesAndNewlineseSpacesAndNewlines } = require("../Utils/compressor");
 
 const { toJSFuck } = require('../Primitives/Integers/jsfuck');
 const { toHex } = require('../Primitives/Integers/hexadecimal');
@@ -424,10 +424,10 @@ function createIntegrity(code, previousDeclarationMapping, declarationMapping, e
   }
 
   // ======================== Prepend hashers + guard ========================
-  const h2Compressed = compress(hasher2.hasherCode);
-  const h1Compressed = compress(hasher1.hasherCode);
-  const guardCompressed = compress(guardCode);
-  const tosCacheCompressed = compress(tosCacheCode);
+  const h2Compressed = removeSpacesAndNewlines(hasher2.hasherCode);
+  const h1Compressed = removeSpacesAndNewlines(hasher1.hasherCode);
+  const guardCompressed = removeSpacesAndNewlines(guardCode);
+  const tosCacheCompressed = removeSpacesAndNewlines(tosCacheCode);
 
   code = guardCompressed + sep + h1Compressed + sep + h2Compressed + sep + tosCacheCompressed + sep + code;
 

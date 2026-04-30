@@ -6,11 +6,11 @@ const config = {
 
     // ========== NUMBERS ==========
     numbers: {
-        enabled: false,
+        enabled: true,
         
         strategy: {
             useCalculator: false,       // Runtime decoding with XOR/arithmetic
-            useBaseIntegers: false,     // Precomputed lookup tables
+            useBaseIntegers: true,     // Precomputed lookup tables
             calculateStrength: 3,      // Decoder complexity (1-5)
         },
         
@@ -40,7 +40,7 @@ const config = {
         },
         
         concealment: {
-            enabled: false,             // Advanced string concealment layer
+            enabled: true,             // Advanced string concealment layer
             decoderLayers: 2,          // Number of decoder functions (was decodersCount)
             noiseFunctions: 1,         // Noise blocks added per decoder (was addNoiseCount)
         },
