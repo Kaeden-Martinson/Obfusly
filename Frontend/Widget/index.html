@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obfusly Widget - Installation & Customization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2e6bff;
+            --primary-light: #88ddff;
+            --bg-dark: #06101d;
+            --bg-card: #0f1c31;
+            --text-primary: #f5f7fb;
+            --text-secondary: #9fb0c8;
+            --border: rgba(141, 167, 206, 0.2);
+            --accent: #00d4ff;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #0c1727 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .section {
+            background: linear-gradient(135deg, rgba(46, 107, 255, 0.08) 0%, rgba(46, 107, 255, 0.02) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .code-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--primary-light);
+        }
+
+        .copy-btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #1f47cc;
+        }
+
+        .copy-btn.copied {
+            background: #37d99c;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .grid-item {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.02) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .grid-item h3 {
+            color: var(--primary-light);
+            margin-bottom: 0.8rem;
+        }
+
+        .option-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .option-table th {
+            background: rgba(46, 107, 255, 0.1);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .option-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .option-table tr:hover {
+            background: rgba(46, 107, 255, 0.05);
+        }
+
+        .code {
+            background: rgba(46, 107, 255, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.3rem 0.6rem;
+            font-family: 'Monaco', monospace;
+            font-size: 0.9rem;
+            color: var(--primary-light);
+        }
+
+        .feature-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .preview-section {
+            background: linear-gradient(135deg, rgba(136, 221, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+            border: 2px dashed var(--accent);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 2rem 0;
+            min-height: 200px;
+        }
+
+        .preview-text {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .option-table {
+                font-size: 0.9rem;
+            }
+
+            .option-table th,
+            .option-table td {
+                padding: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎯 Obfusly Widget</h1>
+            <p class="subtitle">Embed the power of code obfuscation on your website</p>
+        </header>
+
+        <!-- Quick Start -->
+        <div class="section">
+            <h2>⚡ Quick Start</h2>
+            <p>Add one line of code to your HTML and you're done:</p>
+            <div class="code-block">&lt;script src="https://obfusly.com/widget/embed.js"&gt;&lt;/script&gt;</div>
+            <button class="copy-btn" onclick="copyCode('&lt;script src=\"https://obfusly.com/widget/embed.js\"&gt;&lt;/script&gt;')">Copy Code</button>
+        </div>
+
+        <!-- Features -->
+        <div class="section">
+            <h2>✨ Features</h2>
+            <ul class="feature-list">
+                <li>Lightweight (< 5KB)</li>
+                <li>Easy Integration</li>
+                <li>Fully Responsive</li>
+                <li>Customizable Colors</li>
+                <li>CORS-Enabled</li>
+                <li>No Dependencies</li>
+                <li>Mobile Friendly</li>
+                <li>SEO Safe</li>
+            </ul>
+        </div>
+
+        <!-- Configuration Options -->
+        <div class="section">
+            <h2>⚙️ Configuration Options</h2>
+            <p>Customize the widget by adding query parameters:</p>
+            
+            <table class="option-table">
+                <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Values</th>
+                        <th>Default</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>position</strong></td>
+                        <td><span class="code">left</span>, <span class="code">right</span></td>
+                        <td><span class="code">right</span></td>
+                        <td><span class="code">?position=left</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>bgColor</strong></td>
+                        <td>Hex (URL encoded)</td>
+                        <td><span class="code">%23000000</span></td>
+                        <td><span class="code">?bgColor=%232e6bff</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="grid">
+                <div class="grid-item">
+                    <h3>📍 Position</h3>
+                    <p><strong>Right:</strong> <span class="code">position=right</span></p>
+                    <p><strong>Left:</strong> <span class="code">position=left</span></p>
+                </div>
+                <div class="grid-item">
+                    <h3>🎨 Colors</h3>
+                    <p><strong>Black:</strong> <span class="code">%23000000</span></p>
+                    <p><strong>Blue:</strong> <span class="code">%232e6bff</span></p>
+                    <p><strong>Cyan:</strong> <span class="code">%2388ddff</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples -->
+        <div class="section">
+            <h2>📋 Examples</h2>
+
+            <h3 style="margin-top: 1.5rem; color: var(--text-primary);">1. Default (Right, Black)</h3>
+            <div class="code-block">&lt;script src="https://obfusly.com/widget/embed.js"&gt;&lt;/script&gt;</div>
+
+            <h3 style="margin-top: 1.5rem; color: var(--text-primary);">2. Left Position</h3>
+            <div class="code-block">&lt;script src="https://obfusly.com/widget/embed.js?position=left"&gt;&lt;/script&gt;</div>
+
+            <h3 style="margin-top: 1.5rem; color: var(--text-primary);">3. Blue Background</h3>
+            <div class="code-block">&lt;script src="https://obfusly.com/widget/embed.js?bgColor=%232e6bff"&gt;&lt;/script&gt;</div>
+
+            <h3 style="margin-top: 1.5rem; color: var(--text-primary);">4. Left + Cyan</h3>
+            <div class="code-block">&lt;script src="https://obfusly.com/widget/embed.js?position=left&bgColor=%2388ddff"&gt;&lt;/script&gt;</div>
+
+            <h3 style="margin-top: 1.5rem; color: var(--text-primary);">5. Async Loading (Recommended)</h3>
+            <div class="code-block">&lt;script async src="https://obfusly.com/widget/embed.js"&gt;&lt;/script&gt;</div>
+
+            <h3 style="margin-top: 1.5rem; color: var(--text-primary);">6. Dynamic Injection</h3>
+            <div class="code-block">const script = document.createElement('script');<br>
+script.src = 'https://obfusly.com/widget/embed.js';<br>
+script.async = true;<br>
+document.head.appendChild(script);</div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="section">
+            <h2>👁️ Live Preview</h2>
+            <p>The widget is currently embedded on this page:</p>
+            <div class="preview-section">
+                <p class="preview-text">👉 Look in the bottom right corner of your screen!</p>
+                <p class="preview-text" style="margin-top: 1rem;">Hover over the widget to see it expand</p>
+            </div>
+        </div>
+
+        <!-- API Reference -->
+        <div class="section">
+            <h2>🔌 API Reference</h2>
+            <p>Get widget configuration programmatically:</p>
+            <div class="code-block">fetch('https://obfusly.com/api/widget/config')<br>
+&nbsp;&nbsp;.then(r => r.json())<br>
+&nbsp;&nbsp;.then(data => console.log(data));</div>
+        </div>
+
+        <!-- Support -->
+        <div class="section">
+            <h2>🆘 Support & Resources</h2>
+            <div class="grid">
+                <div class="grid-item">
+                    <h3>📚 Documentation</h3>
+                    <p>Visit <span class="code">/widget</span> for full documentation</p>
+                </div>
+                <div class="grid-item">
+                    <h3>🐛 Issues</h3>
+                    <p>Report bugs or request features on GitHub</p>
+                </div>
+                <div class="grid-item">
+                    <h3>💬 Questions</h3>
+                    <p>Contact support@obfusly.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embed the widget -->
+    <script src="/widget/embed.js"></script>
+
+    <!-- Copy button functionality -->
+    <script>
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy Code';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

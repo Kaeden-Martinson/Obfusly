@@ -1304,6 +1304,28 @@ nav a:hover::after {
     z-index: 10;
 }
 
+.current-plan-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: inline-block;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    padding: 0.55rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    z-index: 10;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
 .pricing-card h3 {
     font-size: 1.8rem;
     font-weight: 700;
@@ -1409,6 +1431,17 @@ nav a:hover::after {
 .pricing-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+}
+
+.pricing-button.current-plan {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    cursor: default;
+    pointer-events: none;
+}
+
+.pricing-button.current-plan:hover {
+    transform: none;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
 }
 
 .pricing-note-row {

@@ -303,14 +303,31 @@ function handlePricingClick(plan) {
     
     // User is logged in, check if they already have this plan
     const userPlan = (currentUser.plan || 'free').toLowerCase();
-    console.log('User plan:', userPlan, 'Selected plan:', plan);
+    const selectedPlan = plan.toLowerCase();
     
-    if (userPlan === plan.toLowerCase()) {
+    console.log('User plan:', userPlan, 'Selected plan:', selectedPlan);
+    
+    if (userPlan === selectedPlan) {
         showToast('You already have the ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan', 'info');
         return;
     }
     
-    // Different plan, proceed to checkout
+    // Determine plan order: free (0) < professional (1) < enterprise (2)
+    const planOrder = { free: 0, professional: 1, enterprise: 2 };
+    const userPlanLevel = planOrder[userPlan] || 0;
+    const selectedPlanLevel = planOrder[selectedPlan] || 0;
+    
+    if (selectedPlanLevel < userPlanLevel) {
+        // Downgrading - treat as cancellation
+        console.log('Downgrading from', userPlan, 'to', selectedPlan, '- treating as cancellation');
+        if (!confirm('Downgrading will cancel your current subscription. You will lose access to premium features. Continue?')) {
+            return;
+        }
+        cancelSubscription();
+        return;
+    }
+    
+    // Upgrading - proceed to checkout
     startCheckout(plan);
 }
 
@@ -345,6 +362,7 @@ async function restoreSession() {
             currentUser = await res.json();
             updateNavAuth();
             fillAccountPage();
+            updatePricingPageDisplay();
         } else {
             clearToken();
         }
@@ -729,6 +747,7 @@ function logout() {
     clearToken();
     currentUser = null;
     updateNavAuth();
+    updatePricingPageDisplay();
     showToast('You have been logged out.', 'info');
     navigateTo('home');
 }
@@ -1079,13 +1098,224 @@ function closeAccountMenu() {
 
 function fillAccountPage() {
     if (!currentUser) return;
-    const planLabel = { free: 'Free', professional: 'Professional ($19.99/mo)', enterprise: 'Enterprise ($49.99/mo)' };
+    const planLabel = { free: 'Free', professional: 'Professional', enterprise: 'Enterprise' };
+    
+    // Account Information
     document.getElementById('acct-name').textContent  = currentUser.name;
     document.getElementById('acct-email').textContent = currentUser.email;
     document.getElementById('acct-plan').textContent  = planLabel[currentUser.plan] || currentUser.plan;
     document.getElementById('acct-since').textContent = currentUser.createdAt
         ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })
         : '—';
+    document.getElementById('acct-id').textContent = currentUser.id ? currentUser.id.substring(0, 12) + '...' : '—';
+    
+    // Subscription Status
+    const subStatus = currentUser.subscriptionStatus || 'inactive';
+    const statusDisplay = subStatus.charAt(0).toUpperCase() + subStatus.slice(1).toLowerCase();
+    document.getElementById('acct-status').textContent = statusDisplay;
+    
+    // Show plan features
+    const features = getPlanFeatures(currentUser.plan);
+    const featuresList = document.getElementById('acct-features');
+    if (featuresList) {
+        featuresList.innerHTML = features.map(f => 
+            `<li style="padding: 0.5rem 0; color: var(--text-primary); display: flex; align-items: center;"><span style="color: var(--accent-primary); margin-right: 0.5rem;">✓</span> ${f}</li>`
+        ).join('');
+    }
+    
+    // Show billing information for paid plans
+    const billingCard = document.getElementById('acct-billing-card');
+    const cancelBtn = document.getElementById('acct-cancel-btn');
+    
+    if (currentUser.plan && currentUser.plan !== 'free') {
+        billingCard.style.display = 'block';
+        cancelBtn.style.display = 'block';
+        
+        // Next billing date
+        if (currentUser.nextBillingDate) {
+            const billingDate = new Date(currentUser.nextBillingDate);
+            document.getElementById('acct-next-billing').textContent = billingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        } else {
+            document.getElementById('acct-next-billing').textContent = '—';
+        }
+        
+        // Renewal amount
+        const planPrices = { professional: '$19.99', enterprise: '$49.99' };
+        document.getElementById('acct-renewal-amount').textContent = (planPrices[currentUser.plan] || '—') + '/month';
+    } else {
+        billingCard.style.display = 'none';
+        cancelBtn.style.display = 'none';
+    }
+}
+
+function getPlanFeatures(plan) {
+    const features = {
+        free: [
+            '3 obfuscations per day',
+            'Up to 10 KB file size',
+            'Basic obfuscation modes',
+            'Community support'
+        ],
+        professional: [
+            '50 obfuscations per day',
+            'Up to 5 MB file size',
+            'Advanced obfuscation modes',
+            'Email support',
+            'Full API access',
+            'Standard priority'
+        ],
+        enterprise: [
+            '500 obfuscations per day',
+            'Unlimited file size',
+            'All obfuscation modes',
+            '24/7 priority support',
+            'Full API access',
+            'HTML & webpage support',
+            'Custom solutions',
+            'SLA guarantee'
+        ]
+    };
+    return features[plan] || features.free;
+}
+
+async function cancelSubscription() {
+    if (!currentUser || currentUser.plan === 'free') {
+        showToast('No active subscription to cancel', 'info');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to cancel your subscription? You will be downgraded to the Free plan.')) {
+        return;
+    }
+    
+    try {
+        showToast('Cancelling subscription...', 'info');
+        const res = await fetch('/api/payment/cancel-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() },
+        });
+        
+        const data = await res.json();
+        if (!res.ok) {
+            showToast(data.error || 'Could not cancel subscription', 'error');
+            return;
+        }
+        
+        showToast('✓ Subscription cancelled. You are now on the Free plan.', 'success');
+        // Refresh user data
+        await restoreSession();
+        fillAccountPage();
+        updateNavAuth();
+    } catch (err) {
+        console.error('Cancel subscription error:', err);
+        showToast('Network error — please try again.', 'error');
+    }
+}
+
+function updatePricingPageDisplay() {
+    if (!currentUser) {
+        // Not logged in - show "Create Account" for free, "Get Started" for paid
+        document.getElementById('freeBtn').textContent = 'Create Account';
+        document.getElementById('professionalBtn').textContent = 'Get Started';
+        document.getElementById('enterpriseBtn').textContent = 'Get Started';
+        
+        // Remove current-plan class
+        document.getElementById('freeBtn').classList.remove('current-plan');
+        document.getElementById('professionalBtn').classList.remove('current-plan');
+        document.getElementById('enterpriseBtn').classList.remove('current-plan');
+        
+        // Hide all current plan badges
+        document.getElementById('freeBadge').style.display = 'none';
+        document.getElementById('professionalBadge').style.display = 'none';
+        document.getElementById('enterpriseBadge').style.display = 'none';
+        
+        // Show "MOST POPULAR" badge
+        if (document.getElementById('professionalPopularBadge')) {
+            document.getElementById('professionalPopularBadge').style.display = 'block';
+        }
+        return;
+    }
+    
+    const userPlan = (currentUser.plan || 'free').toLowerCase();
+    const planOrder = { free: 0, professional: 1, enterprise: 2 };
+    const userPlanLevel = planOrder[userPlan] || 0;
+    
+    // Update free card
+    document.getElementById('freeBadge').style.display = userPlan === 'free' ? 'block' : 'none';
+    const freeBtn = document.getElementById('freeBtn');
+    if (userPlan === 'free') {
+        freeBtn.textContent = 'Current Plan';
+        freeBtn.classList.add('current-plan');
+        freeBtn.disabled = true;
+    } else {
+        freeBtn.textContent = 'Create Account';
+        freeBtn.classList.remove('current-plan');
+        freeBtn.disabled = false;
+    }
+    
+    // Update professional card
+    document.getElementById('professionalBadge').style.display = userPlan === 'professional' ? 'block' : 'none';
+    
+    // Hide "MOST POPULAR" badge if showing current plan badge
+    if (document.getElementById('professionalPopularBadge')) {
+        document.getElementById('professionalPopularBadge').style.display = userPlan === 'professional' ? 'none' : 'block';
+    }
+    
+    const professionalBtn = document.getElementById('professionalBtn');
+    if (userPlan === 'professional') {
+        professionalBtn.textContent = 'Current Plan';
+        professionalBtn.classList.add('current-plan');
+        professionalBtn.disabled = true;
+    } else if (userPlanLevel < 1) {
+        professionalBtn.textContent = 'Get Started';
+        professionalBtn.classList.remove('current-plan');
+        professionalBtn.disabled = false;
+    } else {
+        professionalBtn.textContent = 'Downgrade';
+        professionalBtn.classList.remove('current-plan');
+        professionalBtn.disabled = false;
+    }
+    
+    // Update enterprise card
+    document.getElementById('enterpriseBadge').style.display = userPlan === 'enterprise' ? 'block' : 'none';
+    
+    const enterpriseBtn = document.getElementById('enterpriseBtn');
+    if (userPlan === 'enterprise') {
+        enterpriseBtn.textContent = 'Current Plan';
+        enterpriseBtn.classList.add('current-plan');
+        enterpriseBtn.disabled = true;
+    } else if (userPlanLevel < 2) {
+        enterpriseBtn.textContent = 'Get Started';
+        enterpriseBtn.classList.remove('current-plan');
+        enterpriseBtn.disabled = false;
+    } else {
+        enterpriseBtn.textContent = 'Downgrade';
+        enterpriseBtn.classList.remove('current-plan');
+        enterpriseBtn.disabled = false;
+    }
+}
+
+function handleFreePlanClick() {
+    if (!currentUser) {
+        // Not logged in - redirect to register
+        navigateTo('register');
+        return;
+    }
+    
+    // User is logged in
+    const userPlan = (currentUser.plan || 'free').toLowerCase();
+    
+    if (userPlan === 'free') {
+        // Already on free plan
+        showToast('You already have the Free plan', 'info');
+        return;
+    }
+    
+    // On paid plan, clicking free = downgrade/cancel
+    if (!confirm('Downgrading will cancel your current subscription. You will lose access to premium features. Continue?')) {
+        return;
+    }
+    cancelSubscription();
 }
 
 function updateAccountMenuData() {
@@ -1334,6 +1564,7 @@ function navigateTo(pageName) {
     updateFooterVisibility(pageName);
     if (pageName === 'obfuscation' && !inputEditor) initializeEditors();
     if (pageName === 'profile') updateProfilePage();
+    if (pageName === 'pricing') updatePricingPageDisplay();
     window.scrollTo(0, 0);
 }
 
@@ -2314,24 +2545,17 @@ function enableStrictModeAndClose() {
 
 // Core widget code from Frontend/Widget/widget.html
 const WIDGET_SCRIPT = `(function() {
-    // Load Google Font
-    var fontLink = document.createElement('link');
-    fontLink.href = "https://fonts.googleapis.com/css?family=Baloo+Paaji";
-    fontLink.rel = "stylesheet";
-    document.head.appendChild(fontLink);
-
     var collapsedWidth = 62;
     var expandedWidth = 156;
     var widgetHeight = 62;
-    var logoHeight = 58;
-    var iconSize = 25;
+    var logoHeight = 35;
+    var iconSize = 26;
 
     var widgetContainer = document.createElement('div');
     widgetContainer.style.position = "fixed";
     widgetContainer.style.bottom = "20px";
     widgetContainer.style.{{POSITION}};
-    widgetContainer.style.width = collapsedWidth + "px";
-    widgetContainer.style.fontFamily = "Baloo Paaji";
+    widgetContainer.style.width = expandedWidth + "px";
     widgetContainer.style.height = widgetHeight + "px";
     widgetContainer.style.borderRadius = "18px";
     widgetContainer.style.backgroundColor = "{{BG_COLOR}}";
@@ -2342,6 +2566,7 @@ const WIDGET_SCRIPT = `(function() {
     widgetContainer.style.transition = "width 0.42s ease, box-shadow 0.22s ease";
     widgetContainer.style.overflow = "hidden";
     widgetContainer.style.zIndex = "9999";
+    widgetContainer.style.border = "1px solid {{BORDER_COLOR}}";
 
     var button = document.createElement('a');
     button.href = "https://obfusly.com";
@@ -2351,31 +2576,33 @@ const WIDGET_SCRIPT = `(function() {
     button.style.height = "100%";
     button.style.position = "relative";
     button.style.textDecoration = "none";
-    button.style.color = "#f0f4f8";
+    button.style.color = "inherit";
     button.style.overflow = "hidden";
+    button.style.fontFamily = "'Space Grotesk', sans-serif";
+    button.style.fontSize = "12px";
 
     var iconMark = document.createElement('img');
     iconMark.style.position = "absolute";
-    iconMark.style.left = "16px";
-    iconMark.style.top = "18px";
+    iconMark.style.left = "20px";
+    iconMark.style.top = "15px";
     iconMark.style.width = iconSize + "px";
     iconMark.style.height = iconSize + "px";
     iconMark.style.objectFit = "contain";
     iconMark.style.transition = "opacity 0.18s ease";
-    iconMark.style.opacity = "1";
-    iconMark.src = "https://obfusly.com/Images/obfusly_icon.png";
+    iconMark.style.opacity = "0";
+    iconMark.src = "{{ICON}}";
 
     var logoStrip = document.createElement('img');
     logoStrip.style.position = "absolute";
-    logoStrip.style.left = "0";
+    logoStrip.style.left = "10px";
     logoStrip.style.top = "2px";
     logoStrip.style.height = logoHeight + "px";
-    logoStrip.style.width = "155px";
+    logoStrip.style.width = "114px";
     logoStrip.style.display = "block";
     logoStrip.style.flexShrink = "0";
-    logoStrip.style.opacity = "0";
-    logoStrip.style.transform = "translateX(-10px)";
-    logoStrip.style.transition = "transform 0.42s ease, opacity 0.18s ease";
+    logoStrip.style.opacity = "1";
+    logoStrip.style.transform = "translateX(0)";
+    logoStrip.style.transition = "opacity 0.18s ease";
     logoStrip.src = "{{LOGO}}";
 
     button.appendChild(iconMark);
@@ -2385,19 +2612,13 @@ const WIDGET_SCRIPT = `(function() {
     document.body.appendChild(widgetContainer);
 
     widgetContainer.addEventListener("mouseover", function() {
-        widgetContainer.style.width = expandedWidth + "px";
-        widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.6) 6px 10px 24px";
-        iconMark.style.opacity = "0";
-        logoStrip.style.opacity = "1";
-        logoStrip.style.transform = "translateX(0)";
+        iconMark.style.opacity = "1";
+        logoStrip.style.opacity = "0";
     });
 
     widgetContainer.addEventListener("mouseout", function() {
-        widgetContainer.style.width = collapsedWidth + "px";
-        widgetContainer.style.boxShadow = "rgba(0, 0, 0, 0.5) 2px 2px 10px";
-        iconMark.style.opacity = "1";
-        logoStrip.style.opacity = "0";
-        logoStrip.style.transform = "translateX(-10px)";
+        iconMark.style.opacity = "0";
+        logoStrip.style.opacity = "1";
     });
 })();`;
 
@@ -2412,14 +2633,16 @@ function updateWidget() {
         previewFrame.innerHTML = ''; // Clear previous widget
         
         // Render an interactive widget preview with hover effects
-        const bgColor = theme === 'dark' ? 'black' : '#f0f4f8';
-        const nameLogo = theme === 'dark' ? 'http://localhost:3000/Images/obfusly_name_light.png' : 'http://localhost:3000/Images/obfusly_name_dark.png';
+        const bgColor = theme === 'dark' ? '#000' : '#fff';
+        const iconImg = theme === 'dark' ? 'Images/Black/logo-black.png' : 'Images/White/logo-white.png';
+        const nameLogo = theme === 'dark' ? 'Images/Black/obfusly-black.png' : 'Images/White/obfusly-white.png';
+        const borderColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
         const positionStyle = position === 'bottom-left' ? 'left: 20px;' : 'right: 20px;';
         
         const widgetHTML = `
-            <div id="previewWidget" style="position: absolute; bottom: 20px; ${positionStyle} width: 62px; height: 62px; border-radius: 18px; background: ${bgColor}; display: flex; align-items: center; justify-content: center; box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 10px; cursor: pointer; z-index: 10; transition: width 0.42s ease, box-shadow 0.22s ease; overflow: hidden;">
-                <img id="previewIcon" src="Images/obfusly_icon.png" alt="Obfusly" style="position: absolute; left: 16px; width: 25px; height: 25px; object-fit: contain; opacity: 1; transition: opacity 0.18s ease;">
-                <img id="previewLogo" src="${nameLogo}" alt="Obfusly" style="position: absolute; left: 0; width: 155px; height: 58px; object-fit: contain; opacity: 0; transform: translateX(-10px); transition: transform 0.42s ease, opacity 0.18s ease;">
+            <div id="previewWidget" style="position: absolute; bottom: 20px; ${positionStyle} width: 156px; height: 62px; border-radius: 18px; background: ${bgColor}; display: flex; align-items: center; justify-content: center; box-shadow: rgba(0, 0, 0, 0.5) 2px 2px 10px; cursor: pointer; z-index: 10; overflow: hidden; border: 1px solid ${borderColor};">
+                <img id="previewIcon" src="${iconImg}" alt="Obfusly" style="position: absolute; left: 20px; width: 26px; height: 26px; object-fit: contain; opacity: 0; transition: opacity 0.18s ease;">
+                <img id="previewLogo" src="${nameLogo}" alt="Obfusly" style="position: absolute; left: 10px; width: 114px; height: 35px; object-fit: contain; opacity: 1; transition: opacity 0.18s ease;">
             </div>
         `;
         
@@ -2432,19 +2655,13 @@ function updateWidget() {
         
         if (previewWidget && previewIcon && previewLogo) {
             previewWidget.addEventListener('mouseover', function() {
-                previewWidget.style.width = '156px';
-                previewWidget.style.boxShadow = 'rgba(0, 0, 0, 0.6) 6px 10px 24px';
-                previewIcon.style.opacity = '0';
-                previewLogo.style.opacity = '1';
-                previewLogo.style.transform = 'translateX(0)';
+                previewIcon.style.opacity = '1';
+                previewLogo.style.opacity = '0';
             });
             
             previewWidget.addEventListener('mouseout', function() {
-                previewWidget.style.width = '62px';
-                previewWidget.style.boxShadow = 'rgba(0, 0, 0, 0.5) 2px 2px 10px';
-                previewIcon.style.opacity = '1';
-                previewLogo.style.opacity = '0';
-                previewLogo.style.transform = 'translateX(-10px)';
+                previewIcon.style.opacity = '0';
+                previewLogo.style.opacity = '1';
             });
         }
     }
@@ -2454,14 +2671,18 @@ function updateWidget() {
 }
 
 function updateCodeOutput(theme, position) {
-    const bgColor = theme === 'dark' ? '"black"' : '"#f0f4f8"';
+    const bgColor = theme === 'dark' ? '"#000"' : '"#fff"';
     const posStyle = position === 'bottom-left' ? 'left = "20px"' : 'right = "20px"';
-    const nameLogo = theme === 'dark' ? 'http://localhost:3000/Images/obfusly_name_light.png' : 'http://localhost:3000/Images/obfusly_name_dark.png';
+    const icon = theme === 'dark' ? 'https://obfusly.com/Images/Black/logo-black.png' : 'https://obfusly.com/Images/White/logo-white.png';
+    const nameLogo = theme === 'dark' ? 'https://obfusly.com/Images/Black/obfusly-black.png' : 'https://obfusly.com/Images/White/obfusly-white.png';
+    const borderColor = theme === 'dark' ? '"rgba(255,255,255,0.1)"' : '"rgba(0,0,0,0.1)"';
     
     const scriptCode = WIDGET_SCRIPT
         .replace('{{POSITION}}', posStyle)
         .replace('{{BG_COLOR}}', bgColor)
-        .replace('{{LOGO}}', nameLogo);
+        .replace('{{ICON}}', icon)
+        .replace('{{LOGO}}', nameLogo)
+        .replace('{{BORDER_COLOR}}', borderColor);
 
     // Store codes for copying
     window.widgetCodes = {
@@ -2659,6 +2880,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     await restoreSession();
+    updatePricingPageDisplay();
 
     // Handle post-Stripe redirect success
     const params = new URLSearchParams(window.location.search);

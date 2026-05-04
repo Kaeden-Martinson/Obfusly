@@ -176,6 +176,30 @@ function getConnectionStats() {
 }
 
 /**
+ * Log an audit action
+ */
+async function logAuditAction(userId, action, details = {}) {
+    try {
+        const db = await getDB();
+        const auditCollection = db.collection('audit_logs');
+        
+        const auditEntry = {
+            uid: userId,
+            action: action,
+            details: details,
+            cAt: new Date(),
+        };
+        
+        await auditCollection.insertOne(auditEntry);
+        console.log(`✓ Audit log created: ${action}`);
+        return auditEntry;
+    } catch (error) {
+        console.error('✗ Failed to log audit action:', error.message);
+        throw error;
+    }
+}
+
+/**
  * Graceful shutdown
  */
 async function disconnect() {
@@ -212,6 +236,7 @@ module.exports = {
     disconnect,
     healthCheck,
     getConnectionStats,
+    logAuditAction,
     initDatabase: connect, // Alias for backward compatibility
     get isConnected() {
         return isConnected;

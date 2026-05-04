@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Obfusly — Next-Gen Code Obfuscation & Security</title>
-    <link rel="icon" type="image/png" sizes="512x512" href="Images/obfusly_icon.png">
-    <link rel="shortcut icon" href="Images/obfusly_icon.png">
-    <link rel="apple-touch-icon" href="Images/obfusly_icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="Images/Transparent/logo-transparent.png">
+    <link rel="shortcut icon" href="Images/Transparent/obfusly-transparent.png">
+    <link rel="apple-touch-icon" href="Images/Transparent/obfusly-transparent.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
@@ -19,7 +19,7 @@
     <!-- HEADER -->
     <header>
         <div class="header-content">
-            <img src="Images/obfusly_name_light.png" alt="obfusly logo" class="logo" onclick="navigateTo('home')"
+            <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly logo" class="logo" onclick="navigateTo('home')"
                 style="cursor: pointer; height: 65px; width: auto;">
             
             <!-- Desktop Navigation -->
@@ -418,7 +418,8 @@
                 </div>
 
                 <div class="pricing-grid">
-                    <div class="pricing-card">
+                    <div class="pricing-card" id="freeCard">
+                        <div class="current-plan-badge" id="freeBadge" style="display: none;">CURRENT PLAN</div>
                         <h3>Starter</h3>
                         <div class="pricing-price">Free</div>
                         <div class="pricing-period">USD / month</div>
@@ -431,11 +432,12 @@
                             <li class="unavailable">API access</li>
                             <li class="unavailable">HTML & Webpage Targets</li>
                         </ul>
-                        <button class="pricing-button" type="button" id="freeBtn">Start Trial</button>
+                        <button class="pricing-button" type="button" id="freeBtn" onclick="handleFreePlanClick()">Create Account</button>
                     </div>
 
-                    <div class="pricing-card popular">
-                        <div class="price-badge">MOST POPULAR</div>
+                    <div class="pricing-card popular" id="professionalCard">
+                        <div class="price-badge" id="professionalPopularBadge">MOST POPULAR</div>
+                        <div class="current-plan-badge" id="professionalBadge" style="display: none;">CURRENT PLAN</div>
                         <h3>Professional</h3>
                         <div class="pricing-price">19.99</div>
                         <div class="pricing-period">USD / month</div>
@@ -451,7 +453,8 @@
                         <button class="pricing-button" type="button" id="professionalBtn">Get Started</button>
                     </div>
 
-                    <div class="pricing-card">
+                    <div class="pricing-card" id="enterpriseCard">
+                        <div class="current-plan-badge" id="enterpriseBadge" style="display: none;">CURRENT PLAN</div>
                         <h3>Enterprise</h3>
                         <div class="pricing-price">49.99</div>
                         <div class="pricing-period">USD / month</div>
@@ -1378,7 +1381,7 @@
             <div class="auth-card">
                 <span class="section-kicker auth-kicker">Login</span>
                 <div class="auth-logo" onclick="navigateTo('home')">
-                    <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                    <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="auth-brand-image">
                 </div>
                 <h2>Welcome Back</h2>
                 <p class="auth-sub">Sign in to your Obfusly account</p>
@@ -1412,7 +1415,7 @@
                 <div id="register-form-step">
                     <span class="section-kicker auth-kicker">Create</span>
                     <div class="auth-logo" onclick="navigateTo('home')">
-                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                        <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="auth-brand-image">
                     </div>
                     <h2>Create Account</h2>
                     <p class="auth-sub">Start protecting your JavaScript today</p>
@@ -1450,7 +1453,7 @@
                 <div id="register-verification-step" style="display: none;">
                     <span class="section-kicker auth-kicker">Verify</span>
                     <div class="auth-logo" onclick="navigateTo('home')">
-                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                        <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="auth-brand-image">
                     </div>
                     <h2>Verify Your Email</h2>
                     <p class="auth-sub" id="verification-email-display">Check your email for a 6-digit code</p>
@@ -1494,7 +1497,7 @@
                 <div id="forgot-password-form-step">
                     <span class="section-kicker auth-kicker">Reset</span>
                     <div class="auth-logo" onclick="navigateTo('home')">
-                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                        <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="auth-brand-image">
                     </div>
                     <h2>Reset Your Password</h2>
                     <p class="auth-sub">Enter your email and we'll send you a verification code</p>
@@ -1513,7 +1516,7 @@
                 <div id="forgot-password-code-step" style="display: none;">
                     <span class="section-kicker auth-kicker">Verify</span>
                     <div class="auth-logo" onclick="navigateTo('home')">
-                        <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                        <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="auth-brand-image">
                     </div>
                     <h2>Enter Code</h2>
                     <p class="auth-sub" id="forgot-password-code-display">Check your email for a 6-digit code</p>
@@ -1538,7 +1541,7 @@
             <div class="auth-card">
                 <span class="section-kicker auth-kicker">Reset</span>
                 <div class="auth-logo" onclick="navigateTo('home')">
-                    <img src="Images/obfusly_name_light.png" alt="obfusly" class="auth-brand-image">
+                    <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="auth-brand-image">
                 </div>
                 <h2>Create New Password</h2>
                 <p class="auth-sub">Enter your new password</p>
@@ -1562,24 +1565,84 @@
     <!-- ── ACCOUNT PAGE ────────────────────────────────────────────────────── -->
     <div id="account" class="page">
         <section class="auth-section">
-            <div class="auth-card auth-card-wide">
-                <span class="section-kicker auth-kicker">Profile</span>
+            <div class="auth-card auth-card-wide" style="max-width: 900px;">
+                <span class="section-kicker auth-kicker">Account Management</span>
                 <h2>My Account</h2>
-                <p class="auth-sub">Manage your Obfusly subscription</p>
-                <div class="account-info">
-                    <div class="account-row"><span class="account-label">Name</span><span id="acct-name"
-                            class="account-value">—</span></div>
-                    <div class="account-row"><span class="account-label">Email</span><span id="acct-email"
-                            class="account-value">—</span></div>
-                    <div class="account-row"><span class="account-label">Plan</span><span id="acct-plan"
-                            class="account-value">—</span></div>
-                    <div class="account-row"><span class="account-label">Member since</span><span id="acct-since"
-                            class="account-value">—</span></div>
+                <p class="auth-sub">Manage your account settings and subscription</p>
+
+                <!-- ACCOUNT INFO CARD -->
+                <div style="background: linear-gradient(135deg, rgba(46,107,255,0.08) 0%, rgba(46,107,255,0.02) 100%); border: 1px solid rgba(46,107,255,0.2); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 600;">Account Information</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Full Name</div>
+                            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 500;" id="acct-name">—</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Email Address</div>
+                            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 500;" id="acct-email">—</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Member Since</div>
+                            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 500;" id="acct-since">—</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Account ID</div>
+                            <div style="color: var(--text-primary); font-size: 0.95rem; font-weight: 500; font-family: 'Courier New', monospace;" id="acct-id">—</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="account-actions">
-                    <button class="btn-primary btn-block" onclick="navigateTo('pricing')">Upgrade Plan</button>
-                    <button class="btn-secondary btn-block btn-danger-outline" onclick="logout()">Log Out</button>
+
+                <!-- SUBSCRIPTION & PLAN CARD -->
+                <div style="background: linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(0,212,255,0.02) 100%); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 600;">Current Plan</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Plan Name</div>
+                            <div style="color: var(--accent-primary); font-size: 1.2rem; font-weight: 600;" id="acct-plan">Free</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Status</div>
+                            <div style="color: #2ecc71; font-size: 1rem; font-weight: 600;" id="acct-status">Active</div>
+                        </div>
+                    </div>
+
+                    <!-- PLAN FEATURES -->
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
+                        <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Plan Features</div>
+                        <ul id="acct-features" style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                            <li style="color: var(--text-secondary); font-size: 0.95rem;">Loading features...</li>
+                        </ul>
+                    </div>
                 </div>
+
+                <!-- BILLING & SUBSCRIPTION DETAILS (for paid plans) -->
+                <div id="acct-billing-card" style="display: none; background: linear-gradient(135deg, rgba(136,221,255,0.08) 0%, rgba(136,221,255,0.02) 100%); border: 1px solid rgba(136,221,255,0.2); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 600;">Billing Information</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Next Billing Date</div>
+                            <div style="color: var(--text-primary); font-size: 1rem; font-weight: 500;" id="acct-next-billing">—</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Renewal Amount</div>
+                            <div style="color: var(--accent-primary); font-size: 1rem; font-weight: 600;" id="acct-renewal-amount">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <button class="btn-primary" onclick="navigateTo('pricing')" style="padding: 0.9rem 1.5rem; font-weight: 600;">
+                        View Plans & Upgrade
+                    </button>
+                    <button class="btn-secondary" id="acct-cancel-btn" style="display: none; padding: 0.9rem 1.5rem; font-weight: 600; background-color: rgba(220,38,38,0.1); color: #ff6b6b; border: 1px solid rgba(220,38,38,0.3);" onclick="cancelSubscription()">
+                        Cancel Subscription
+                    </button>
+                </div>
+                <button class="btn-secondary btn-danger-outline" onclick="logout()" style="width: 100%; padding: 0.9rem 1.5rem; font-weight: 600;">
+                    Log Out
+                </button>
             </div>
         </section>
     </div>
@@ -2088,7 +2151,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-brand">
-                <img src="Images/obfusly_name_light.png" alt="obfusly" class="footer-brand-mark">
+                <img src="Images/Transparent/obfusly-transparent.png" alt="obfusly" class="footer-brand-mark">
                 <p>Production-grade JavaScript protection for teams shipping browser and Node runtimes at scale.</p>
             </div>
             <div class="footer-section">

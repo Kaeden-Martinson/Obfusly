@@ -17,12 +17,11 @@ const stripeConfig = require('./Payments/stripe-config');
 
 // ── Configuration ────────────────────────────────────────────────────────────
 // Set these via environment variables in production.
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production-' + crypto.randomBytes(16).toString('hex');
-const STRIPE_SECRET = process.env.STRIPE_SECRET || '';          // sk_live_... or sk_test_...
+const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production-' + crypto.randomBytes(16).toString('hex');       // sk_live_... or sk_test_...
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || ''; // whsec_...
 const DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
 
-const stripe = STRIPE_SECRET ? Stripe(STRIPE_SECRET) : null;
+const stripe = process.env.STRIPE_RESTRICTED_KEY ? Stripe(process.env.STRIPE_RESTRICTED_KEY) : null;
 const stripeService = stripe ? new StripeService(stripe) : null;
 
 // Plan → Stripe Price ID mapping (from stripe-config.js)
@@ -37,15 +36,15 @@ app.use('/api/webhook/stripe', express.raw({ type: 'application/json' }));
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'Frontend')));
 
 // ── Rate limiters ─────────────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
     windowMs: 60 * 1000,           // 1 minute
-    max: 60,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Too many requests — please slow down.' },
+    skip: (req) => req.path === '/api/webhook/stripe',
 });
 
 const authLimiter = rateLimit({
@@ -58,13 +57,40 @@ const authLimiter = rateLimit({
 
 const obfuscateLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 20,
+    max: 30,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Obfuscation rate limit exceeded. Please wait a moment.' },
 });
 
+const paymentLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many payment requests. Please wait before trying again.' },
+});
+
+const billingLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many billing requests. Please wait.' },
+});
+
+const accountLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many account requests. Please wait.' },
+});
+
 app.use(globalLimiter);
+
+// Serve static files from Frontend directory
+app.use(express.static(path.join(__dirname, 'Frontend')));
 
 // ── JWT helper ────────────────────────────────────────────────────────────────
 function signToken(userId) {
@@ -571,7 +597,7 @@ app.get('/api/plans', (req, res) => {
 });
 
 // Get user's billing info
-app.get('/api/billing/info', requireAuth, async (req, res) => {
+app.get('/api/billing/info', requireAuth, billingLimiter, async (req, res) => {
     try {
         const user = await db.findById(req.user.sub);
         if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -599,7 +625,7 @@ app.get('/api/billing/info', requireAuth, async (req, res) => {
 });
 
 // Create checkout session for plan upgrade/subscription
-app.post('/api/payment/create-session', requireAuth, async (req, res) => {
+app.post('/api/payment/create-session', requireAuth, paymentLimiter, async (req, res) => {
     try {
         if (!stripe || !stripeService)
             return res.status(503).json({ error: 'Payment system is not configured yet.' });
@@ -660,8 +686,71 @@ app.post('/api/payment/create-session', requireAuth, async (req, res) => {
     }
 });
 
+// Cancel subscription - downgrade user to free plan
+app.post('/api/payment/cancel-subscription', requireAuth, paymentLimiter, async (req, res) => {
+    try {
+        if (!stripe || !stripeService) {
+            return res.status(503).json({ error: 'Payment system is not configured yet.' });
+        }
+
+        const user = await db.findById(req.user.sub);
+        if (!user) {
+            console.error(`[CANCEL] User not found: ${req.user.sub}`);
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        if (user.plan === 'free') {
+            return res.status(400).json({ error: 'Already on free plan.' });
+        }
+
+        console.log(`[CANCEL] Cancelling subscription for user ${user.id}, current plan: ${user.plan}`);
+
+        // If user has a Stripe subscription, cancel it
+        if (user.stripeSubId) {
+            try {
+                const subscription = await stripe.subscriptions.cancel(user.stripeSubId);
+                console.log(`[CANCEL] ✓ Stripe subscription cancelled: ${subscription.id}`);
+            } catch (error) {
+                console.error(`[CANCEL] Error cancelling Stripe subscription:`, error.message);
+                // Continue - downgrade in DB anyway
+            }
+        }
+
+        // Downgrade user to free plan
+        const updateData = {
+            plan: 'free',
+            subStatus: 'cancelled',
+            stripeSubId: null,
+            nextBillDt: null,
+        };
+
+        await db.updateSubscription(user.id, updateData);
+        console.log(`[CANCEL] ✓ User downgraded to free plan`);
+
+        // Log the action
+        await db.logAuditAction(user.id, 'SUBSCRIPTION_CANCELLED', {
+            previousPlan: user.plan,
+            newPlan: 'free',
+            stripeSubId: user.stripeSubId,
+        });
+
+        res.json({
+            success: true,
+            message: 'Subscription cancelled successfully. You are now on the Free plan.',
+            user: {
+                plan: 'free',
+                subStatus: 'cancelled',
+                stripeSubId: null,
+            }
+        });
+    } catch (error) {
+        console.error('[CANCEL] Error:', error);
+        res.status(500).json({ error: error.message || 'Failed to cancel subscription.' });
+    }
+});
+
 // Get payment methods
-app.get('/api/payment-methods', requireAuth, async (req, res) => {
+app.get('/api/payment-methods', requireAuth, billingLimiter, async (req, res) => {
     try {
         if (!stripe || !stripeService)
             return res.status(503).json({ error: 'Payment system is not configured.' });
@@ -687,7 +776,7 @@ app.get('/api/payment-methods', requireAuth, async (req, res) => {
 });
 
 // Set default payment method
-app.post('/api/payment-methods/set-default', requireAuth, async (req, res) => {
+app.post('/api/payment-methods/set-default', requireAuth, paymentLimiter, async (req, res) => {
     try {
         if (!stripe || !stripeService)
             return res.status(503).json({ error: 'Payment system is not configured.' });
@@ -709,7 +798,7 @@ app.post('/api/payment-methods/set-default', requireAuth, async (req, res) => {
 });
 
 // Get billing history
-app.get('/api/billing/invoices', requireAuth, async (req, res) => {
+app.get('/api/billing/invoices', requireAuth, billingLimiter, async (req, res) => {
     try {
         if (!stripe || !stripeService)
             return res.json({ invoices: [] });
@@ -737,7 +826,7 @@ app.get('/api/billing/invoices', requireAuth, async (req, res) => {
 });
 
 // Search/lookup account by ID, email, subscription ID, or customer ID
-app.get('/api/account/lookup/:identifier', requireAuth, async (req, res) => {
+app.get('/api/account/lookup/:identifier', requireAuth, accountLimiter, async (req, res) => {
     try {
         const identifier = req.params.identifier?.trim();
         if (!identifier) {
@@ -906,7 +995,7 @@ app.post('/api/webhook/stripe', async (req, res) => {
 });
 
 // Cancel subscription
-app.post('/api/subscription/cancel', requireAuth, async (req, res) => {
+app.post('/api/subscription/cancel', requireAuth, paymentLimiter, async (req, res) => {
     try {
         if (!stripe || !stripeService)
             return res.status(503).json({ error: 'Payment system is not configured.' });
@@ -946,7 +1035,7 @@ app.post('/api/subscription/cancel', requireAuth, async (req, res) => {
 });
 
 // Downgrade to free plan (immediate)
-app.post('/api/subscription/downgrade', requireAuth, async (req, res) => {
+app.post('/api/subscription/downgrade', requireAuth, paymentLimiter, async (req, res) => {
     try {
         const user = await db.findById(req.user.sub);
         if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -1328,7 +1417,7 @@ app.get('/api/debug/stripe-config', (req, res) => {
     }
 
     if (!stripe) {
-        config.errors.push('❌ Stripe not initialized (STRIPE_SECRET missing or invalid)');
+        config.errors.push('❌ Stripe not initialized (STRIPE_RESTRICTED_KEY missing or invalid)');
     } else {
         config.errors.push('✓ Stripe initialized');
     }
@@ -1457,6 +1546,47 @@ app.get('/api/debug/subscription/:customerId', async (req, res) => {
         console.error('Debug error:', error);
         res.status(500).json({ error: error.message });
     }
+});
+
+// ── WIDGET ENDPOINTS ────────────────────────────────────────────────────────────
+
+// Widget API endpoint - for programmatic control
+app.get('/api/widget/config', (req, res) => {
+    const domain = process.env.DOMAIN || 'https://obfusly.com';
+    res.json({
+        widget: {
+            name: 'Obfusly Widget',
+            version: '1.0.0',
+            scriptUrl: `${domain}/widget/embed.js`,
+            documentationUrl: `${domain}/widget`,
+            options: {
+                position: {
+                    default: 'right',
+                    allowed: ['left', 'right'],
+                    description: 'Position of the widget on the screen'
+                },
+                bgColor: {
+                    default: '#000000',
+                    description: 'Background color in hex format (URL encoded)',
+                    examples: ['%23000000', '%232e6bff', '%2388ddff']
+                }
+            },
+            examples: [
+                {
+                    name: 'Default',
+                    code: `<script src="${domain}/widget/embed.js"><\\/script>`
+                },
+                {
+                    name: 'Left Position',
+                    code: `<script src="${domain}/widget/embed.js?position=left"><\\/script>`
+                },
+                {
+                    name: 'Custom Color',
+                    code: `<script src="${domain}/widget/embed.js?bgColor=%232e6bff"><\\/script>`
+                }
+            ]
+        }
+    });
 });
 
 // Initialize MongoDB and start server
