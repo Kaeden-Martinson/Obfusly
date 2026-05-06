@@ -655,8 +655,20 @@ app.post('/api/payment/create-session', requireAuth, paymentLimiter, async (req,
         // Ensure customer exists
         let customer = null;
         if (user.stripeCustId) {
-            customer = await stripeService.getCustomer(user.stripeCustId);
-            console.log(`[CHECKOUT] Using existing customer: ${customer.id}`);
+            try {
+                customer = await stripeService.getCustomer(user.stripeCustId);
+                if (customer.deleted) throw new Error('Customer deleted');
+                console.log(`[CHECKOUT] Using existing customer: ${customer.id}`);
+            } catch (custErr) {
+                if (custErr.code === 'resource_missing' || custErr.message === 'Customer deleted') {
+                    console.warn(`[CHECKOUT] Stored customer ID invalid (${user.stripeCustId}), creating new customer.`);
+                    customer = await stripeService.ensureCustomer({ ...user, stripeCustId: null });
+                    await db.updateSubscription(req.user.sub, { stripeCustId: customer.id });
+                    console.log(`[CHECKOUT] Created replacement customer: ${customer.id}`);
+                } else {
+                    throw custErr;
+                }
+            }
         } else {
             customer = await stripeService.ensureCustomer(user);
             console.log(`[CHECKOUT] Created new customer: ${customer.id}`);
