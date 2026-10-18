@@ -5,36 +5,58 @@
  */
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const dns = require('dns');
+const fs = require('fs');
+const path = require('path');
 
 // Use Cloudflare and Google DNS to bypass local DNS issues
 dns.setServers(['1.1.1.1', '8.8.8.8']);
 
-const uri = process.env.MONGO_URI;
-if (!uri) {
-    console.error('✗ MONGO_URI environment variable not set');
-    process.exit(1);
+const LOCAL_DB_PATH = path.join(__dirname, '..', '.localdb');
+
+// MONGO_URI unset or "local" => run an embedded mongod (mongodb-memory-server)
+// with data persisted to .localdb/. Intended for local development only.
+const useLocal = !process.env.MONGO_URI || process.env.MONGO_URI === 'local';
+
+let client = null;
+let localServer = null;
+
+async function resolveUri() {
+    if (!useLocal) return process.env.MONGO_URI;
+
+    const { MongoMemoryServer } = require('mongodb-memory-server');
+    fs.mkdirSync(LOCAL_DB_PATH, { recursive: true });
+    localServer = await MongoMemoryServer.create({
+        binary: { version: '7.0.14' },
+        instance: { dbPath: LOCAL_DB_PATH, storageEngine: 'wiredTiger' },
+    });
+    console.log(`🧪 Using local MongoDB (data in ${LOCAL_DB_PATH})`);
+    return localServer.getUri();
 }
 
-// Initialize MongoDB client with optimized settings
-const client = new MongoClient(uri, {
-    // Connection pooling
-    maxPoolSize: 50,
-    minPoolSize: 10,
-    maxIdleTimeMS: 45000,
-    
-    // Timeouts and retries
-    serverSelectionTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-    retryWrites: true,
-    retryReads: true,
-    
-    // Stable API for version compatibility
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-});
+async function createClient() {
+    const uri = await resolveUri();
+    // Initialize MongoDB client with optimized settings
+    client = new MongoClient(uri, {
+        // Connection pooling
+        maxPoolSize: 50,
+        minPoolSize: useLocal ? 0 : 10,
+        maxIdleTimeMS: 45000,
+
+        // Timeouts and retries
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        retryWrites: !useLocal,
+        retryReads: true,
+
+        // Stable API for version compatibility
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        },
+    });
+    return client;
+}
 
 let isConnected = false;
 let connectionPromise = null;
@@ -105,7 +127,8 @@ async function connect() {
 
     connectionPromise = (async () => {
         try {
-            console.log('🔄 Connecting to MongoDB Atlas...');
+            if (!client) await createClient();
+            console.log(useLocal ? '🔄 Connecting to local MongoDB...' : '🔄 Connecting to MongoDB Atlas...');
             await client.connect();
             
             const db = client.db('Obfusly');
@@ -160,7 +183,7 @@ async function healthCheck() {
  * Get connection stats
  */
 function getConnectionStats() {
-    if (!client.topology) {
+    if (!client || !client.topology) {
         return { connected: false };
     }
 
@@ -212,6 +235,10 @@ async function disconnect() {
             console.error('✗ Error during disconnect:', error.message);
         }
     }
+    if (localServer) {
+        await localServer.stop({ doCleanup: false });
+        localServer = null;
+    }
 }
 
 /**
@@ -230,7 +257,9 @@ process.on('SIGTERM', async () => {
 });
 
 module.exports = {
-    client,
+    get client() {
+        return client;
+    },
     connect,
     getDB,
     disconnect,

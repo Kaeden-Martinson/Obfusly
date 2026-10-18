@@ -1,1 +1,5 @@
 node_modules
+.localdb
+.env
+.env.*
+!.env.example

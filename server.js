@@ -1604,12 +1604,6 @@ app.get('/api/widget/config', (req, res) => {
 // Initialize MongoDB and start server
 async function startServer() {
     try {
-        const mongoUri = process.env.MONGO_URI;
-        if (!mongoUri) {
-            console.error('✗ MONGO_URI not set in .env file');
-            process.exit(1);
-        }
-
         await mongoManager.initDatabase();
         console.log('✓ MongoDB connected successfully');
 
