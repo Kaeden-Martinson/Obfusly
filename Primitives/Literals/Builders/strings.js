@@ -397,7 +397,7 @@ function buildStringConcealment(opts = {}, encodingAndDecodingPairs, encodeModul
         code += `\nvar ${getFnName}=${iifeFnName};`;
     }
 
-    return config.output.compression ? removeSpacesAndNewlines(code) : code;
+    return config.output.compression ? compress(code) : code;
 };
 
 function getBrokenIIFE() {

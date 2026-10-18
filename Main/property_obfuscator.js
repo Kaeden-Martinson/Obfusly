@@ -160,6 +160,9 @@ async function obfuscateProperties(sourceCode, windowName, previousDeclarationMa
             if (node.type === "ImportDeclaration") if (node.source && node.source.type === "Literal") node.source.dontObfuscate = true;
 
             if (node.type === "MemberExpression") {
+                /* #private members must stay as `.#name` — bracketing them (obj["name"]) turns a private access
+                   into a public one (undefined) and is a syntax error for a true private field. Leave untouched. */
+                if (node.property && node.property.type === "PrivateIdentifier") return node;
                 if (node.object.type === "ThisExpression") return createStringProperty(node, ['this', node.optional, (!node.computed ? encodeStringsRandom(node.property.name).raw : node.property.type === "Identifier" && node.computed ? node.property.name : node.property.type === "Literal" ? encodeStringsRandom(node.property.value).raw : sourceCode.slice(node.property.start, node.property.end))]);
                 let properties = [...recursiveCallObject(node, [])].reverse();
                 if (properties[0] === false) properties.splice(0, 1);

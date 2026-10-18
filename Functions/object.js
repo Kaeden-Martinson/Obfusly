@@ -80,7 +80,13 @@ function recursiveCallObject(node, properties, isCallee = false) {
             properties.push({ raw: ("[" + node.property.name + "]" + (isEmptyFunction ? "()" : "")) });
             properties.push(node.optional);
         } else {
-            properties.push(encodeStringsRandom(node.property.name).raw);
+            /* object is a Literal/Array/etc. (not caught by the line-70 branch). A no-arg call here, e.g.
+               ("x").toLowerCase() or [1,2].reverse(), must keep its "()" — the old code dropped it, turning
+               `"x".toLowerCase().charAt(0)` into `"x"["toLowerCase"]["charAt"](0)` -> "not a function".
+               Mirror the line-70 branch: emit the bracketed key and append "()" when this member is itself
+               the callee of an empty call. */
+            let isEmptyFunction = sourceCode.slice(node.property.end, node.property.end + 2) === "()" && isCallee;
+            properties.push({ raw: "[" + encodeStringsRandom(node.property.name).raw + "]" + (isEmptyFunction ? "()" : "") });
             properties.push(node.optional);
         };
     };
@@ -89,7 +95,9 @@ function recursiveCallObject(node, properties, isCallee = false) {
         if (node.property.callee.type === "MemberExpression") {
             let argumentString = "";
             if (node.property.arguments) {
-                for (let argument of node.property.arguments) {
+                for (let _ai = 0; _ai < node.property.arguments.length; _ai++) {
+                    const argument = node.property.arguments[_ai];
+                    if (_ai > 0) argumentString += ", ";   // separate arguments (was missing -> "0MC.length")
                     if (argument.left && argument.operator && argument.right) {
                         let leftProps = [...recursiveCallObject(argument.left, [])].reverse();
                         let rightProps = [...recursiveCallObject(argument.right, [])].reverse();
@@ -137,6 +145,11 @@ function recursiveCallObject(node, properties, isCallee = false) {
     if (node?.object?.type === "BinaryExpression" || node?.object?.type === "AssignmentExpression" || node?.object?.type === "LogicalExpression" || node?.object?.type === "ForInStatement" || node?.object?.type === "ForOfStatement") { properties.push({ raw: "(" + sourceCode.slice(node.object.start, node.object.end) + ")" }); properties.push(node.optional); };
 
     if (node?.object?.type === "ArrayExpression") {
+        /* Empty array literal as a member object (`[].concat(...)`, `[].slice()`...): the loop below starts
+           at length-1 = -1 and never runs, so the `[]` was emitted as nothing and the member collapsed to a
+           bare `["concat"]` (an array literal, then called) -> "["concat"] is not a function". Emit `[]` so
+           it stays `[]["concat"]`. */
+        if (node.object.elements.length === 0) { properties.push({ raw: "[]" }); return properties; }
         for (let i = node.object.elements.length - 1; i > -1; i--) {
             const element = node.object.elements[i];
             if (element.type === "SpreadElement") {
@@ -161,6 +174,11 @@ function recursiveCallObject(node, properties, isCallee = false) {
         properties.push(node.object.name); return properties;
     } else if (node.object && node.object.type === "NewExpression") {
         properties.push(sourceCode.slice(node.object.start, node.object.end)); return properties;
+    } else if (node.object && (node.object.type === "TemplateLiteral" || node.object.type === "TaggedTemplateExpression" || node.object.type === "ConditionalExpression" || node.object.type === "ObjectExpression" || node.object.type === "SequenceExpression" || node.object.type === "AwaitExpression")) {
+        /* Object expressions that recursion can't unwrap (it has no case for them) were being dropped,
+           leaving a bare `["x"]` -> "not a function"/"not defined": `tpl`.m(), tag`x`.m(), (a?b:c).m(),
+           ({...}).m(), (a,b).m(), (await p).m(). Emit verbatim, parenthesized so the member/call binds. */
+        properties.push({ raw: "(" + sourceCode.slice(node.object.start, node.object.end) + ")" }); return properties;
     } else if (node.object && node.object.type === "ThisExpression") {
         properties.push({ raw: 'this' }); return properties;
     } else return recursiveCallObject(node.object, properties);

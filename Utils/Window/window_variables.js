@@ -23,7 +23,10 @@ const windowVariables = ['parseInt', 'atob', 'btoa', 'alert', 'blur',
     'Float32Array', 'Float64Array', 'BigUint64Array', 'Uint32Array', 'BigInt64Array', '$',
     'XMLHttpRequest', 'URLSearchParams', 'WeakMap', 'WeakSet', 'URL',
     'TextEncoder', 'TextDecoder', 'sessionStorage', 'MutationObserver', 'Path2D', 'inner',
-    'scrollX', 'scrollY', 'WebSocket', 'crypto', 'DataView', 'ArrayBuffer'
+    'scrollX', 'scrollY', 'WebSocket', 'crypto', 'DataView', 'ArrayBuffer',
+    'Boolean', 'HTMLCanvasElement', 'CanvasRenderingContext2D', 'getComputedStyle', 'CompressionStream',
+    'MediaRecorder', 'DecompressionStream', 'Response', 'cancelAnimationFrame', 'Audio', 'FileReader',
+    'CSSStyleDeclaration', 'Event', 'createImageBitmap', 'indexedDB', 'BroadcastChannel', 'DOMParser', 'Buffer'
 ];
 
 const ignoreVariables = ['parent', 'window', 'arguments', 'module', 'define', 'exports', 'require', 'chrome'];
